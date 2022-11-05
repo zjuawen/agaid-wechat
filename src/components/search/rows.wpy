@@ -1,0 +1,119 @@
+<template>
+    <view class="list-item {{type==1?'flex-item':''}} wl-padding-sm box-radius-20 bg-white wl-margin-bottom-sm">
+        <navigator wx:if="{{type==0}}" hover-class="none">
+            <view class="flex flex-ai-center">
+                <image wx:if="{{item.thumb&&item.thumb.url}}" class="avatar" src="{{item.thumb.url}}" mode="scaleToFill" />
+                <image wx:else class="avatar" src="/public/img/avatar.png" mode="scaleToFill" />
+                <view class="flex-main wl-margin-left-sm">
+                    <view class="text-30">
+                        {{item.name}}
+                    </view>
+                </view>
+            </view>
+        </navigator>
+        <navigator wx:if="{{type==1}}" hover-class="none" url="/pages/news/detail?id={{item.id}}">
+            <view class="live">
+                <image wx:if="{{item.type==1}}" class="thumb" src="{{item.image.url}}" mode="scaleToFill" />
+                <video wx:elif="{{item.type==2}}" class="video" src="{{item.video.url}}" controls="{{false}}" show-center-play-btn="{{false}}" />
+            </view>
+            <view class="info wl-padding-xs">
+                <view class="title text-ellipsis text-26 text-bold">{{item.title}}</view>
+                <view class="author flex flex-ai-end">
+                    <view class="flex-main flex flex-ai-center">
+                        <image wx:if="{{item.author&&item.author.customer&&item.author.customer.avatar}}" class="avatar" src="{{item.author.customer.avatar}}" mode="scaleToFill" />
+                        <image wx:else class="avatar" src="/public/img/logo.jpg" mode="scaleToFill" />
+                        <view class="text-20 flex-main wl-margin-left-xs">{{item.author.username}}</view>
+                    </view>
+                </view>
+            </view>
+        </navigator>
+        <navigator wx:if="{{type==2}}" hover-class="none">
+            <view class="flex flex-ai-center wl-margin-bottom-lg">
+                <image wx:if="{{item.image&&item.image.url}}" class="avatar" src="{{item.image.url}}" mode="scaleToFill" />
+                <image wx:else class="avatar" src="/public/img/avatar.png" mode="scaleToFill" />
+                <view class="flex-main wl-margin-left-sm">
+                    <view class="text-30">
+                        {{item.name}}
+                    </view>
+                </view>
+            </view>
+            <view wx:if="{{item.description}}" class="title text-34 wl-margin-bottom-sm text-ellipsis-2">{{item.description}}</view>
+            <view wx:if="{{item.area}}" class="description text-28 color-gray wl-margin-bottom-sm text-ellipsis-2">服务区域：{{item.area}}</view>
+            <view class="flex flex-ai-center flex-jc-between text-30 color-green text-center wl-padding-top-xl">
+                <navigator hover-class="none" url="/pages/article/add?type=2&pid={{item.id}}">
+                    <i class="icon-question mid text-32"></i> 向他提问
+                </navigator>
+                <navigator hover-class="none" url="/pages/professor/chat?pid={{item.id}}" >
+                    <i class="icon-comment top text-36"></i> 私信交流
+                </navigator>
+                <view wx:if="{{item.phone}}" @tap="handlePhoneCall({{item.phone}})">
+                    <i class="icon-phone top text-36"></i> 电话咨询
+                </view>
+            </view>
+        </navigator>
+        <navigator wx:if="{{type==3}}" hover-class="none" url="/pages/article/detail?id={{item.id}}">
+            <view class="flex flex-ai-center wl-margin-bottom-lg">
+                <image wx:if="{{item.author&&item.author.customer&&item.author.customer.avatar}}" class="avatar" src="{{item.author.customer.avatar}}" mode="scaleToFill" />
+                <image wx:else class="avatar" src="/public/img/logo.jpg" mode="scaleToFill" />
+                <view class="flex-main wl-margin-left-sm">
+                    <view class="text-30">{{item.customer?item.customer.nickname:'-'}}</view>
+                    <view class="color-gray text-24 wl-margin-top-5">{{item.created_at}}</view>
+                </view>
+                <i class="fa fa-angle-right color-gray text-bold text-40"></i>
+            </view>
+            <view wx:if="{{item.title}}" class="title text-36 wl-margin-bottom-sm text-ellipsis-2">{{item.title}}</view>
+            <view wx:if="{{item.description}}" class="description text-30 color-gray wl-margin-bottom-sm text-ellipsis-2">{{item.description}}</view>
+            <view wx:if="{{(item.images&&item.images.length>0)||(item.videos&&item.videos.length>0)}}" class="list-pics scroll-x ">
+                <block wx:if="{{item.images&&item.images.length>0}}">
+                    <image wx:for="{{item.images}}" wx:for-item="file" wx:for-index="fidx" class="list-pics-item sm" src="{{file.url}}"  mode="aspectFill" />
+                </block>
+                <block wx:if="{{item.videos&&item.videos.length>0}}">
+                    <video wx:for="{{item.videos}}" wx:for-item="file" wx:for-index="fidx" controls="{{false}}" show-center-play-btn="{{false}}" class="list-pics-item sm" src="{{file.url}}" />
+                </block>
+            </view>
+            <view wx:if="{{item.type==2&&item.reply_content}}" class="reply wl-padding-sm bg-gray text-30 wl-margin-top-sm box-radius-20">
+                <text class="text-ellipsis-2">{{item.professor.name}}：<text class="color-gray">{{item.reply_content}}</text></text>
+            </view>
+        </navigator>
+    </view>
+</template>
+<script>
+import wepy from 'wepy'
+import api from '@/utils/api'
+import baseMixin from '@/mixins/base'
+export default class Rows extends wepy.component {
+    
+    components = {}
+
+    mixins = [ baseMixin ]
+
+    props = {
+        // 0-品种；1-资讯；2-专家；3-贴吧；
+        type: {
+            type: Number
+        },
+        item: {
+            type: Object
+        }
+    }
+
+    data = {
+        collectList: [],
+    }
+
+    computed = {
+    }
+    
+    methods = {
+    }
+
+    events = {
+    }
+
+    onLoad (params, data) { }
+    onShow () { }
+    onReady () { }
+}
+</script>
+<style lang="css" scoped>
+</style>

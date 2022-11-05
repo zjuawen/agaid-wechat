@@ -1,0 +1,237 @@
+<template>
+    <view class="page-article-add">
+        <view class="wl-form head-view bg-head wl-padding-page wl-padding-vertical-xl">
+            <view class="form-card wl-padding-sm">
+                <!-- <view class="form-group flex">
+                    <view class="form-label must">标题</view>
+                    <view class="flex flex-ai-center flex-main">
+                        <view class="form-control">
+                            <input type="text" 
+                                    class="flex-main" 
+                                    placeholder="请输入" 
+                                    data-key="title"
+                                    placeholder-class="color-desc"
+                                    @input="inputValue" value="{{submitData.title}}" />
+                        </view>
+                    </view>
+                </view> -->
+                <view class="form-group flex textarea">
+                    <view class="form-label must">问题</view>
+                    <view class="flex flex-ai-center flex-main">
+                        <view class="form-control wl-padding-0">
+                            <textarea
+                                class="flex-main" 
+                                placeholder="请输入" 
+                                data-key="description"
+                                @input="inputValue" 
+                                placeholder-class="color-desc"
+                                value="{{submitData.description}}" />
+                        </view>
+                    </view>
+                </view>
+
+                <SelectProfessor wx:if="{{submitData.type==2}}" title="专家" required="true" @selectCallback.user="handleSelectProfessor" />
+               
+                <view class="form-group flex box-border-none files">
+                    <view class="form-label">媒体</view>
+                    <view class="form-control file-list flex flex-wrap">
+                        <view class="file-item">
+                            <block wx:for="{{submitData.images||[]}}" wx:key="index">
+                                <view class="relative inline">
+                                    <image mode="aspectFill" src="{{item.url}}" @tap="handlePreview('images', {{index}})" />
+                                    <i class="fa fa-times-circle file-del" @tap="handleDelImage('images', {{index}})"></i>
+                                </view>
+                            </block>
+                            <block wx:for="{{submitData.videos||[]}}" wx:key="index">
+                                <view class="relative inline">
+                                    <video controls="{{false}}" show-center-play-btn="{{false}}" src="{{item.url}}"  @tap="handlePreview('videos', {{index}})" />
+                                    <i class="fa fa-times-circle file-del" @tap="handleDelImage('videos', {{index}})"></i>
+                                </view>
+                            </block>
+                            <view wx:if="{{canUpload}}" class="file-upload" hover-class='none' @tap="handleAddMedia()">
+                                <view class="box-center fa fa-camera upload-icon"></view>
+                            </view>
+                        </view>
+                    </view>
+                </view>
+            </view>
+        </view>
+        <view class="wl-padding-page wl-margin-vertical-xl">
+            <button class="btn btn-submit border-none" hover-class='none' @tap="handleSave"> 保存 </button>
+        </view>
+    </view>
+</template>
+<script>
+import wepy from 'wepy'
+import api from '@/utils/api'
+import baseMixin from '@/mixins/base'
+import SelectProfessor from '@/components/selectprofessor'
+export default class add extends wepy.page {
+    config = {
+        navigationBarTitleText: '发布问题',
+        usingComponents: {
+            "van-popup": "@vant/weapp/popup/index"
+        }
+    }
+    
+    mixins = [ baseMixin ]
+    
+    components = {
+        SelectProfessor
+    }
+
+    data = {
+        maxCount: 6,
+        professorId: null,
+        submitLoading: false,
+        submitData: {
+            type: 1,
+            description: '',
+            images: [],
+            videos: [],
+            professor: null,
+            author: null,
+            created_by: null
+        }
+    }
+
+    computed = {
+        canUpload() {
+            if (!this.submitData) {
+                return 0
+            }
+            let imgs = this.submitData.images ? this.submitData.images.length : 0
+            let vids = this.submitData.videos ? this.submitData.videos.length : 0
+            return (imgs + vids) < this.maxCount
+        },
+        userInfo() {
+            return this.$parent.globalData.appuser
+        },
+        wxuserInfo() {
+            return this.$parent.globalData.wxuser
+        }
+    }
+    
+    methods = {
+        inputValue(e) {
+            let data = e.currentTarget.dataset
+            let _value = e.detail.value
+            let _key = data.key
+
+            this.submitData[_key] = _value
+            this.$apply()
+        },
+        // 添加图片/视频
+        handleAddMedia(key) {
+            let vm = this
+            if (!vm.submitData) {
+                vm.submitData = {}
+                vm.$apply()
+            }
+            if (!vm.submitData.images) {
+                vm.submitData.images = []
+                vm.$apply()
+            }
+            if (!vm.submitData.videos) {
+                vm.submitData.videos = []
+                vm.$apply()
+            }
+            let count  = vm.submitData.images.length + vm.submitData.videos.length
+            let max = vm.maxCount - count
+                max = max < 0 ? 0 : max
+            api.uploadMedia({ max: max }, function(res){
+                if(res && res.length > 0) {
+                    res.forEach(file => {
+                        if (file.type == 'image') {
+                            vm.submitData.images.push(file)
+                        } else if (file.type == 'video') {
+                            vm.submitData.videos.push(file)
+                        }
+                    })
+                    vm.$apply()
+                    console.log(vm.submitData)
+                }
+            });
+        },
+        // 删除图片
+        handleDelImage(key, idx) {
+            let _this = this
+            wx.showModal({
+                title: '删除',
+                content: '您确定要删除该媒体吗？',
+                confirmText: '确定',
+                cancelText: '先不了',
+                success: function (res) {
+                    if (res.confirm) {
+                        _this.submitData[key].splice(idx, 1);
+                        _this.$apply()
+                    }
+                }
+            })
+        },
+        // 图片预览
+        handlePreview(key, idx) {
+            this.handlePreviewMedia(this.submitData[key], idx)
+        },
+        // 选择专家
+        handleSelectProfessor(user) {
+            this.submitData.professor = user
+            this.$apply()
+        },
+        handleSave() {
+            if (this.submitLoading) {
+                return
+            }
+            // if (!this.submitData.title) {
+            //     api.toast('请填写标题', 'none')
+            //     return
+            // }
+            if (!this.submitData.description) {
+                api.toast('请填写问题', 'none')
+                return
+            }
+            if (this.submitData.type == 2 && (!this.submitData.professor || !this.submitData.professor.id)) {
+                api.toast('请选择要询问的专家', 'none')
+                return
+            }
+            this.submitLoading = true
+            api.$request('articles_save', this.submitData , true, false).then(({data}) => {
+                if (data && data.id) {
+                    api.toast('保存成功', 'success')
+                    this.$apply()
+                    this.pageBack(true, true)
+                } else {
+                    api.toast(data.msg, 'none')
+                }
+            }).finally(() => {
+                this.submitLoading = false
+                this.$apply()
+            })
+        }
+    }
+
+    events = {
+    }
+
+    onLoad (params, data) {
+        this.maxCount = this.$parent.globalData.maxUploadCount
+        this.submitData.type = params.type
+        this.submitData.author = this.userInfo.id
+        this.submitData.created_by = this.userInfo.id
+        this.submitData.customer = this.wxuserInfo.id
+        if (params.pid) {
+            this.professorId = params.pid
+        }
+        this.$apply()
+        this.$invoke('SelectProfessor', 'init', {professorId: this.professorId})
+    }
+    onShow () {
+        
+    }
+    onReady () {
+
+    }
+}
+</script>
+<style lang="css">
+</style>

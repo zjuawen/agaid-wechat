@@ -1,0 +1,224 @@
+<template>
+    <view class="page-article page-nav flex flex-col flow-hide">
+        <view class="head-view search-tab bg-head flex flex-ai-center wl-padding-page wl-padding-top-sm wl-padding-bottom-sm z-100">
+            <view class="relative flex-main" @tap="handleToSearch">
+                <i class="left-icon fa fa-search text-32 color-blue"></i>
+                <input class="search-input" type="text" disabled placeholder="搜索" placeholder-class="search-pholder" />
+            </view>
+            <navigator hover-class="none" url="/pages/article/add?type=1" class="btn btn-search wl-margin-left-sm"><i class="icon-edit icon"></i> 发布问题</navigator>
+            <navigator hover-class="none" url="/pages/article/add?type=2" class="btn btn-search wl-margin-left-xs"><i class="icon-professor icon"></i> 问专家</navigator>
+        </view>
+        <van-tabs v-model="activeTab" class="text-32 inline-tabs wl-margin-bottom-sm" tab-class="inline" line-width="30" line-height="3" color="#1F8C48" title-active-color="#1F8C48" title-inactive-color="#949494" @change="handleChangeTab">
+            <van-tab title="热门"></van-tab>
+            <van-tab title="最新"></van-tab>
+            <van-tab title="推荐"></van-tab>
+        </van-tabs>
+        <scroll-view scroll-y="true" class="flex-main flow-y-auto list z-100 bg-tran" @scrolltolower="handleNext">
+            <view wx:if="{{!isEmpty}}" class="list-card wl-margin-bottom-xl">
+                <view class="card-body">
+                    <view wx:for="{{queryConfig.list}}" wx:key="index" class="list-item wl-padding-sm box-radius-20 bg-white wl-margin-bottom-sm">
+                        <navigator hover-class="none" url="/pages/article/detail?id={{item.id}}">
+                            <view class="flex flex-ai-center wl-margin-bottom-lg">
+                                <image wx:if="{{item.author&&item.author.customer&&item.author.customer.avatar}}" class="avatar" src="{{item.author.customer.avatar}}" mode="scaleToFill" />
+                                <image wx:else class="avatar" src="/public/img/avatar.png" mode="scaleToFill" />
+                                <view class="flex-main wl-margin-left-sm">
+                                    <view class="text-30">{{item.customer?item.customer.nickname:'-'}}</view>
+                                    <view class="color-gray text-24 wl-margin-top-5">{{item.created_at}}</view>
+                                </view>
+                                <i class="fa fa-angle-right color-gray text-bold text-40"></i>
+                            </view>
+                            <view wx:if="{{item.title}}" class="title text-36 wl-margin-bottom-sm text-ellipsis-2">{{item.title}}</view>
+                            <view wx:if="{{item.description}}" class="description text-30 color-gray wl-margin-bottom-sm text-ellipsis-2">{{item.description}}</view>
+                            <view wx:if="{{(item.images&&item.images.length>0)||(item.videos&&item.videos.length>0)}}" class="list-pics scroll-x ">
+                                <block wx:if="{{item.images&&item.images.length>0}}">
+                                    <image wx:for="{{item.images}}" wx:for-item="file" wx:for-index="fidx" class="list-pics-item sm" src="{{file.url}}"  mode="aspectFill" @catchtap="handlePreview({{item}}, {{index}}, 0)" />
+                                </block>
+                                <block wx:if="{{item.videos&&item.videos.length>0}}">
+                                    <video wx:for="{{item.videos}}" wx:for-item="file" wx:for-index="fidx" controls="{{false}}" show-center-play-btn="{{false}}" class="list-pics-item sm" src="{{file.url}}" @catchtap="handlePreview({{item}}, {{index}}, {{item.images.length}})" />
+                                </block>
+                            </view>
+                            <view wx:if="{{item.type==2&&item.reply_content}}" class="reply wl-padding-sm bg-gray text-30 wl-margin-top-sm box-radius-20">
+                                <text class="text-ellipsis-2">{{item.professor.name}}：<text class="color-gray">{{item.reply_content}}</text></text>
+                            </view>
+                        </navigator>
+                        <view class="flex flex-ai-center flex-jc-between text-30 color-gray text-center wl-padding-top-xl">
+                            <view class="flex-main {{item.isCollect?'color-green':''}}" @tap="handleCollect(1, {{item}}, {{index}})">
+                                <i class="icon-star text-40 top"></i> 收藏
+                            </view>
+                            <view class="flex-main" @tap="handleShowConsult({{item}}, {{index}})">
+                                <i class="icon-comment text-36 top"></i> 评论
+                            </view>
+                            <view class="flex-main {{item.thumbsup?'color-green':''}}" @tap="handleCollect(3, {{item}}, {{index}})">
+                                <i class="icon-thumbs-up text-36 top"></i> {{item.up_count||0}}
+                            </view>
+                        </view>
+                    </view>
+                    <view wx:if="{{queryConfig.finished}}" class="color-gray text-26 text-center wl-padding-top-xl wl-padding-bottom-sm">没有更多了~</view>
+                </view>
+            </view>
+            <view  wx:if="{{isEmpty}}" class="card-body">
+                <view class="empty">
+                    <i class="icon icon-empty"></i>
+                    <view class="wl-margin-top-sm">~还没有信息</view>
+                </view>
+            </view>
+        </scroll-view>
+
+        <Consult @onclose.user="handleCloseConsult" />
+    </view>
+</template>
+<script>
+import wepy from 'wepy'
+import api from '@/utils/api'
+import baseMixin from '@/mixins/base'
+import Consult from '@/components/consult/dialog'
+export default class Article extends wepy.component {
+    
+    components = {
+        Consult
+    }
+
+    mixins = [ baseMixin ]
+
+    data = {
+        activeTab: 0,
+        sorts: ['up_count:DESC', 'created_at:DESC', 'collect_count:DESC'],
+        // _where[_or][0][stars]=1&_where[_or][1][pricing_gt]=30
+        queryParams: {
+            '_or[0][state]': 1,
+            _sort: 'up_count:DESC'
+        },
+        collectList: [],
+        list: [],
+    }
+
+    computed = {
+        isEmpty() {
+            return (!this.queryConfig.loading&&this.queryConfig.finished&&this.queryConfig.list.length==0)
+        },
+        userInfo() {
+            return this.$parent.$parent.globalData.appuser
+        }
+    }
+    
+    methods = {
+        // 下一页
+        handleNext() {
+            if (this.queryConfig.finished) {
+                return
+            }
+            this.handleFetchList(false, false, this.handleListBefore)
+        },
+        handleToSearch() {
+            this.$parent.$navigate('/pages/search/index', { type: 3})
+        },
+        handleChangeTab(e) {
+            this.queryParams._sort = this.sorts[e.detail.index]
+            this.handleFetchList(true, false, this.handleListBefore)
+        },
+        // 点赞收藏
+        handleCollect(type, item, idx) {
+            if (type != 1 && type != 3) {
+                return
+            }
+            let vm = this
+            let isCollect = true
+            let params = {
+                type: type,
+                target: item.id,
+                user: vm.userInfo.id
+            }
+            if ((type == 1 && item.collectId) || (type == 3 && item.thumbsupId)) {
+                isCollect = false
+                params = {
+                    id: (type == 1 ? item.collectId : item.thumbsupId)
+                }
+            }
+            vm.handleSetCollect(params, isCollect, (ret) => {
+                if (type == 1) {
+                    vm.queryConfig.list[idx].isCollect = isCollect
+                    vm.queryConfig.list[idx].collectId = isCollect?ret.id:null
+                } else if (type == 3) {
+                    vm.queryConfig.list[idx].thumbsup = isCollect
+                    vm.queryConfig.list[idx].thumbsupId = isCollect?ret.id:null
+                }
+                vm.$apply()
+                vm.handleSetCount(item, type, idx, isCollect)
+            })
+        },
+        // 评论
+        handleShowConsult(item, idx) {
+            this.$emit('onevt', false)
+            this.$invoke('Consult', 'init', {id: item.id})
+        },
+        // 评论-关闭
+        handleCloseConsult() {
+            this.$emit('onevt', true)
+        },
+        // 图片预览
+        handlePreview(item, idx, len) {
+            let medisa = [].concat(item.images).concat(item.videos)
+            this.handlePreviewMedia(medisa, ((+len||0) + idx))
+        },
+    }
+
+    events = {
+    }
+
+    onLoad (params, data) {
+        this.queryConfig.key = 'articles_list'
+    }
+    onShow () { }
+    onReady () { }
+
+    init(params) {
+        this.queryParams['_or[1][author]'] = wepy.$instance.globalData.appuser.id
+        this.collectList = wepy.$instance.globalData.collects
+        this.handleFetchList(true, false, this.handleListBefore)
+    }
+
+    handleListBefore(vm, list) {
+        list.forEach(v => {
+            v.isCollect = false
+            v.collectId = null
+            v.thumbsup = false
+            v.thumbsupId = null
+            v.created_at = vm.handleDateView(v.created_at)
+            let cidx = vm.collectList.findIndex(c => {
+                return (c.type == 1 && c.target == v.id && c.user.id == vm.userInfo.id)
+            })
+            if (cidx > -1) {
+                v.isCollect = true
+                v.collectId = vm.collectList[cidx].id
+            }
+            let tidx = vm.collectList.findIndex(c => {
+                return (c.type == 3 && c.target == v.id && c.user.id == vm.userInfo.id)
+            })
+            if (tidx > -1) {
+                v.thumbsup = true
+                v.thumbsupId = vm.collectList[tidx].id
+            }
+        })
+        return list
+    }
+
+    handleSetCount(item, type, idx, isCollect) {
+        let vm = this
+        let params = {}
+        let count = isCollect ? 1 : -1
+        let keys = ['', 'collect_count', '', 'up_count', '']
+        params[keys[type]] = item[keys[type]] + count
+        if (params[keys[type]] < 0) {
+            params[keys[type]] = 0
+        }
+        api.$request(['articles_update', item.id], params , true, false).then(({data}) => {
+            if (data && data.id) {
+                vm.queryConfig.list[idx][keys[type]] = params[keys[type]]
+                vm.$apply()
+            }
+        })
+    }
+}
+</script>
+<style lang="css" scoped>
+</style>

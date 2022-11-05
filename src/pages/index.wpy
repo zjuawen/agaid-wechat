@@ -1,0 +1,245 @@
+<template>
+    <view class="page-home h-full-v-min bg-body">
+        <view class="page-loading" style="opacity: {{opacity}};display: {{display}};">
+            <image class="icon-loading box-center" src="/public/img/loading.gif" />
+        </view>
+        <block wx:if="{{!isError}}">
+            <block wx:if="{{showAuth}}">
+                <Auth @onback.user="handleAuth" />
+            </block>
+            <block wx:else>
+                <Category wx:if="{{navCode=='Category'}}" />
+                <Article wx:if="{{navCode=='Article'}}" @onevt.user="handleShowNav" />
+                <News wx:if="{{navCode=='News'}}" />
+                <Professor wx:if="{{navCode=='Professor'}}" />
+                <My wx:if="{{navCode=='My'}}" />
+                <view wx:if="{{showNav}}" class="nav-bar flex flex-ai-center {{isIphoneX?'fix-iphonex-bottom':''}}">
+                    <view 
+                        wx:for="{{navItems}}" wx:key="index" 
+                        class="nav-bar-item flex-main text-center {{navActive==index?'active':''}}" 
+                        @tap="handleNavbarClick({{index}})">
+                        <i class="{{item.icon}} relative bar-icon">
+                            <!-- <text wx:if="{{index==0}}" class="tip">2</text> -->
+                        </i>
+                        <view class="text-24 nav-title">{{item.text}}</view>
+                    </view>
+                </view>
+            </block>
+        </block>
+        <block wx:else>
+            <view class="h-full-v w-full relative">
+                <view class="box-center">
+                    <i class="icon-error text-300">
+                        <i class="path1"></i><i class="path2"></i><i class="path3"></i><i class="path4"></i><i class="path5"></i><i class="path6"></i><i class="path7"></i><i class="path8"></i><i class="path9"></i><i class="path10"></i><i class="path11"></i><i class="path12"></i><i class="path13"></i><i class="path14"></i>
+                    </i>
+                    <view class="text-26 color-desc text-center wl-margin-top-lg">{{message}}</view>
+                    <view class="text-24 color-desc text-center wl-margin-top-sm">{{subMessage}}</view>
+                    <button style="width: 400rpx;" class="btn btn-submit border-none wl-margin-top-32" hover-class='none' @tap="handleDoLogin"> 重新登陆 </button>
+                </view>
+            </view>
+        </block>
+    </view>
+</template>
+<script>
+import wepy from 'wepy'
+import api from '@/utils/api'
+import baseMixin from '@/mixins/base'
+import Auth from '@/components/pages/auth'
+import Category from '@/components/pages/category'
+import Article from '@/components/pages/article'
+import News from '@/components/pages/news'
+import Professor from '@/components/pages/professor'
+import My from '@/components/pages/my'
+
+export default class Index extends wepy.page {
+    config = {
+        navigationBarTitleText: '助农小程序',
+        // enablePullDownRefresh: true,
+        usingComponents: {
+            "van-calendar": "@vant/weapp/calendar/index",
+            "van-sticky": "@vant/weapp/sticky/index",
+            "van-dialog": "@vant/weapp/dialog/index",
+            "van-tabs": "@vant/weapp/tabs/index",
+            "van-tab": "@vant/weapp/tab/index",
+            "van-popup": "@vant/weapp/popup/index"
+        }
+    }
+    
+    mixins = [ baseMixin ]
+
+    components = {
+        Auth: Auth,
+        Category: Category,
+        Article: Article,
+        News: News,
+        Professor: Professor,
+        My: My
+    }
+
+    data = {
+        active: 0,
+        loading: true,
+        isError: false,
+        showNav: true,
+        showAuth: false,
+        display: 'block',
+        message: '',
+        subMessage: '',
+        navActive: 1,
+        navCode: '',
+        navItems: [
+            { text: '品种', code: 'Category', icon: 'icon-category'},
+            { text: '贴吧', code: 'Article', icon: 'icon-article'},
+            { text: '资讯', code: 'News', icon: 'icon-news'},
+            { text: '专家', code: 'Professor', icon: 'icon-professor'},
+            { text: '我的', code: 'My', icon: 'icon-user'},
+        ]
+
+    }
+
+    computed = {
+        opacity () {
+            if (this.loading) {
+                return '1'
+            } else {
+                return '0'
+            }
+        }
+    }
+    
+    methods = {
+        handleNavbarClick(idx) {
+            this.navActive = idx
+            this.navCode = this.navItems[idx].code
+            this.loadPage()
+        },
+        handleDoLogin() {
+            this.$parent.doLogin(() => {
+                this.loadPage()
+            })
+        },
+        handleAuth(res) {
+            wx.setStorageSync('agaid-weapp-auth', false)
+            this.showAuth = false
+            this.loadPage()
+            this.$apply()
+        },
+        handleShowNav(isShow) {
+            if (isShow) {
+                setTimeout(() => {
+                    this.showNav = isShow
+                    this.$apply()
+                }, 300)
+            } else {
+                setTimeout(() => {
+                    this.showNav = isShow
+                    this.$apply()
+                }, 100)
+            }
+            
+        }
+    }
+
+    events = {
+    }
+
+    onLoad (params, data) {
+        this.isIphoneX = this.checkIphoneX()
+        this.showLoading()
+        this.$apply()
+    }
+    onShow () {
+        this.handleCheckPageBackReload((res)=>{
+            if (res && res.navigateUrl) {
+                this.$navigate(res.navigateUrl) 
+            } else {
+                this.loadPage()
+            }
+        })
+    }
+    onReady () {
+        const vm = this
+        if (vm.$parent.globalData.isLaunch) {
+            vm.$parent.globalData.userInfoReadyCallback = (res) => {
+                if (res.code == 0) {
+                    vm.loadPage()
+                } else {
+                    vm.isError = true
+                    vm.message = res.data.message
+                }
+            }
+        } else {
+            vm.loadPage()
+        }
+    }
+
+
+    onPullDownRefresh() {
+        // this.loadPage(true)
+    }
+
+    loadPage(refresh=false) {
+        let vm = this
+        vm.showAuth = wx.getStorageSync('agaid-weapp-auth')
+        if (!vm.showAuth) {
+            vm.initPage(refresh)
+        }
+        vm.$apply()
+        vm.hideLoading()
+    }
+    initPage(refresh) {
+        let _this = this
+        let idx = _this.navActive
+        let nav = _this.navItems[+idx]
+        let code = nav.code
+        this.navCode = code
+        this.$apply()
+        if (code == 'My') {
+            wx.setNavigationBarColor({
+                frontColor: '#ffffff',
+                backgroundColor: '#82C8A7'
+            })
+        } else {
+            wx.setNavigationBarColor({
+                frontColor: '#ffffff',
+                backgroundColor: '#239A4F'
+            })
+        }
+        wx.setNavigationBarTitle({title: nav.text})
+        let params = {}
+        _this.$invoke(code, 'init', params)
+        _this.$apply()
+        if (refresh) {
+            setTimeout(() => {
+                wx.stopPullDownRefresh()                
+            }, 1500)
+        }
+    }
+    checkIphoneX() {
+        let mobile = wx.getSystemInfoSync()
+        if (mobile.model.indexOf('iPhone X') >= 0) {
+            return true
+        } else {
+            return false
+        }
+    }
+    showLoading () {
+        this.loading = true
+        this.display = 'block'
+        this.$apply()
+    }
+    hideLoading () {
+        let that = this
+        setTimeout(function () {
+            that.loading = false
+            setTimeout(function () {
+                that.display = 'none'
+                that.$apply()
+            }, 400)
+            that.$apply()
+        }, 400)
+    }
+}
+</script>
+<style lang="css">
+</style>

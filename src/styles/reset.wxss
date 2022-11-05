@@ -1,0 +1,13 @@
+.inline-tabs {
+    --tabs-nav-background-color: transparent;
+}
+
+[class^="icon-"].top, [class*=" icon-"].top {
+	vertical-align: text-top;
+}
+[class^="icon-"].mid, [class*=" icon-"].mid {
+	vertical-align: middle;
+}
+[class^="icon-"].sub, [class*=" icon-"].sub {
+	vertical-align: sub;
+}

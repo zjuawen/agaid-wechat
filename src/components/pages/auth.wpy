@@ -1,0 +1,84 @@
+<template>
+    <view class="page-auth h-full-v flex flex-col bg-white">
+        <view class="text-center">
+            <view class="logo">
+                <image mode="aspectFill" src="/public/img/logo.jpg" />
+                <view class="text-38 color-title text-sc-bold text-center wl-margin-top-xl line-1">助农小程序</view>
+            </view>
+            <view class="text-28 color-title text-center wl-margin-bottom-50">点击授权将获取您的信息（昵称，头像等）</view>
+            <view class="wl-padding-page">
+                <button class="w-full btn btn-submit border-none wl-margin-top-xl wl-margin-bottom-50" style="background: #3cb035;" hover-class='none' open-type="getUserProfile" bindtap="getUserProfile"> 授权 </button>
+                <view class="text-28 color-blue text-center line-1" @tap="handleBack">暂不授权</view>
+            </view>
+        </view>
+    </view>
+</template>
+<script>
+import wepy from 'wepy'
+import api from '@/utils/api'
+import baseMixin from '@/mixins/base'
+export default class Auth extends wepy.component {
+    config = {
+        navigationBarTitleText: '微信授权',
+        navigationBarBackgroundColor: '#ffffff'
+    }
+    
+    mixins = [ baseMixin ]
+    
+    components = {
+    }
+
+    data = {
+    }
+
+    computed = {
+    }
+    
+    methods = {
+        getUserProfile(e) {
+            let _this = this
+            // 推荐使用 wx.getUserProfile 获取用户信息，开发者每次通过该接口获取用户个人信息均需用户确认
+            // 开发者妥善保管用户快速填写的头像昵称，避免重复弹窗
+            wx.getUserProfile({
+                desc: '用于完善用户资料', // 声明获取用户个人信息后的用途，后续会展示在弹窗中，请谨慎填写
+                success: (res) => {
+                    console.log(res)
+                    _this.handleUpdate(res.userInfo)
+                }
+            })
+        },
+        handleBack() {
+            this.$emit('onback', false);
+        }
+    }
+
+    events = {
+    }
+
+    handleUpdate(info) {
+        let appuser = this.$parent.$parent.globalData.appuser
+        let customer = appuser.customer
+        customer.nickname = info.nickName
+        customer.avatar = info.avatarUrl
+        customer.gender = info.gender
+        customer.province = info.province
+        customer.city = info.city
+        customer.country = info.country
+        customer.language = info.language
+        api.$request(['customers_update', customer.id], customer).then(({data}) => {
+            if (data) {
+                this.$emit('onback', true);
+            }
+        })
+    }
+
+    onLoad (params, data) {
+    }
+    onShow () {
+    }
+    onReady () {
+    }
+}
+</script>
+<style lang="css">
+</style>

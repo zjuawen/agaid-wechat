@@ -1,0 +1,137 @@
+<template>
+    <view>
+        <view class="form-group flex">
+            <view class="form-label {{required=='true'?'must':''}}">{{title}}</view>
+            <view class="flex flex-ai-center flex-main">
+                <view class="form-control block {{professorName?'':'color-desc'}}" @tap="handleShow">
+                    {{professorName?professorName:'请选择'}}
+                </view>
+            </view>
+            <i class="fa fa-angle-right color-gray text-50 wl-margin-left-xs"></i>
+        </view>
+        <van-popup
+            show="{{showPopup}}"
+            round
+            closeable
+            close-icon-position="top-right"
+            position="bottom"
+            custom-style="height: 80%;"
+            bind:close="handleShow"
+          >
+            <view class="flex flex-col h-full">
+                <view class="wl-padding-top-sm wl-padding-bottom-lg text-34 color-title text-center"><text class="box-border-title wl-padding-bottom-xs">选择专家</text></view>
+                <scroll-view scroll-y="true" class="flex-main flow-y-auto list z-100 bg-tran" @scrolltolower="handleNext">
+                    <view wx:if="{{!isEmpty}}" class="list-card wl-margin-bottom-xl">
+                        <view class="card-body flex flex-flow flex-jc-between">
+                            <view wx:for="{{queryConfig.list}}" wx:key="index" class="list-item w-full wl-padding-vertical-sm box-radius-20 box-border-bottom" @tap="handleSelect({{item}})">
+                                <view class="flex flex-ai-center wl-margin-bottom-sm">
+                                    <image wx:if="{{item.image}}" class="avatar" src="{{item.image.url}}" mode="scaleToFill" />
+                                    <image wx:else class="avatar" src="/public/img/logo.jpg" mode="scaleToFill" />
+                                    <view class="flex-main wl-margin-left-sm">
+                                        <view class="text-30">{{item.name}}</view>
+                                        <view wx:if="{{item.area}}"  class="text-24 color-gray wl-margin-top-xs text-ellipsis-2">服务区域：{{item.area}}</view>
+                                    </view>
+                                </view>
+                                <view wx:if="{{item.description}}" style="padding-left: 100rpx;" class="title text-32 color-sub-title wl-margin-bottom-sm text-ellipsis-2">{{item.description}}</view>
+                            </view>
+                        </view>
+                    </view>
+                    <view  wx:else class="card-body">
+                        <view class="empty">
+                            <i class="icon icon-empty"></i>
+                            <view class="wl-margin-top-sm">~还没有专家</view>
+                        </view>
+                    </view>
+                </scroll-view>
+            </view>
+        </van-popup>
+    </view>
+</template>
+<script>
+import wepy from 'wepy'
+import api from '@/utils/api'
+import baseMixin from '@/mixins/base'
+export default class SelectProfessor extends wepy.component {
+    components = {}
+
+    mixins = [ baseMixin ]
+
+    props = {
+        title: {
+            type: String,
+            default: '专家'
+        },
+        required: {
+            type: String,
+            default: ''
+        }
+    }
+
+    data = {
+        showPopup: false,
+        readonly: false,
+        professorName: '',
+        queryParams: {
+            name_contains: ''
+        }
+    }
+
+    computed = {
+        isEmpty() {
+            return (!this.queryConfig.loading&&this.queryConfig.finished&&this.queryConfig.list.length==0)
+        }
+    }
+    
+    methods = {
+        // 下一页
+        handleNext() {
+            if (this.queryConfig.finished) {
+                return
+            }
+            this.handleFetchList(false)
+        },
+        handleShow() {
+            if (this.readonly) {
+                return
+            }
+            this.showPopup = !this.showPopup
+            this.$apply()
+        },
+        handleSelect(item) {
+            this.professorName = item.name
+            this.showPopup = false
+            this.$emit('selectCallback', item)
+            this.$apply()
+        },
+    }
+
+    init(params) {
+        this.queryConfig.key = 'professor_list'
+        if (params.professorId) {
+            this.readonly = true
+            this.$apply()
+            this.handleGetProfessor(params.professorId)
+        }
+        this.handleFetchList(true)
+    }
+
+    handleGetProfessor(pid) {
+        api.$request(['professor_info', pid], {} , true, false).then(({data}) => {
+            if (data && data.id) {
+                this.professorName = data.name
+                this.$emit('selectCallback', data)
+                this.$apply()
+            } else {
+                api.toast(data.msg, 'none')
+            }
+        })
+    }
+
+    events = {
+    }
+    onLoad (params, data) {
+    }
+}
+</script>
+<style lang="css">
+</style>

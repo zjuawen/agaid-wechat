@@ -1,0 +1,189 @@
+<template>
+    <view class="page-news page-nav flex flex-col flow-hide">
+        <view class="head-view search-tab bg-head flex flex-ai-center wl-padding-page wl-padding-top-sm wl-padding-bottom-sm z-100">
+            <view class="relative flex-main" @tap="handleToSearch">
+                <i class="left-icon fa fa-search text-32 color-blue"></i>
+                <input class="search-input" type="text" disabled placeholder="搜索" placeholder-class="search-pholder" />
+            </view>
+        </view>
+        <scroll-view scroll-y="true" class="flex-main flow-y-auto list z-100 bg-tran" @scrolltolower="handleNext">
+            <view class="wl-padding-horizontal-lg wl-margin-bottom-lg">
+                <swiper 
+                    autoplay="{{autoplay}}" 
+                    bindchange="setCurrent" 
+                    class="banner-box  swiper-box" 
+                    duration="{{duration}}" 
+                    indicator-dots="{{indicatorDots}}" 
+                    interval="{{interval}}" 
+                    circular="{{true}}">
+                    <swiper-item wx:for="{{3}}" wx:key="this" data-index="{{ index }}">
+                        <image class="banner" src="../../public/img/banner.png" mode="aspectFill" />
+                    </swiper-item>
+                </swiper>
+            </view>
+            <view wx:if="{{!isEmpty}}" class="list-card wl-margin-bottom-xl">
+                <view class="card-body flex flex-flow flex-jc-between">
+                    <view wx:for="{{queryConfig.list}}" wx:key="index" class="list-item flex-item box-radius-20 bg-white">
+                        <view class="live" @tap="handleToDetail({{item}})">
+                            <image wx:if="{{item.type==1}}" class="thumb" src="{{item.image.url}}" mode="scaleToFill" />
+                            <video wx:elif="{{item.type==2}}" class="video" src="{{item.video.url}}" controls="{{false}}" show-center-play-btn="{{false}}" />
+                        </view>
+                        <view class="info wl-padding-xs">
+                            <view class="title text-ellipsis text-26 text-bold">{{item.title}}</view>
+                            <view class="author flex flex-ai-end">
+                                <view class="flex-main flex flex-ai-center">
+                                    <image wx:if="{{item.author&&item.author.customer&&item.author.customer.avatar}}" class="avatar" src="{{item.author.customer.avatar}}" mode="scaleToFill" />
+                                    <image wx:else class="avatar" src="/public/img/avatar.png" mode="scaleToFill" />
+                                    <view class="text-20 flex-main wl-margin-left-xs">{{item.author.username}}</view>
+                                </view>
+                                <view  class="text-28 {{item.thumbsup?'color-green':'color-gray'}}" catchtap="handleCollect(4, {{item}}, {{index}})"><i class="icon-thumbs-up"></i> {{item.up_count||0}}</view>
+                            </view>
+                        </view>
+                    </view>
+                </view>
+            </view>
+            <view  wx:if="{{isEmpty}}" class="card-body">
+                <view class="empty">
+                    <i class="icon icon-empty"></i>
+                    <view class="wl-margin-top-sm">~还没有资讯</view>
+                </view>
+            </view>
+        </scroll-view>
+    </view>
+</template>
+<script>
+import wepy from 'wepy'
+import api from '@/utils/api'
+import baseMixin from '@/mixins/base'
+export default class News extends wepy.component {
+    
+    components = {}
+
+    mixins = [ baseMixin ]
+
+    data = {
+        indicatorDots: true, // 是否显示面板指示点
+        autoplay: true, // 是否自动切换
+        interval: 5000, // 自动切换时间间隔
+        duration: 800, // 滑动动画时长
+        currentIndex: 1, // 轮播图指针
+        collectList: [],
+        queryParams: {
+            title_contains: ''
+        }
+    }
+
+    computed = {
+        isEmpty() {
+            return (!this.queryConfig.loading&&this.queryConfig.finished&&this.queryConfig.list.length==0)
+        },
+        userInfo() {
+            return wepy.$instance.globalData.appuser
+        }
+    }
+    
+    methods = {
+        // 下一页
+        handleNext() {
+            if (this.queryConfig.finished) {
+                return
+            }
+            this.handleFetchList(false, false, this.handleListBefore)
+        },
+        handleToSearch() {
+            this.$parent.$navigate('/pages/search/index', { type: 1 })
+        },
+        handleToDetail(item) {
+            this.$parent.$navigate('/pages/news/detail', {id: item.id})
+        },
+        // 点赞收藏
+        handleCollect(type, item, idx) {
+            if (type != 4 && type != 5) {
+                return
+            }
+            let vm = this
+            let isCollect = true
+            let params = {
+                type: type,
+                target: item.id,
+                user: vm.userInfo.id
+            }
+            if ((type == 5 && item.collectId) || (type == 4 && item.thumbsupId)) {
+                isCollect = false
+                params = {
+                    id: (type == 5 ? item.collectId : item.thumbsupId)
+                }
+            }
+            vm.handleSetCollect(params, isCollect, (ret) => {
+                if (type == 5) {
+                    vm.queryConfig.list[idx].isCollect = isCollect
+                    vm.queryConfig.list[idx].collectId = isCollect?ret.id:null
+                } else if (type == 4) {
+                    vm.queryConfig.list[idx].thumbsup = isCollect
+                    vm.queryConfig.list[idx].thumbsupId = isCollect?ret.id:null
+                }
+                vm.$apply()
+                vm.handleSetCount(item, type, idx, isCollect)
+            })
+        },
+    }
+
+    events = {
+    }
+
+    init(params) {
+        this.collectList = wepy.$instance.globalData.collects
+        this.handleFetchList(true, false, this.handleListBefore)
+    }
+
+    handleListBefore(vm, list) {
+        list.forEach(v => {
+            v.isCollect = false
+            v.collectId = null
+            v.thumbsup = false
+            v.thumbsupId = null
+            v.created_at = vm.handleDateView(v.created_at)
+            let cidx = vm.collectList.findIndex(c => {
+                return (c.type == 5 && c.target == v.id && c.user.id == vm.userInfo.id)
+            })
+            if (cidx > -1) {
+                v.isCollect = true
+                v.collectId = vm.collectList[cidx].id
+            }
+            let tidx = vm.collectList.findIndex(c => {
+                return (c.type == 4 && c.target == v.id && c.user.id == vm.userInfo.id)
+            })
+            if (tidx > -1) {
+                v.thumbsup = true
+                v.thumbsupId = vm.collectList[tidx].id
+            }
+        })
+        return list
+    }
+
+    handleSetCount(item, type, idx, isCollect) {
+        let vm = this
+        let params = {}
+        let count = isCollect ? 1 : -1
+        let key = type==4?'up_count':(type == 5?'collect_count':'view_count')
+        params[key] = (+item[key]||0) + count
+        if (params[key] < 0) {
+            params[key] = 0
+        }
+        api.$request(['atnews_update', item.id], params , true, false).then(({data}) => {
+            if (data && data.id) {
+                vm.queryConfig.list[idx][key] = params[key]
+                vm.$apply()
+            }
+        })
+    }
+
+    onLoad (params, data) {
+        this.queryConfig.key = 'atnews_list'
+    }
+    onShow () { }
+    onReady () { }
+}
+</script>
+<style lang="css">
+</style>

@@ -1,0 +1,168 @@
+<template>
+    <van-popup
+        show="{{showPopup}}"
+        round
+        closeable
+        close-icon-position="top-right"
+        position="bottom"
+        custom-style="height: 80%;"
+        bind:close="handleShow"
+      >
+        <view class="flex flex-col h-full">
+            <view class="wl-padding-top-sm wl-padding-bottom-lg text-34 color-title text-center"><text class="box-border-title wl-padding-bottom-xs">评论</text></view>
+            <scroll-view scroll-y="true" class="flex-main flow-y-auto list z-100 bg-tran" @scrolltolower="handleNext">
+                <view wx:if="{{!isEmpty}}" class="list-card wl-margin-bottom-xl">
+                    <view class="card-body flex flex-flow flex-jc-between">
+                        <view wx:for="{{queryConfig.list}}" wx:key="index" class="list-item w-full wl-padding-vertical-sm box-border-bottom">
+                            <view class="flex flex-ai-start">
+                                <view>
+                                    <image wx:if="{{item.customer&&item.customer.avatar}}" class="icon-60 circle" src="{{item.customer.avatar}}" mode="scaleToFill" />
+                                    <image wx:else class="icon-60 circle" src="/public/img/logo.jpg" mode="scaleToFill" />
+                                    <!-- <view class="text-20 text-ellipsis text-center w-60">{{item.customer.nickname}}</view> -->
+                                </view>
+                                <view class="flex-main wl-margin-left-sm wl-padding-top-xs flow-hide">
+                                    <view class="title text-32 color-sub-title wl-margin-bottom-sm">{{item.content}}</view>
+                                    <view class="wl-margin-top-xs text-ellipsis text-24 color-gray">
+                                        {{item.created_at}}<text class="text-24 color-gray"> · </text>{{item.customer.nickname}}
+                                    </view>
+                                </view>
+                            </view>
+                        </view>
+                        <view wx:if="{{queryConfig.finished}}" class="text-24 color-gray wl-margin-top-sm w-full text-center">没有更多了~</view>
+                    </view>
+                </view>
+                <view  wx:else class="card-body">
+                    <view class="empty">
+                        <i class="icon icon-empty"></i>
+                        <view class="wl-margin-top-sm">~还没有评论</view>
+                    </view>
+                </view>
+            </scroll-view>
+            <view class="consult-tab flex flex-ai-center box-shadow wl-padding-page wl-padding-top-sm wl-padding-bottom-sm z-100">
+                <view class="relative flex-main">
+                    <i class="left-icon icon-comment text-32 color-blue"></i>
+                    <input type="text"  class="consult-input" confirm-type="send" placeholder="我来说两句" placeholder-class="search-pholder" value="{{formData.content}}" @input="handleInput('content')" bindconfirm="handleSendConsult" />
+                    <i wx:if="{{formData.content!=''}}" class="text-40 clear-icon fa fa-times-circle color-gray" catchtap="handleClear('content')"></i>
+                </view>
+                <view class="text-30 color-green wl-margin-left-sm" @tap="handleShow">返回</view>
+                <!-- <view class="btn btn-search wl-margin-left-sm">提交</view> -->
+            </view>
+        </view>
+    </van-popup>
+</template>
+<script>
+import wepy from 'wepy'
+import api from '@/utils/api'
+import baseMixin from '@/mixins/base'
+export default class Dialog extends wepy.component {
+    components = {}
+
+    mixins = [ baseMixin ]
+
+    props = {
+    }
+
+    data = {
+        showPopup: false,
+        professorName: '',
+        articleId: null,
+        queryParams: {
+            '_or[0][status]': 1,
+            article: null
+        },
+        submitLoading: false,
+        formData: {
+            content: ''
+        }
+    }
+
+    computed = {
+        isEmpty() {
+            return (!this.queryConfig.loading&&this.queryConfig.finished&&this.queryConfig.list.length==0)
+        },
+        userInfo() {
+            return wepy.$instance.globalData.wxuser
+        }
+    }
+    
+    methods = {
+        // 下一页
+        handleNext() {
+            if (this.queryConfig.finished) {
+                return
+            }
+            this.handleFetchList(false, this.handleListBefore)
+        },
+        handleShow() {
+            this.showPopup = !this.showPopup
+            if (!this.showPopup) {
+                this.$emit('onclose')
+            }
+            this.$apply()
+        },
+        handleInput (key, e) {
+            this.formData[key] = e.detail.value
+            this.$apply()
+        },
+        handleClear() {
+            this.formData.content = ''
+            this.$apply()
+        },
+        handleSendConsult(e) {
+            if (this.submitLoading) {
+                return
+            }
+            if (!this.formData.content) {
+                api.toast('请输入您的评论', 'none')
+                return
+            }
+            let submitData = {
+                content: this.formData.content,
+                parent: 0,
+                status: 0,
+                article: this.articleId,
+                customer: this.userInfo.id
+            }
+            this.submitLoading = true
+            api.$request('consults_save', submitData , true, false).then(({data}) => {
+                if (data && data.id) {
+                    this.formData.content = ''
+                    this.queryConfig.list.unshift(data)
+                    this.$apply()
+                }
+            }).finally(() => {
+                this.submitLoading = false
+                this.$apply()
+            })
+        }
+    }
+
+    events = {
+    }
+
+    init(params) {
+        let reload = this.articleId != params.id
+        this.showPopup = true
+        this.queryConfig.key = 'consults_list'
+        this.queryParams.article = params.id
+        this.queryParams['_or[1][customer]'] = wepy.$instance.globalData.wxuser.id
+        this.articleId = params.id
+        this.$apply()
+        if (reload) {
+            this.handleFetchList(true, this.handleListBefore)            
+        }
+    }
+
+    onLoad (params, data) {
+    }
+
+    handleListBefore(vm, list) {
+        list.forEach(v => {
+            v.created_at = this.handleDateView(v.created_at)
+        })
+        return list
+    }
+}
+</script>
+<style lang="css">
+</style>

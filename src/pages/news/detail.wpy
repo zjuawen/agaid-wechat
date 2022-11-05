@@ -1,0 +1,202 @@
+<template>
+    <view class="page-task-driver">
+        <view class="relative list z-100 bg-tran">
+            <view class="list-item bg-white wl-padding-sm wl-margin-bottom-sm">
+                <view class="title text-36 text-center wl-margin-bottom-sm">{{info.title}}</view>
+                <view class="flex flex-ai-center flex-jc-center wl-padding-bottom-xl">
+                    <view class="icon-user text-24 color-gray wl-margin-right-xs"></view>
+                    <view class="text-24 color-gray">{{info.author.username}}</view>
+                    <view class="text-24 color-gray wl-margin-horizontal-sm">|</view>
+                    <view class="fa fa-clock-o text-24 color-gray wl-margin-right-xs"></view>
+                    <view class="text-26 color-gray">{{info.created_at}}</view>
+                </view>
+                <view wx:if="{{info.description}}" class="description text-30 color-gray wl-margin-bottom-sm">{{info.description}}</view>
+            </view>
+            <view wx:if="{{info.content}}" class="list-item wl-padding-sm bg-white wl-margin-bottom-sm">
+                <rich-text class="text-30 color-title sc-regular line-40" nodes="{{info.content}}"></rich-text>
+            </view>
+            <view wx:if="{{info.type==2}}" class="live wl-padding-sm bg-white">
+                <video class="video w-full" src="{{info.video.url}}" />
+            </view>
+            <view class="flex flex-ai-center flex-jc-center wl-padding-page wl-margin-top-lg">
+                <view class="nav-bar-item text-center {{info.isCollect?'active':''}}" @tap="handleCollect(5)">
+                    <i class="icon-star text-40 relative bar-icon"></i>
+                    <view class="text-24 nav-title">收藏</view>
+                </view>
+                <view class="nav-bar-item text-center wl-margin-left-60 {{info.thumbsup?'active':''}}" @tap="handleCollect(4)">
+                    <i class="icon-thumbs-up text-30 relative bar-icon"></i>
+                    <view class="text-24 nav-title">{{info.up_count||'点赞'}}</view>
+                </view>
+            </view>
+            <view class="wl-padding-bottom-nav"></view>
+        </view>
+    </view>
+</template>
+<script>
+import wepy from 'wepy'
+import api from '@/utils/api'
+import baseMixin from '@/mixins/base'
+import Consult from '@/components/consult/list'
+export default class Detail extends wepy.page {
+    config = {
+        navigationBarTitleText: '详情'
+    }
+    
+    mixins = [ baseMixin ]
+    
+    components = {
+        Consult
+    }
+
+    data = {
+        loading: true,
+        collectList: [],
+        info: {},
+        submitLoading: false,
+        formData: {
+            content: ''
+        }
+    }
+
+    computed = {
+        userInfo() {
+            return this.$parent.globalData.appuser
+        }
+    }
+    
+    methods = {
+        handleInput (key, e) {
+            this.formData[key] = e.detail.value
+            this.$apply()
+        },
+        // 点赞收藏
+        handleCollect(type) {
+            if (type != 4 && type != 5) {
+                return
+            }
+            let vm = this
+            let isCollect = true
+            let params = {
+                type: type,
+                target: vm.info.id,
+                user: vm.userInfo.id
+            }
+            if ((type == 5 && vm.info.collectId) || (type == 4 && vm.info.thumbsupId)) {
+                isCollect = false
+                params = {
+                    id: (type == 5 ? vm.info.collectId : vm.info.thumbsupId)
+                }
+            }
+            vm.handleSetCollect(params, isCollect, (ret) => {
+                if (type == 5) {
+                    vm.info.isCollect = isCollect
+                    vm.info.collectId = isCollect?ret.id:null
+                } else if (type == 4) {
+                    vm.info.thumbsup = isCollect
+                    vm.info.thumbsupId = isCollect?ret.id:null
+                }
+                vm.$apply()
+                vm.handleSetCount(type, isCollect)
+            })
+        },
+        handleSendConsult(e) {
+            if (this.submitLoading) {
+                return
+            }
+            if (!this.formData.content) {
+                api.toast('请输入您的评论', 'none')
+                return
+            }
+            let submitData = {
+                content: this.formData.content,
+                parent: 0,
+                status: 0,
+                article: this.info.id,
+                customer: this.userInfo.id
+            }
+            this.submitLoading = true
+            api.$request('consults_save', submitData , true, false).then(({data}) => {
+                if (data && data.id) {
+                    this.formData.content = ''
+                    data.created_at = this.handleDateView(data.created_at)
+                    this.$invoke('Consult', 'add', data)
+                    this.$apply()
+                }
+            }).finally(() => {
+                this.submitLoading = false
+                this.$apply()
+            })
+        }
+    }
+
+    events = {
+    }
+
+    handleFetchDetail(id) {
+        let vm = this
+        this.loading = true
+        api.$request(['atnews_info', id], {} , true, false).then(({data}) => {
+            if (data && data.id) {
+                data.isCollect = false
+                data.collectId = null
+                data.thumbsup = false
+                data.thumbsupId = null
+                data.created_at = this.handleDateView(data.created_at)
+                let cidx = vm.collectList.findIndex(c => {
+                    return (c.type == 5 && c.target == data.id && c.user.id == vm.userInfo.id)
+                })
+                if (cidx > -1) {
+                    data.isCollect = true
+                    data.collectId = vm.collectList[cidx].id
+                }
+                let tidx = vm.collectList.findIndex(c => {
+                    return (c.type == 4 && c.target == data.id && c.user.id == vm.userInfo.id)
+                })
+                if (tidx > -1) {
+                    data.thumbsup = true
+                    data.thumbsupId = vm.collectList[tidx].id
+                }
+                this.info = data
+                this.$apply()
+                this.$invoke('Consult', 'init', {id: data.id})
+                // 记录浏览数
+                this.handleSetCount(6, true)
+                this.handleSetHistory('news', data)
+            } else {
+                api.toast(data.msg, 'none')
+            }
+        }).finally(() => {
+            this.loading = false
+            this.$apply()
+        })
+    }
+    handleSetCount(type, isCollect) {
+        let vm = this
+        let params = {}
+        let count = isCollect ? 1 : -1
+        let key = type==4?'up_count':(type == 5?'collect_count':'view_count')
+        params[key] = (+vm.info[key]||0) + count
+        api.$request(['atnews_update', vm.info.id], params , true, false).then(({data}) => {
+            if (data && data.id) {
+                vm.info[key] = params[key]
+                vm.$apply()
+            }
+        })
+    }
+
+    async onLoad (params, data) {
+        let id = params.id
+        this.collectList = wepy.$instance.globalData.collects
+        this.$apply()
+        this.handleFetchDetail(id)
+    }
+    onShow () {
+        
+    }
+    onReady () {
+
+    }
+}
+</script>
+<style lang="css">
+</style>

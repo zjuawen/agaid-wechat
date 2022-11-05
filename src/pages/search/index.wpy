@@ -1,0 +1,191 @@
+<template>
+    <view class="page-search flex flex-col h-full-v flow-hide bg-body">
+        <view class="head-view search-tab bg-head flex flex-ai-center wl-padding-page wl-padding-top-sm wl-padding-bottom-sm z-100">
+            <view class="relative flex-main">
+                <i class="left-icon fa fa-search text-32 color-blue"></i>
+                <input class="search-input" type="text" confirm-type="search" placeholder="搜索" placeholder-class="search-pholder" value="{{keyword}}" @input="handleInput" bindconfirm="handleSearch" />
+                <i wx:if="{{keyword!=''}}" class="text-40 clear-icon fa fa-times-circle color-gray" catchtap="handleInputClear"></i>
+            </view>
+            <view class="text-30 color-white wl-margin-left-sm" @tap="handleBack">返回</view>
+        </view>
+        <block wx:if="{{!hasSearch}}">
+            <view class="wl-padding-page wl-margin-top-lg">
+                <view class="flex flex-ai-center">
+                    <view class="flex-main text-32 color-title text-bold">搜索历史</view>
+                    <view class="text-26 color-gray" @tap="handleClearAll"><i class="fa fa-trash-o text-30"></i> 清除历史</view>
+                </view>
+                <view class="wl-padding-vertical-sm">
+                    <view wx:for="{{words}}" class="tag color-sub-title" @tap="handleWordSearch({{item}})">{{item}}</view>
+                </view>
+            </view>
+            <view class="wl-padding-page wl-margin-top-lg">
+                <view class="flex flex-ai-center">
+                    <view class="flex-main text-32 color-title text-bold">热门搜索</view>
+                </view>
+                <view class="wl-padding-vertical-sm">
+                    <view wx:for="{{hotWords}}" class="tag color-sub-title {{item.active?'active':''}}" @tap="handleWordSearch({{item.word}})">{{item.word}}</view>
+                </view>
+            </view>
+        </block>
+        <block wx:else>
+            <scroll-view scroll-y="true" class="flex-main flow-y-auto list z-100 bg-tran {{pageCls[searchType]}}" @scrolltolower="handleNext">
+                <view wx:if="{{!isEmpty}}" class="list-card wl-margin-bottom-xl">
+                    <view class="card-body">
+                        <repeat for="{{queryConfig.list}}" key="index" index="index" item="item">
+                            <Rows :type="searchType" :item="item" />
+                        </repeat>
+                        <view wx:if="{{queryConfig.finished}}" class="color-gray text-26 text-center wl-padding-top-xl wl-padding-bottom-sm">没有更多了~</view>
+                    </view>
+                </view>
+                <view  wx:if="{{isEmpty}}" class="card-body">
+                    <view class="empty">
+                        <i class="icon icon-empty"></i>
+                        <view class="wl-margin-top-sm">~未找到相关信息</view>
+                    </view>
+                </view>
+            </scroll-view>
+        </block>
+    </view>
+</template>
+<script>
+import wepy from 'wepy'
+import api from '@/utils/api'
+import baseMixin from '@/mixins/base'
+import Rows from '@/components/search/rows'
+export default class Index extends wepy.page {
+
+    config = {
+        navigationBarTitleText: '搜索',
+    }
+    
+    mixins = [ baseMixin ]
+    
+    components = { Rows }
+
+    data = {
+        hasSearch: false,
+        searchType: 0,     // 0-品种；1-资讯；2-专家；3-贴吧；
+        searchUrl: ['category_list' ,'atnews_list' ,'professor_list', 'articles_list'],
+        pageCls: ['page-category', 'page-news', 'page-professor', 'page-article'],
+        keyword: '',
+        hotWords: [],
+        words: [],
+        queryParams: {}
+    }
+
+    computed = {
+        isEmpty() {
+            return (!this.queryConfig.loading&&this.queryConfig.finished&&this.queryConfig.list.length==0)
+        },
+    }
+    
+    methods = {
+        handleBack() {
+            this.pageBack(false, false)
+        },
+        handleInput (e) {
+            this.keyword = e.detail.value
+            this.$apply()
+        },
+        handleInputClear() {
+            this.keyword = ''
+            this.hasSearch = false
+            this.$apply()
+        },
+        handleClearAll() {
+            wx.setStorageSync('AGAID_SEARCH_HISTORY', [])
+            this.words = []
+            this.$apply()
+        },
+        handleWordSearch(word) {
+            this.keyword = word
+            this.$apply()
+            this.handleDoSearch()
+        },
+        handleSearch(e) {
+            this.handleDoSearch()
+        }
+    }
+
+    events = {
+    }
+    handleDoSearch() {
+        this.queryConfig.key = this.searchUrl[this.searchType]
+        this.queryParams = this.handleSetParams(this.searchType)
+        
+        this.handleFetchList(true, false, this.handleListBefore)
+        this.handleSetSearch(this.keyword)
+        setTimeout(() => {
+            this.hasSearch = true
+            this.$apply()
+        }, 1000)
+        
+    }
+
+    handleSetParams(type) {
+        let params = {}
+        if (type == 0) {
+            params['type'] = 1
+            params['name_contains'] = this.keyword
+        } else if (type == 1) {
+            params['_or[0][title_contains]'] = this.keyword
+            params['_or[1][description_contains]'] = this.keyword
+            params['_or[2][content_contains]'] = this.keyword
+        } else if (type == 2) {
+            params['_or[0][name_contains]'] = this.keyword
+            params['_or[1][description_contains]'] = this.keyword
+            params['_or[2][content_contains]'] = this.keyword
+        } else if (type == 3) {
+            params['_or[0][title_contains]'] = this.keyword
+            params['_or[1][description_contains]'] = this.keyword
+        }
+        return params
+    }
+
+    handleListBefore(vm, list) {
+        list.forEach(v => {
+            v.created_at = vm.handleDateView(v.created_at)
+        })
+        return list
+    }
+
+    handleSetHotWords() {
+        let hwordsList = []
+        let hwords = this.$parent.globalData.config.search_keywords || ''
+        if (hwords) {
+            let hwordsItems = hwords.split('|', -1)
+            if (hwordsItems && hwordsItems.length > 0) {
+                hwordsItems.forEach(v => {
+                    let item = { word: '', active: false }
+                    let str = v.split(":")
+                    if (str && str.length > 0) {
+                        item.word = str[0]
+                        if (str[1] && str[1] > 0) {
+                            item.active = true
+                        }
+                    }
+                    if (item.word) {
+                        hwordsList.push(item)
+                    }
+                })
+            }
+        }
+        this.hotWords = hwordsList
+        this.$apply()
+    }
+
+    onLoad (params, data) {
+        this.searchType = params.type
+        this.hasSearch = false
+        this.words = wx.getStorageSync('AGAID_SEARCH_HISTORY')
+        this.handleSetHotWords()
+        this.$apply()
+    }
+    onShow () {
+    }
+    onReady () {
+    }
+}
+</script>
+<style lang="css">
+</style>

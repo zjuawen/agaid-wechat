@@ -1,0 +1,148 @@
+<template>
+    <view>
+        <view class="form-group flex">
+            <view class="form-label must">{{title}}</view>
+            <view class="flex flex-ai-center flex-main">
+                <view class="form-control block {{areaName?'':'color-desc'}}" @tap="handleShowArea">
+                    {{areaName?areaName:'请选择'}}
+                </view>
+            </view>
+            <i class="icon-right color-right text-24 wl-margin-left-xs"></i>
+        </view>
+        <van-popup
+            show="{{showArea}}"
+            position="bottom"
+            custom-style="height: 50%;"
+            bind:close="handleShowArea"
+          >
+            <van-picker 
+                class="labelPicker"
+                columns="{{ areaList }}" 
+                value-key="name" 
+                show-toolbar 
+                title="{{title}}" 
+                bind:change="handleAreaChange" 
+                bind:cancel="handleShowArea"
+                bind:confirm="handleSelectArea" />
+        </van-popup>
+    </view>
+</template>
+<script>
+import wepy from 'wepy'
+import api from '@/utils/api'
+export default class SelectArea extends wepy.component {
+    components = {}
+
+    props = {
+        title: {
+            type: String
+        },
+        level: {
+            type: Number,
+            default: 3
+        }
+    }
+
+    data = {
+        showArea: false,
+        areaData: {},
+        areaList: [{values: []}, {values: []}, {values: []}],
+        areaName: ''
+    }
+
+    computed = {
+    }
+    
+    methods = {
+        handleShowArea() {
+            this.showArea = !this.showArea
+            this.$apply()
+        },
+        handleAreaChange(e) {
+            const { picker, value, index } = e.detail
+            if (index < 2) {
+                let keys = ['county', 'town', 'village']
+                let dict = this.areaData[keys[index+1]]
+                let areaId = value[index].areaId
+                let items = dict.filter(v => { return v.parentAreaId == areaId})
+                picker.setColumnValues((index+1), items);
+            }
+            this.$apply()
+        },
+        handleSelectArea(e) {
+            const { picker, value, index } = e.detail
+            let ret = []
+            let areaNames = []
+            if (this.level > 0) {
+                ret.push(value[0].areaId)
+                areaNames.push(value[0].name)
+            }
+            if (this.level > 1) {
+                ret.push(value[1].areaId)
+                areaNames.push(value[1].name)
+            }
+            if (this.level > 2) {
+                ret.push(value[2].areaId)
+                areaNames.push(value[2].name)
+            }
+            this.areaName = areaNames.join(' ')
+            let result = {value: ret, name: areaNames.join(' ')}
+            this.showArea = false
+            this.$emit('selectCallback', result)
+            this.$apply()
+        },
+    }
+
+    events = {
+    }
+    init (params) {
+        this.handleFetchArea((data) => {
+            this.areaData = data
+            let county = this.areaData.county
+            let townId = null,villageId = null
+            if('townId' in params && params.townId) {
+                townId = params.townId
+            }
+            if('villageId' in params && params.villageId) {
+                villageId = params.villageId
+            }
+            let countyName = county[0].name,townName = '',villageName = ''
+            let town = this.areaData.town.filter((v,idx) => { 
+                if(v.parentAreaId == county[0].areaId) {
+                    if(v.areaId == townId) townName = v.name
+                    return true
+                }
+                return false
+            })
+            let village = this.areaData.village.filter((v,idx) => { 
+                if(v.parentAreaId == town[0].areaId) {
+                    if(v.areaId == villageId) villageName = v.name
+                    return true
+                }
+                return false
+            })
+            this.areaList = [{values: county},{values: town},{values: village}]
+            this.areaName = [countyName,townName,villageName].join(' ')
+            this.$apply()
+        })
+    }
+    handleFetchArea(callback) {
+        api.$request('get_area', {}, false).then(({data}) => {
+            if (data.code == 0) {
+                let area = {}
+                data.list.forEach(v => {
+                    if (!area[v.type]) {
+                        area[v.type] = []
+                    }
+                    area[v.type].push(v)
+                })
+                callback && callback(area)
+            } else {
+                callback && callback({})
+            }
+        })
+    }
+}
+</script>
+<style lang="css">
+</style>

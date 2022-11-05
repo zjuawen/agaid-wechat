@@ -1,0 +1,280 @@
+<template>
+    <view class="page-task-driver">
+        <view class="relative list z-100 bg-tran wl-padding-top-sm">
+            <view class="list-item wl-padding-sm box-radius-20 bg-white wl-margin-bottom-sm">
+                <view class="flex flex-ai-center wl-margin-bottom-lg">
+                    <image wx:if="{{info.customer&&info.customer.avatar}}" class="avatar" src="{{info.customer.avatar}}" mode="scaleToFill" />
+                    <image wx:else class="avatar" src="/public/img/avatar.png" mode="scaleToFill" />
+                    <view class="flex-main wl-margin-left-sm">
+                        <view class="text-30">{{info.customer?info.customer.nickname:'-'}}</view>
+                        <view class="color-gray text-24 wl-margin-top-5">{{info.created_at}}</view>
+                    </view>
+                </view>
+                <view wx:if="{{info.title}}" class="title text-36 wl-margin-bottom-sm">{{info.title}}</view>
+                <view wx:if="{{info.description}}" class="description text-30 color-gray wl-margin-bottom-sm">{{info.description}}</view>
+                <view wx:if="{{(info.images&&info.images.length>0)||(info.videos&&info.videos.length>0)}}" class="list-pics scroll-x ">
+                    <block wx:if="{{info.images&&info.images.length>0}}">
+                        <image wx:for="{{info.images}}" wx:for-item="file" wx:for-index="fidx" class="list-pics-item sm" src="{{file.url}}"  mode="aspectFill" @tap="handlePreview({{fidx}}, 0)" />
+                    </block>
+                    <block wx:if="{{info.videos&&info.videos.length>0}}">
+                        <video wx:for="{{info.videos}}" wx:for-item="file" wx:for-index="fidx" class="list-pics-item sm" src="{{file.url}}" controls="{{false}}" show-center-play-btn="{{false}}" @tap="handlePreview({{fidx}}, {{info.images.length}})" />
+                    </block>
+                </view>
+                <view wx:if="{{info.type==2&&!isReply}}" class="reply wl-padding-sm bg-gray text-30 wl-margin-top-sm box-radius-20">
+                    <text>{{info.professor.name}}：<text class="color-gray">{{info.reply_content}}</text></text>
+                </view>
+                <view wx:if="{{info.type==2&&isReply}}" class="reply wl-padding-sm bg-gray text-30 wl-margin-top-sm box-radius-20">
+                    <block wx:if="{{info.reply_content&&!replyEdit}}">
+                        <view>
+                            {{info.professor.name}}：
+                            <text class="color-gray">{{info.reply_content}}</text>
+                            <view class="color-green inline" @tap="handleShowEdit">修改</view>
+                        </view>
+                    </block>
+                    <block wx:elif="{{!info.reply_content||replyEdit}}">
+                        <textarea
+                            class="w-full" 
+                            placeholder="请输入回复" 
+                            data-key="description"
+                            @input="inputReply" 
+                            placeholder-class="color-desc"
+                            value="{{info.reply_content}}" />
+                        <view class="text-right color-green">
+                            <view wx:if="{{info.reply_content}}" class="inline color-gray wl-margin-right-xl" @tap="handleShowEdit"><text>取消</text></view>
+                            <view class="inline" @tap="handleSendReply"><text>回复 </text><i class="fa fa-mail-forward"></i></view>
+                        </view>
+                    </block>
+                </view>
+            </view>
+            <view class="list-item wl-padding-bottom-nav box-radius-20 bg-white wl-margin-bottom-sm">
+                <view class="wl-padding-page wl-padding-top-sm wl-padding-bottom-lg text-34 color-title text-left"><text class="box-border-title wl-padding-bottom-xs">评论</text></view>
+                <Consult />
+            </view>
+            <view wx:if="{{!isReply}}" class="nav-bar flex flex-ai-center {{isIphoneX?'fix-iphonex-bottom':''}}">
+                <view class="flex-main flex flex-ai-center wl-padding-page">
+                    <view class="relative consult-tab flex flex-ai-center flex-main">
+                        <i class="left-icon icon-comment text-32 color-blue"></i>
+                        <input type="text"  class="consult-input w-full" confirm-type="send" placeholder="我来说两句" placeholder-class="search-pholder" value="{{formData.content}}" @input="handleInput('content')" bindconfirm="handleSendConsult" />
+                        <i wx:if="{{formData.content!=''}}" class="text-40 clear-icon fa fa-times-circle color-gray" catchtap="handleClear('content')"></i>
+                    </view>
+                    <view class="nav-bar-item text-center wl-margin-left-xl {{info.isCollect?'active':''}}" @tap="handleCollect(1)">
+                        <i class="icon-star text-40 relative bar-icon"></i>
+                        <view class="text-24 nav-title">收藏</view>
+                    </view>
+                    <view class="nav-bar-item text-center wl-margin-left-xl {{info.thumbsup?'active':''}}" @tap="handleCollect(3)">
+                        <i class="icon-thumbs-up text-30 relative bar-icon"></i>
+                        <view class="text-24 nav-title">点赞</view>
+                    </view>
+                </view>
+            </view>
+        </view>
+    </view>
+</template>
+<script>
+import wepy from 'wepy'
+import api from '@/utils/api'
+import baseMixin from '@/mixins/base'
+import Consult from '@/components/consult/list'
+export default class Detail extends wepy.page {
+    config = {
+        navigationBarTitleText: '详情'
+    }
+    
+    mixins = [ baseMixin ]
+    
+    components = {
+        Consult
+    }
+
+    data = {
+        loading: true,
+        isReply: false,
+        collectList: [],
+        info: {},
+        submitLoading: false,
+        replyEdit: false,
+        replyData: {
+            content: ''
+        },
+        formData: {
+            content: ''
+        }
+    }
+
+    computed = {
+        userInfo() {
+            return this.$parent.globalData.appuser
+        }
+    }
+    
+    methods = {
+        handleInput (key, e) {
+            this.formData[key] = e.detail.value
+            this.$apply()
+        },
+        inputReply (e) {
+            this.replyData.content = e.detail.value
+            this.$apply()
+        },
+        handleShowEdit() {
+            this.replyEdit = !this.replyEdit
+            this.$apply()
+        },
+        // 图片预览
+        handlePreview(idx, len) {
+            let medisa = [].concat(this.info.images).concat(this.info.videos)
+            this.handlePreviewMedia(medisa, ((+len||0) + idx))
+        },
+        // 点赞收藏
+        handleCollect(type) {
+            if (type != 1 && type != 3) {
+                return
+            }
+            let vm = this
+            let isCollect = true
+            let params = {
+                type: type,
+                target: vm.info.id,
+                user: vm.userInfo.id
+            }
+            if ((type == 1 && vm.info.collectId) || (type == 3 && vm.info.thumbsupId)) {
+                isCollect = false
+                params = {
+                    id: (type == 1 ? vm.info.collectId : vm.info.thumbsupId)
+                }
+            }
+            vm.handleSetCollect(params, isCollect, (ret) => {
+                if (type == 1) {
+                    vm.info.isCollect = isCollect
+                    vm.info.collectId = isCollect?ret.id:null
+                } else if (type == 3) {
+                    vm.info.thumbsup = isCollect
+                    vm.info.thumbsupId = isCollect?ret.id:null
+                }
+                vm.$apply()
+                vm.handleSetCount(type, isCollect)
+            })
+        },
+        handleSendConsult(e) {
+            if (this.submitLoading) {
+                return
+            }
+            if (!this.formData.content) {
+                api.toast('请输入您的评论', 'none')
+                return
+            }
+            let submitData = {
+                content: this.formData.content,
+                parent: 0,
+                status: 0,
+                article: this.info.id,
+                customer: this.userInfo.id
+            }
+            this.submitLoading = true
+            api.$request('consults_save', submitData , true, false).then(({data}) => {
+                if (data && data.id) {
+                    this.formData.content = ''
+                    data.created_at = this.handleDateView(data.created_at)
+                    this.$invoke('Consult', 'add', data)
+                    this.$apply()
+                }
+            }).finally(() => {
+                this.submitLoading = false
+                this.$apply()
+            })
+        },
+        handleSendReply() {
+            if (this.submitLoading) {
+                return
+            }
+            if (!this.replyData.content) {
+                api.toast('请输入您的回复', 'none')
+                return
+            }
+            let submitData = {
+                reply_content: this.replyData.content
+            }
+            this.submitLoading = true
+            api.$request(['articles_update', this.info.id], submitData , true, false).then(({data}) => {
+                if (data && data.id) {
+                    this.info.reply_content = submitData.reply_content
+                    this.replyData.content = ''
+                    this.$apply()
+                }
+            }).finally(() => {
+                this.submitLoading = false
+                this.$apply()
+            })
+        },
+    }
+
+    events = {
+    }
+
+    handleFetchDetail(id) {
+        let vm = this
+        this.loading = true
+        api.$request(['articles_info', id], {} , true, false).then(({data}) => {
+            if (data && data.id) {
+                data.isCollect = false
+                data.collectId = null
+                data.thumbsup = false
+                data.thumbsupId = null
+                data.created_at = this.handleDateView(data.created_at)
+                let cidx = vm.collectList.findIndex(c => {
+                    return (c.type == 1 && c.target == data.id && c.user.id == vm.userInfo.id)
+                })
+                if (cidx > -1) {
+                    data.isCollect = true
+                    data.collectId = vm.collectList[cidx].id
+                }
+                let tidx = vm.collectList.findIndex(c => {
+                    return (c.type == 3 && c.target == data.id && c.user.id == vm.userInfo.id)
+                })
+                if (tidx > -1) {
+                    data.thumbsup = true
+                    data.thumbsupId = vm.collectList[tidx].id
+                }
+                this.info = data
+                this.$apply()
+                this.$invoke('Consult', 'init', {id: data.id})
+                this.handleSetHistory('article', data)
+            } else {
+                api.toast(data.msg, 'none')
+            }
+        }).finally(() => {
+            this.loading = false
+            this.$apply()
+        })
+    }
+    handleSetCount(type, isCollect) {
+        let vm = this
+        let params = {}
+        let count = isCollect ? 1 : -1
+        let keys = ['', 'collect_count', '', 'up_count', '']
+        params[keys[type]] = vm.info[keys[type]] + count
+        api.$request(['articles_update', vm.info.id], params , true, false).then(({data}) => {
+            if (data && data.id) {
+                vm.info[keys[type]] = params[keys[type]]
+                vm.$apply()
+            }
+        })
+    }
+
+    async onLoad (params, data) {
+        let id = params.id
+        this.isReply = params.reply
+        this.collectList = wepy.$instance.globalData.collects
+        this.$apply()
+        this.handleFetchDetail(id)
+    }
+    onShow () {
+        
+    }
+    onReady () {
+
+    }
+}
+</script>
+<style lang="css">
+</style>

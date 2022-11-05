@@ -1,0 +1,54 @@
+<template>
+    <view class="page-common-bulletin wl-padding-page bg-white h-full-min">
+        <view class="wl-padding-top-lg">
+            <view class="color-title text-38 text-sc-bold text-center">{{info.title}}</view>
+            <view class="text-30 color-sub-title line-40 wl-margin-top-xl">
+                {{info.content}}
+            </view>            
+        </view>
+    </view>
+</template>
+<script>
+import wepy from 'wepy'
+import baseMixin from '@/mixins/base'
+export default class Bulletin extends wepy.page {
+    config = {
+        navigationBarTitleText: '公告详情',
+        navigationBarBackgroundColor: '#ffffff'
+    }
+    
+    mixins = [ baseMixin ]
+    
+    components = {}
+
+    data = {
+        info: {}
+    }
+
+    computed = {
+    }
+    
+    methods = {
+        handleBack() {
+            this.pageBack(false, true)
+        }
+    }
+
+    events = {
+    }
+
+    onLoad (params, data) {
+        this.info = wx.getStorageSync('covid-bulletin-info')
+        this.$apply()
+        console.log(this.info)
+    }
+    onShow () {
+        
+    }
+    onReady () {
+
+    }
+}
+</script>
+<style lang="css">
+</style>

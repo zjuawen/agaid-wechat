@@ -1,0 +1,109 @@
+<template>
+    <view class="page-my-collect flex flex-col flow-hide">
+        <scroll-view scroll-y="true" class="flex-main flow-y-auto list z-100 bg-tran" @scrolltolower="handleNext">
+            <view wx:if="{{!isEmpty}}" class="list-card bg-white wl-margin-bottom-sm wl-padding-top-0">
+                <view class="card-body wl-padding-bottom-lg">
+                    <view wx:for="{{queryConfig.list}}" wx:key="index" class="flex flex-ai-start list-item" @tap="handleToDetail({{item}})">
+                        <view class="flex-main flex flex-ai-center wl-padding-vertical-lg line">
+                            <view class="tag {{typeDict['t_'+item.type].cls}} wl-margin-top-0 wl-margin-right-xs">{{typeDict['t_'+item.type].name}}</view>
+                            <view class="flex-main">
+                                <view class="color-title text-30 text-sc-bold line-1">{{item.type==5?item.target.title:item.target.description}}</view>
+                            </view>
+                            <i class="fa fa-angle-right color-green text-40 wl-margin-left-8"></i>
+                        </view>
+                    </view>
+                </view>
+            </view>
+            <view  wx:if="{{isEmpty}}" class="card-body">
+                <view class="empty">
+                    <i class="icon icon-empty"></i>
+                    <view class="wl-margin-top-sm">~还没有收藏</view>
+                </view>
+            </view>
+        </scroll-view>
+    </view>
+</template>
+<script>
+import wepy from 'wepy'
+import api from '@/utils/api'
+import baseMixin from '@/mixins/base'
+export default class Collect extends wepy.page {
+    config = {
+        navigationBarTitleText: '我的收藏',
+    }
+    
+    mixins = [ baseMixin ]
+    
+    components = {
+    }
+
+    data = {
+        typeDict: {
+            't_5': {name: '资讯', cls: 'blue'},
+            't_1': {name: '帖子', cls: 'success'}
+        },
+        queryParams: {
+            uid: null
+        }
+
+    }
+
+    computed = {
+        isEmpty() {
+            return (!this.queryConfig.loading&&this.queryConfig.finished&&this.queryConfig.list.length==0)
+        },
+    }
+    
+    methods = {
+        handleToDetail(item) {
+            if (item.type == 5) {
+                this.$navigate('/pages/news/detail?id='+item.target.id)
+            } else if (item.type == 1) {
+                this.$navigate('/pages/article/detail?id='+item.target.id)
+            }
+        }
+    }
+
+    events = {
+    }
+
+    handleListBefore(vm, list) {
+        // list.forEach(v => {
+        //     v.isCollect = false
+        //     v.collectId = null
+        //     v.thumbsup = false
+        //     v.thumbsupId = null
+        //     v.created_at = vm.handleDateView(v.created_at)
+        //     let cidx = vm.collectList.findIndex(c => {
+        //         return (c.type == 5 && c.target == v.id && c.user.id == vm.userInfo.id)
+        //     })
+        //     if (cidx > -1) {
+        //         v.isCollect = true
+        //         v.collectId = vm.collectList[cidx].id
+        //     }
+        //     let tidx = vm.collectList.findIndex(c => {
+        //         return (c.type == 4 && c.target == v.id && c.user.id == vm.userInfo.id)
+        //     })
+        //     if (tidx > -1) {
+        //         v.thumbsup = true
+        //         v.thumbsupId = vm.collectList[tidx].id
+        //     }
+        // })
+        return list
+    }
+
+    onLoad (params, data) {
+        this.queryConfig.key = 'collects_my'
+        this.queryParams.uid = wepy.$instance.globalData.appuser.id
+        this.handleFetchList(true, false, this.handleListBefore)
+    }
+    onShow () {
+        
+    }
+    onReady () {
+        
+    }
+}
+</script>
+<style lang="css">
+</style>

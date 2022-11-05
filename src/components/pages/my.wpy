@@ -1,0 +1,126 @@
+<template>
+    <view class="page-my page-nav wl-padding-bottom-bar">
+        <view class="head-view banner">
+            <view class="flex flex-ai-center z-100 info relative wl-padding-page">
+                <image mode="aspectFill" wx:if="{{wxuser.avatar}}" class="avatar icon-128 circle" src="{{wxuser.avatar}}" />
+                <image mode="aspectFill" wx:else class="avatar icon-128 circle" src="/public/img/avatar.png" />
+                <view class="flex-main wl-margin-left-lg">
+                    <view class="flex flex-ai-center">
+                        <view class="flex-main color-white line-1 text-40 text-sc-bold">{{wxuser.nickname||'还没有昵称'}}</view>
+                        <navigator class="text-22 color-white line-1 edit" hover-class="none" url="/pages/my/info"><i class="icon-user-info sub text-34 wl-margin-right-xs text-v-middle"></i>个人信息</navigator>
+                    </view>
+                    <view wx:if="{{wxuser.phone_number}}" class="wl-margin-top-sm color-white text-28">
+                        <text>绑定手机：{{wxuser.phone_number||'-'}}</text>
+                    </view>
+                </view>
+
+            </view>
+        </view>
+        <view class="wl-padding-page z-500 relative">
+            <view class="menu-nav flow-hide">
+                <navigator class="menu-item flex flex-ai-center" hover-class="none" url="/pages/my/history">
+                    <i class="fa fa-file-text-o text-60 color-green wl-margin-right-sm"></i>
+                    <view class="flex-main flex flex-ai-center">
+                        <text class="flex-main text-32 text-sc-medium"> 浏览记录</text>
+                        <i class="fa fa-angle-right color-sub-green text-bold text-40"></i>
+                    </view>
+                </navigator>
+                <navigator class="menu-item flex flex-ai-center" hover-class="none" url="/pages/my/collect">
+                    <i class="fa fa-star-half-o text-60 color-green wl-margin-right-sm"></i>
+                    <view class="flex-main flex flex-ai-center">
+                        <text class="flex-main text-32 text-sc-medium">我的收藏</text>
+                        <i class="fa fa-angle-right color-sub-green text-bold text-40"></i>
+                    </view>
+                </navigator>
+                <navigator class="menu-item flex flex-ai-center" hover-class="none" url="/pages/my/consult">
+                    <i class="fa fa-comments text-60 color-green wl-margin-right-sm relative"><text wx:if="{{replyCount>0}}" class="dot-single"></text></i>
+                    <view class="flex-main flex flex-ai-center">
+                        <text class="flex-main text-32 text-sc-medium"> 咨询回复</text>
+                        <i class="fa fa-angle-right color-sub-green text-bold text-40"></i>
+                    </view>
+                </navigator>
+                <view class="menu-item flex flex-ai-center">
+                    <i class="fa fa-flickr text-60 color-green wl-margin-right-sm"></i>
+                    <view class="flex-main flex flex-ai-center">
+                        <text class="flex-main text-32 text-sc-medium">我的消息</text>
+                        <i class="fa fa-angle-right color-sub-green text-bold text-40"></i>
+                    </view>
+                </view>
+            </view>
+        </view>
+    </view>
+</template>
+<script>
+import wepy from 'wepy'
+import api from '@/utils/api'
+import baseMixin from '@/mixins/base'
+export default class My extends wepy.component {
+    config = {
+    }
+    
+    mixins = [ baseMixin ]
+
+    components = {}
+
+    data = {
+        isProfessor: false,
+        replyCount: 0,
+        appuser: {},
+        wxuser: {}
+    }
+
+    computed = {
+        isAreaAdmin() {
+            const baseUser = this.$parent.$parent.globalData.baseUser
+            const areaPrimss = [4, 5, 6]
+            let isAreaAdmin = baseUser!=null && areaPrimss.includes(baseUser.userType)
+            return isAreaAdmin
+        }
+    }
+    
+    methods = {
+    }
+
+    events = {
+    }
+
+    init() {
+        this.appuser = this.$parent.$parent.globalData.appuser
+        this.wxuser = this.$parent.$parent.globalData.wxuser
+        if (this.appuser.professor && this.appuser.professor.id) {
+            this.isProfessor = true
+        }
+        this.$apply()
+        if (this.isProfessor) {
+            this.handleCountConsult()
+        }
+    }
+
+    handleCountConsult() {
+        let pid = this.appuser.professor.id
+        let params = {
+            state: 1,
+            professor: pid,
+            reply_content_null: true
+        }
+        api.$request('articles_count', params , false, false).then(({data}) => {
+            if (data) {
+                this.replyCount = data
+                this.$apply()
+            }
+        })
+    }
+
+    onLoad (params, data) {
+
+    }
+    onShow () {
+        
+    }
+    onReady () {
+        
+    }
+}
+</script>
+<style lang="css">
+</style>

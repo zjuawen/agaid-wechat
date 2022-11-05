@@ -1,0 +1,130 @@
+<template>
+    <view class="page-article flex flex-col flow-hide">
+        <van-tabs v-model="activeTab" class="text-32 inline-tabs wl-margin-bottom-sm" tab-class="inline" line-width="30" line-height="3" color="#1F8C48" title-active-color="#1F8C48" title-inactive-color="#949494" @change="handleChangeTab">
+            <van-tab title="待回复"></van-tab>
+            <van-tab title="已回复"></van-tab>
+        </van-tabs>
+        <scroll-view scroll-y="true" class="flex-main flow-y-auto list z-100 bg-tran" @scrolltolower="handleNext">
+            <view wx:if="{{!isEmpty}}" class="list-card wl-margin-bottom-xl">
+                <view class="card-body">
+                    <view wx:for="{{queryConfig.list}}" wx:key="index" class="list-item wl-padding-sm box-radius-20 bg-white wl-margin-bottom-sm">
+                        <navigator hover-class="none" url="/pages/article/detail?id={{item.id}}&reply=1">
+                            <view class="flex flex-ai-center wl-margin-bottom-lg">
+                                <image wx:if="{{item.author&&item.author.customer&&item.author.customer.avatar}}" class="avatar" src="{{item.author.customer.avatar}}" mode="scaleToFill" />
+                                <image wx:else class="avatar" src="/public/img/avatar.png" mode="scaleToFill" />
+                                <view class="flex-main wl-margin-left-sm">
+                                    <view class="text-30">{{item.customer?item.customer.nickname:'-'}}</view>
+                                    <view class="color-gray text-24 wl-margin-top-5">{{item.created_at}}</view>
+                                </view>
+                                <i class="fa fa-angle-right color-gray text-bold text-40"></i>
+                            </view>
+                            <view wx:if="{{item.title}}" class="title text-36 wl-margin-bottom-sm text-ellipsis-2">{{item.title}}</view>
+                            <view wx:if="{{item.description}}" class="description text-30 color-gray wl-margin-bottom-sm text-ellipsis-2">{{item.description}}</view>
+                            <view wx:if="{{(item.images&&item.images.length>0)||(item.videos&&item.videos.length>0)}}" class="list-pics scroll-x ">
+                                <block wx:if="{{item.images&&item.images.length>0}}">
+                                    <image wx:for="{{item.images}}" wx:for-item="file" wx:for-index="fidx" class="list-pics-item sm" src="{{file.url}}"  mode="aspectFill" @catchtap="handlePreview({{item}}, {{index}}, 0)" />
+                                </block>
+                                <block wx:if="{{item.videos&&item.videos.length>0}}">
+                                    <video wx:for="{{item.videos}}" wx:for-item="file" wx:for-index="fidx" controls="{{false}}" show-center-play-btn="{{false}}" class="list-pics-item sm" src="{{file.url}}" @catchtap="handlePreview({{item}}, {{index}}, {{item.images.length}})" />
+                                </block>
+                            </view>
+                            <view wx:if="{{item.type==2&&item.reply_content}}" class="reply wl-padding-sm bg-gray text-30 wl-margin-top-sm box-radius-20">
+                                <text class="text-ellipsis-2">{{item.professor.name}}：<text class="color-gray">{{item.reply_content}}</text></text>
+                            </view>
+                        </navigator>
+                    </view>
+                    <view wx:if="{{queryConfig.finished}}" class="color-gray text-26 text-center wl-padding-top-xl wl-padding-bottom-sm">没有更多了~</view>
+                </view>
+            </view>
+            <view  wx:if="{{isEmpty}}" class="card-body">
+                <view class="empty">
+                    <i class="icon icon-empty"></i>
+                    <view class="wl-margin-top-sm">~还没有信息</view>
+                </view>
+            </view>
+        </scroll-view>
+    </view>
+</template>
+<script>
+import wepy from 'wepy'
+import api from '@/utils/api'
+import baseMixin from '@/mixins/base'
+export default class Consult extends wepy.page {
+    config = {
+        navigationBarTitleText: '咨询回复',
+        usingComponents: {
+            "van-dialog": "@vant/weapp/dialog/index",
+            "van-tabs": "@vant/weapp/tabs/index",
+            "van-tab": "@vant/weapp/tab/index",
+            "van-popup": "@vant/weapp/popup/index"
+        }
+    }
+
+    mixins = [ baseMixin ]
+
+    components = {}
+
+    data = {
+        activeTab: 0,
+        queryParams: {
+            state: 1,
+            professor: 0,
+            reply_content_null: true,
+            _sort: 'created_at:DESC'
+        }
+    }
+
+    computed = {
+        isEmpty() {
+            return (!this.queryConfig.loading&&this.queryConfig.finished&&this.queryConfig.list.length==0)
+        },
+        userInfo() {
+            return this.$parent.globalData.appuser
+        },
+        wxuserInfo() {
+            return this.$parent.globalData.wxuser
+        }
+    }
+    
+    methods = {
+        handleChangeTab(e) {
+            this.queryParams.reply_content_null = e.detail.index == 0
+            this.handleFetchList(true, false, this.handleListBefore)
+        },
+        // 下一页
+        handleNext() {
+            if (this.queryConfig.finished) {
+                return
+            }
+            this.handleFetchList(false, false, this.handleListBefore)
+        },
+        // 图片预览
+        handlePreview(item, idx, len) {
+            let medisa = [].concat(item.images).concat(item.videos)
+            this.handlePreviewMedia(medisa, ((+len||0) + idx))
+        },
+    }
+
+    events = {
+    }
+
+    onLoad (params, data) {
+        this.queryConfig.key = 'articles_list'
+        this.queryParams['professor'] = this.userInfo.professor.id
+        this.collectList = wepy.$instance.globalData.collects
+        this.handleFetchList(true, false, this.handleListBefore)
+    }
+    onShow () { }
+    onReady () { }
+
+
+    handleListBefore(vm, list) {
+        list.forEach(v => {
+            v.created_at = vm.handleDateView(v.created_at)
+        })
+        return list
+    }
+}
+</script>
+<style lang="css" scoped>
+</style>

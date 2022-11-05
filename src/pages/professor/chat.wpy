@@ -1,0 +1,292 @@
+<template>
+    <view class="page page-chat flex flex-col h-full-v flow-hide bg-white">
+        <scroll-view scroll-y class="flex-main" style="height:calc(100vh - 100rpx);opacity:{{showScroll}};" bindscroll="scrollAction" scroll-into-view="{{scrollView}}" scroll-top="{{scrollTop}}" lower-threshold="50" bindscrolltolower="scrollBottomAction"> 
+            <view wx:if="{{loading}}" class="text-sm text-gray text-center wl-padding-top-lg">加载中</view>       
+            <view wx:for="{{messages}}"  id="message_item_{{item.id}}" style="opacity:{{item.new?'0':'1'}}" animation="{{item.new?item.animation:''}}">
+                <view wx:if="{{item.sendType==9}}" class="m-row wl-over text-xs text-gray js-center">
+                    <text class="text-white timestep">{{item.content}}</text>
+                </view>
+                <view wx:if="{{item.sendType==2}}" class="m-row wl-over">
+                    <view class="blank-avatar"></view>
+                    <view class="message right">
+                        <text wx:if="{{item.type==0}}" class="content">{{item.content}}</text>
+                        <image wx:if="{{item.type==1}}" mode="aspectFill" src="{{item.content}}" data-url="{{item.content}}" catchtap="handlePreview({{item.content}}, 'image')" />
+                        <video wx:if="{{item.type==2}}" class="video" src="{{item.content}}" controls="{{false}}" show-center-play-btn="{{false}}"  catchtap="handlePreview({{item.content}}, 'video')" />
+                    </view>
+                    <view wx:if="{{item.type==0}}" class="triangle right"></view>
+                    <image mode="aspectFill" class="avatar right wl-padding-xs" src="{{wxuserInfo.avatar}}" />
+
+                </view>
+                <view wx:if="{{item.sendType==1}}" class="m-row wl-over">
+                    <image wx:if="{{!isProfessor}}" mode="aspectFill" class="avatar left wl-padding-xs" src="{{item.professor.image.url}}" />
+                    <image wx:else mode="aspectFill" class="avatar right wl-padding-xs" src="{{item.customer.avatar}}" />
+                    <view wx:if="{{item.type==0}}" class="triangle left"></view>
+                    <view class="message left">
+                        <text wx:if="{{item.type==0}}" class="content">{{item.content}}</text>
+                        <image wx:if="{{item.type==1}}" mode="aspectFill" src="{{item.content}}" data-url="{{item.content}}" catchtap="handlePreview({{item.content}}, 'image')" />
+                        <video wx:if="{{item.type==2}}" class="video" src="{{item.content}}" controls="{{false}}" show-center-play-btn="{{false}}"  catchtap="handlePreview({{item.content}}, 'video')" />
+                    </view>
+                    <view class="blank-avatar"></view>
+                </view>
+            </view>
+            <view id="message_bottom" class="blank-send"></view>
+        </scroll-view>
+        <view class="nav-bar flex flex-ai-center box-shadow {{isIphoneX?'fix-iphonex-bottom':''}} {{isFocus?'wl-padding-bottom-lg':''}}">
+            <view class="flex-main flex flex-ai-center wl-padding-page">
+                <view class="relative consult-tab flex flex-ai-center flex-main">
+                    <i class="left-icon icon-comment text-32 color-blue"></i>
+                    <input type="text"  class="consult-input w-full" confirm-type="send" placeholder="说点什么吧" placeholder-class="search-pholder" value="{{submitData.content}}" @input="handleInput" @focus="handleSetFocus" @blur="handleSetBlur" bindconfirm="handleSend" />
+                    <i wx:if="{{submitData.content!=''}}" class="text-40 clear-icon fa fa-times-circle color-gray" catchtap="handleClear('content')"></i>
+                </view>
+                <view class="nav-bar-item text-center wl-margin-left-xl active" @tap="handleAddMedia">
+                    <i class="fa fa-picture-o text-40 color-green relative bar-icon"></i>
+                </view>
+            </view>
+        </view>
+    </view>
+    </view>
+</template>
+<script>
+import wepy from 'wepy'
+import api from '@/utils/api'
+import baseMixin from '@/mixins/base'
+export default class Chat extends wepy.page {
+    config = {
+        navigationBarTitleText: '聊天'
+    }
+    
+    mixins = [ baseMixin ]
+    
+    components = {}
+
+    data = {
+        loading: true,
+        professorId: null,
+        showScroll: 0,
+        scrollTop: 0,
+        scrollView: '',
+        lastChat: null,
+        isFocus: false,
+        // type: 0-文字；1-图片；2-视频
+        messages: [],
+        submitLoading: false,
+        submitData: {
+            type: 0,
+            content: ''
+        }
+    }
+
+    computed = {
+        isEmpty() {
+            return (!this.loading && (!this.messages || this.messages.length == 0))
+        },
+        userInfo() {
+            return this.$parent.globalData.appuser
+        },
+        wxuserInfo() {
+            return this.$parent.globalData.wxuser
+        },
+        isProfessor() {
+            return (this.userInfo.professor && this.userInfo.professor.id == this.professorId)
+        }
+    }
+    
+    methods = {
+        handleInput(e) {
+            this.submitData.content = e.detail.value
+            this.$apply()
+        },
+        handleSetFocus() {
+            this.isFocus = true
+            this.$apply()
+        },
+        handleSetBlur() {
+            this.isFocus = false
+            this.$apply()
+        },
+        // 添加图片/视频
+        handleAddMedia() {
+            let vm = this
+            if (vm.submitLoading) {
+                return
+            }
+            api.uploadMedia({ max: 1 }, function(res){
+                if(res && res.length > 0) {
+                    let file = res[0]
+                    if (file.type == 'image') {
+                        vm.handleDoSend(1, file.url)
+                    } else if (file.type == 'video') {
+                        vm.handleDoSend(2, file.url)
+                    }
+                }
+            });
+        },
+        // 图片预览
+        handlePreview(_url, _type) {
+            let _source = [{
+                url: _url,
+                type: _type
+            }]
+            wx.previewMedia({
+                sources: _source,
+                current: 0
+            })
+        },
+        handleSend() {
+            this.handleDoSend(0, this.submitData.content)
+        }
+    }
+
+    events = {
+    }
+
+    handleFetchList() {
+        let vm = this
+        let params = { customer: vm.wxuserInfo.id, professor: vm.professorId, _sort: 'created_at:ASC' }
+        api.$request('chats_list', params , true, false).then(({data}) => {
+            if (data && data.length > 0) {
+                data.forEach(v => {
+                    v.animation = null
+                    v.created_at = vm.handleDateView(v.created_at)
+                    if (v.user.id==vm.userInfo.id) {
+                        v.sendType = 2
+                    } else {
+                        v.sendType = 1
+                    }
+                })
+                data = vm.handleSetTime(data)
+                vm.messages = data
+                vm.lastChat = data[data.length - 1]
+                vm.$apply()
+                setTimeout(function(){
+                    vm.pageScrollToBottom(vm.lastChat.id, false);  
+                    vm.showScroll = 1
+                    vm.$apply()
+                },600)
+            } else {
+                api.toast(data.msg, 'none')
+            }
+        }).finally(() => {
+            this.loading = false
+            this.$apply()
+        })
+    }
+
+    handleSetTime(data) {
+        let sdata = JSON.parse(JSON.stringify(data))
+        let curDate = new Date()
+        let curDay = this.handleFormatDate(curDate, 'date')
+        let sort = 0
+        let day = '0000-00-00'
+        let ctime = curDate.getTime()
+        let point = 0
+        for (var i = 0; i < data.length; i++) {
+            let time = data[i].created_at
+            let rowDay = this.handleFormatDate(time, 'date')
+            if (rowDay > day && rowDay < curDay) {
+                point = i + sort
+                sdata.splice(point, 0, {
+                    sendType: 9,
+                    content: this.handleFormatDate(time, 'full-cn'),
+                    source: data[i].created_at
+                })
+                sort = sort + 1
+                day = rowDay
+            } else if (rowDay == curDay) {
+                let rowTime = new Date(time).getTime()
+                if (Math.abs(ctime - rowTime) > (30 * 60 * 1000)) {
+                    point = i + sort
+                    sdata.splice(point, 0, {
+                        sendType: 9,
+                        content: this.handleFormatDate(data[i].created_at, 'minute'),
+                        source: data[i].created_at
+                    })
+                    sort = sort + 1
+                    ctime = rowTime
+                }
+            }
+            
+        }
+        return sdata
+    }
+
+    handleSetTimeSingle(data) {
+        let timeItems = this.messages.filter(v => { return v.sendType == 9 })
+        if (timeItems && timeItems.length > 0) {
+            let rowTime = timeItems[timeItems.length - 1].source
+                rowTime = new Date(rowTime).getTime()
+            let ctime = new Date(data.created_at).getTime()
+            if (Math.abs(ctime - rowTime) > (30 * 60 * 1000)) {
+                this.messages.push({
+                    sendType: 9,
+                    content: this.handleFormatDate(data.created_at, 'minute'),
+                    source: data.created_at
+                })
+            }
+        }
+    }
+
+    handleDoSend(_type, _content) {
+        if (this.submitLoading) {
+            return
+        }
+        if (!_content) {
+            api.toast('内容不能为空', 'none')
+            return
+        }
+        let sdata = {
+            customer: this.wxuserInfo.id,
+            professor: this.professorId,
+            content: _content,
+            user: this.userInfo.id,
+            type: _type
+        }
+        this.submitLoading = true
+        api.$request('chats_save', sdata , false, false).then(({data}) => {
+            if (data && data.id) {
+                data.new = true
+                data.sendType = 2
+                data.animation = null
+                data.created_at = this.handleDateView(data.created_at)
+                this.handleSetTimeSingle(data)
+                this.messages.push(data)
+                this.lastChat = data
+                if (_type == 0) {
+                    this.submitData.content = ''
+                }
+                this.$apply()
+                this.pageScrollToBottom(data.id, true);
+            } else {
+                api.toast(data.msg, 'none')
+            }
+        }).finally(() => {
+            this.submitLoading = false
+            this.$apply()
+        })
+    }
+
+    pageScrollToBottom(_id, isNew) {
+        var vm = this;
+        vm.scrollView = 'message_item_' + _id
+        if (isNew){
+            var animation = wx.createAnimation();
+            animation.opacity(1).step()
+            vm.messages[vm.messages.length-1].animation = animation.export()
+        }
+    }
+
+    onLoad (params, data) {
+        this.professorId = params.pid
+        this.$apply()
+        this.handleFetchList()
+    }
+    onShow () {
+        
+    }
+    onReady () {
+
+    }
+}
+</script>
+<style lang="css">
+</style>

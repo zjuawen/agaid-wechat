@@ -1,0 +1,113 @@
+<template>
+    <view class="page-category page-nav flex flex-col flow-hide">
+        <view class="head-view search-tab bg-head wl-padding-page wl-padding-bottom-sm z-100">
+            <view class="relative" @tap="handleToSearch">
+                <i class="left-icon fa fa-search text-32 color-blue"></i>
+                <input class="search-input" type="text" disabled placeholder="搜索" placeholder-class="search-pholder" />
+            </view>
+        </view>
+        <view class="category-head scroll-x">
+            <view wx:for="{{ctrees}}" class="category-head-item {{index==activeTab[0]?'active':''}}" @tap="handleSetActive(0, {{index}})">
+                <view class="category-head-item-icon">
+                    <image wx:if="{{item.thumb&&item.thumb.url}}" src="{{item.thumb.url}}" mode="scaleToFill" />
+                    <image wx:else src="/public/img/logo.jpg" mode="scaleToFill" />
+                </view>
+                <view class="category-head-item-text">{{item.name}}</view>
+            </view>
+        </view>
+        <view class="flex flex-main flow-hide">
+            <view class="category-left">
+                <view wx:for="{{ctrees[activeTab[0]].children}}" class="category-left-item {{index==activeTab[1]?'active':''}}" @tap="handleSetActive(1, {{index}})">
+                    <view class="box-center text-center w-full">
+                        <!-- <text class="tag">推荐</text> -->
+                        <text>{{item.name}}</text>
+                    </view>
+                </view>
+            </view>
+            <view class="category-right flex-main relative">
+                <view wx:for="{{ctrees[activeTab[0]].children[activeTab[1]].children}}" class="category-right-item" @tap="handleClick({{item}})">
+                    <image wx:if="{{item.thumb&&item.thumb.url}}" src="{{item.thumb.url}}" mode="scaleToFill" />
+                    <image wx:else src="/public/img/logo.jpg" mode="scaleToFill" />
+                    <view class="category-right-item-text">{{item.name}}</view>
+                </view>
+                <view wx:if="{{isEmpty}}" class="empty box-center">
+                    <i class="icon icon-empty"></i>
+                    <view class="wl-margin-top-sm">~还没有品种信息</view>
+                </view>
+            </view>
+        </view>
+        <view></view>
+    </view>
+</template>
+<script>
+import wepy from 'wepy'
+import api from '@/utils/api'
+export default class Category extends wepy.component {
+    
+    components = {}
+
+    data = {
+        activeTab: [0, 0],
+        queryParams: {
+            keyword: ''
+        },
+        clists: [],
+        ctrees: []
+    }
+
+    computed = {
+        isEmpty() {
+            if (!this.ctrees[this.activeTab[0]] || !this.ctrees[this.activeTab[0]].children || this.ctrees[this.activeTab[0]].children.length == 0) {
+                return true
+            } else if (!this.ctrees[this.activeTab[0]].children[this.activeTab[1]].children || this.ctrees[this.activeTab[0]].children[this.activeTab[1]].children.length == 0) {
+                return true
+            }
+            return false
+        },
+    }
+    
+    methods = {
+        handleSetActive(sort, idx) {
+            this.activeTab[sort] = idx
+            this.$apply()
+        },
+        handleInput (key, e) {
+            this.queryParams[key] = e.detail.value
+            this.$apply()
+        },
+        handleClick(item) {
+            console.log(item)
+        },
+        handleToSearch() {
+            this.$parent.$navigate('/pages/search/index', { type: 0 })
+        }
+    }
+
+    events = {
+    }
+
+    init(params) {
+        this.handleFetchCategory()
+    }
+
+    onLoad (params, data) { }
+    onShow () { }
+    onReady () { }
+
+    handleFetchCategory() {
+        let params = { type: 1, _sort: 'sort:ASC' }
+        api.$request('category_list', params).then(({data}) => {
+            if (data && data.length > 0) {
+                data.forEach(v => {
+                    v.parentId = (v.parent&&v.parent.id) ? v.parent.id : 0
+                })
+                this.clists = data || []
+                this.ctrees = this.$parent.treeDataTranslate(data)
+                this.$apply()
+            }
+        })
+    }
+}
+</script>
+<style lang="css">
+</style>

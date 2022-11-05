@@ -1,0 +1,148 @@
+<script>
+    import wepy from 'wepy'
+    import api from '@/utils/api'
+    import 'wepy-async-function'
+
+    // 添加事件结束
+    Promise.prototype.finally = function (callback) {
+        var Promise = this.constructor
+        return this.then(
+            function (value) {
+                Promise.resolve(callback()).then(
+                    function () {
+                        return value
+                    }
+                )
+            },
+            function (reason) {
+                Promise.resolve(callback()).then(
+                    function () {
+                        throw reason
+                    }
+                )
+            }
+        )
+    }
+
+    export default class extends wepy.app {
+        config = {
+            pages: [
+                'pages/index',
+                'pages/auth',
+                'pages/search/index',
+                'pages/my/info',
+                'pages/my/history',
+                'pages/my/collect',
+                'pages/my/consult',
+                'pages/article/add',
+                'pages/article/detail',
+                'pages/news/detail',
+                'pages/professor/chat'
+            ],
+            window: {
+                backgroundTextStyle: 'light',
+                navigationBarBackgroundColor: '#239A4F',
+                navigationBarTitleText: 'WeChat',
+                navigationBarTextStyle: 'white',
+                // navigationStyle: 'custom'
+            },
+            permission: {
+                "scope.userLocation": {
+                    "desc": "为了信息的精准性，小程序将获取您的位置权限"
+                }
+            },
+            requiredPrivateInfos: ['getLocation', 'onLocationChange', 'startLocationUpdate']
+
+        }
+
+        globalData = {
+            isLoading: false,
+            isLaunch: false,
+            appuser: null,
+            wxuser: null,
+            config: null,
+            userInfoReadyCallback: null,
+            maxUploadCount: 6,
+            collects: [],
+            code: ''
+        }
+
+        constructor () {
+            super()
+            this.use('requestfix')
+            this.use('promisify')
+            this.intercept('request', {
+                config (p) {
+                    wx.showLoading({
+                        title: '加载中'
+                    })
+                    return p
+                },
+                success (obj) {
+                    console.log('request success')
+                },
+                complete (p) {
+                    wx.hideLoading()
+                }
+            })
+        }
+
+        onLaunch (params, data) {
+            const that = this
+            that.globalData.isLaunch = true
+            that.doLogin(function (res) {
+                setTimeout(() => {
+                    // 登陆回调
+                    that.globalData.userInfoReadyCallback && that.globalData.userInfoReadyCallback(res)
+                    that.globalData.isLaunch = false
+                }, 600)
+            })
+        }
+
+        onShow (res) {
+        }
+
+        sleep (s) {
+            return new Promise((resolve, reject) => {
+                setTimeout(() => {
+                    resolve('promise resolved')
+                }, s * 1000)
+            })
+        }
+
+
+        async doLogin(callback) {
+            const login = await wepy.login()
+            let loginParams  = {
+                code: login.code
+            }
+            let _this = this
+            api.$request('login', loginParams, false).then(({data}) => {
+                if (data.code === 0) {
+                    if (data.jwt) {
+                        wx.setStorageSync('agaid-weapp-token', data.jwt)
+                    }
+                    if (data.user) {
+                        _this.globalData.appuser = data.user
+                        _this.globalData.wxuser = data.user.customer||null
+                        _this.globalData.collects = data.collects || []
+                        _this.globalData.config = data.config || null
+                        wx.setStorageSync('agaid-weapp-auth', !data.user.customer.nickname)
+                    }
+                }
+                callback && callback({code: 0})
+            }).catch((res) => {
+                callback && callback({code: 1, data: res})
+            })
+        }
+    }
+</script>
+<style lang="css">
+    @import '/styles/flex.wxss';
+    @import '/styles/font.wxss';
+    @import '/styles/icon.wxss';
+    @import '/styles/main.wxss';
+    @import '/styles/themes.wxss';
+    @import '/styles/vant.wxss';
+    @import '/styles/reset.wxss';
+</style>

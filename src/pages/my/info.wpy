@@ -1,0 +1,132 @@
+<template>
+    <view class="page-work-unit">
+        <view class="wl-form head-view bg-head wl-padding-page wl-padding-vertical-xl">
+            <view class="text-center wl-padding-vertical-xl">
+                <image wx:if="{{submitData.avatar}}" class="icon-158 circle" src="{{submitData.avatar}}" mode="scaleToFill" />
+                <image wx:else class="icon-158 circle" src="/public/img/avatar.png" mode="scaleToFill" />
+                <view class="text-center text-30 color-white wl-margin-top-xs">{{submitData.nickname}}</view>
+            </view>
+            <view class="form-card">
+                 <!-- <view class="form-group flex">
+                    <view class="form-label must">昵称</view>
+                    <view class="flex flex-ai-center flex-main">
+                        <view class="form-control">
+                            <input type="text" 
+                                    class="flex-main" 
+                                    placeholder="请输入" 
+                                    data-key="nickname"
+                                    placeholder-class="color-desc"
+                                    @input="inputValue" value="{{submitData.nickname}}" />
+                        </view>
+                    </view>
+                </view> -->
+                <view class="form-group flex">
+                    <view class="form-label">姓名</view>
+                    <view class="flex flex-ai-center flex-main">
+                        <view class="form-control">
+                            <input type="text" 
+                                    class="flex-main" 
+                                    placeholder="请输入" 
+                                    data-key="name"
+                                    placeholder-class="color-desc"
+                                    @input="inputValue" value="{{submitData.name}}" />
+                        </view>
+                    </view>
+                </view>
+                <view class="form-group flex">
+                    <view class="form-label">电话</view>
+                    <view class="flex flex-ai-center flex-main">
+                        <view class="form-control">
+                            <input type="number" 
+                                   class="flex-main" 
+                                   placeholder="请输入" 
+                                   data-key="phone_number"
+                                    placeholder-class="color-desc"
+                                   @input="inputValue" value="{{submitData.phone_number}}" />
+                        </view>
+                    </view>
+                </view>
+            </view>
+        </view>
+        <view class="wl-padding-page wl-margin-vertical-xl">
+            <button class="btn btn-submit border-none" hover-class='none' @tap="handleSave"> 保存 </button>
+        </view>
+    </view>
+</template>
+<script>
+import wepy from 'wepy'
+import api from '@/utils/api'
+import baseMixin from '@/mixins/base'
+export default class Info extends wepy.page {
+    config = {
+        navigationBarTitleText: '个人信息',
+    }
+    
+    mixins = [ baseMixin ]
+    
+    components = {}
+
+    data = {
+        submitLoading: false,
+        submitData: {}
+    }
+
+    computed = {
+    }
+    
+    methods = {
+        inputValue(e) {
+            let data = e.currentTarget.dataset
+            let _value = e.detail.value
+            let _key = data.key
+
+            this.submitData[_key] = _value
+            this.$apply()
+        },
+        handleSave() {
+            if (this.submitLoading) {
+                return
+            }
+            if (!this.submitData.nickname) {
+                api.toast('请输入昵称', 'none')
+                return
+            }
+            let sdata = {
+                nickname: this.submitData.nickname,
+                name: this.submitData.name,
+                phone_number: this.submitData.phone_number
+            }
+            this.submitLoading = true
+            api.$request(['customers_update', this.submitData.id], sdata, true, false).then(({data}) => {
+                if (data && data.id) {
+                    api.toast('保存成功', 'success')
+                    this.$parent.globalData.wxuser = this.submitData
+                    this.$apply()
+                    this.pageBack(true, true)
+                } else {
+                    api.toast(data.msg, 'none')
+                }
+            }).finally(() => {
+                this.submitLoading = false
+                this.$apply()
+            })
+        }
+    }
+
+    events = {
+    }
+
+    onLoad (params, data) {
+        this.submitData = JSON.parse(JSON.stringify(this.$parent.globalData.wxuser))
+        this.$apply()
+    }
+    onShow () {
+        
+    }
+    onReady () {
+
+    }
+}
+</script>
+<style lang="css">
+</style>
