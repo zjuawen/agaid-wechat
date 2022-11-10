@@ -36,6 +36,8 @@ const urlConfig = {
 
     customers_update:       ['', '/customers/${0}', methods.PUT],
 
+    carousels_list:         ['', '/carousels', methods.GET],
+
     consults_list:          ['', '/consults', methods.GET],
     consults_save:          ['', '/consults', methods.POST],
 

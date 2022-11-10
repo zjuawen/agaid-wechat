@@ -85,7 +85,7 @@ export default class Index extends wepy.page {
         display: 'block',
         message: '',
         subMessage: '',
-        navActive: 1,
+        navActive: 2,
         navCode: '',
         navItems: [
             { text: '品种', code: 'Category', icon: 'icon-category'},

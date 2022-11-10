@@ -9,6 +9,7 @@
         <scroll-view scroll-y="true" class="flex-main flow-y-auto list z-100 bg-tran" @scrolltolower="handleNext">
             <view class="wl-padding-horizontal-lg wl-margin-bottom-lg">
                 <swiper 
+                    wx:if="{{carousel&&carousel.length>0}}"
                     autoplay="{{autoplay}}" 
                     bindchange="setCurrent" 
                     class="banner-box  swiper-box" 
@@ -16,8 +17,8 @@
                     indicator-dots="{{indicatorDots}}" 
                     interval="{{interval}}" 
                     circular="{{true}}">
-                    <swiper-item wx:for="{{3}}" wx:key="this" data-index="{{ index }}">
-                        <image class="banner" src="../../public/img/banner.png" mode="aspectFill" />
+                    <swiper-item wx:for="{{carousel}}" wx:key="this" data-index="{{ index }}" @tap="handleToCarouselDetail({{item}})">
+                        <image class="banner" src="{{item.media.url}}" mode="aspectFill" />
                     </swiper-item>
                 </swiper>
             </view>
@@ -67,6 +68,7 @@ export default class News extends wepy.component {
         interval: 5000, // 自动切换时间间隔
         duration: 800, // 滑动动画时长
         currentIndex: 1, // 轮播图指针
+        carousel: [],
         collectList: [],
         queryParams: {
             title_contains: ''
@@ -92,6 +94,11 @@ export default class News extends wepy.component {
         },
         handleToSearch() {
             this.$parent.$navigate('/pages/search/index', { type: 1 })
+        },
+        handleToCarouselDetail(item) {
+            if (item.target) {
+                this.$parent.$navigate('/pages/news/detail', {id: item.target})
+            }
         },
         handleToDetail(item) {
             this.$parent.$navigate('/pages/news/detail', {id: item.id})
@@ -133,9 +140,19 @@ export default class News extends wepy.component {
 
     init(params) {
         this.collectList = wepy.$instance.globalData.collects
+        this.handleFetchCarousel()
         this.handleFetchList(true, false, this.handleListBefore)
     }
 
+    handleFetchCarousel() {
+        api.$request('carousels_list', { type: 1 } , true, false).then(({data}) => {
+            if (data && data.length > 0) {
+                this.carousel = data[0].medias || []
+                this.$apply()
+            }
+        })
+    }
+    
     handleListBefore(vm, list) {
         list.forEach(v => {
             v.isCollect = false

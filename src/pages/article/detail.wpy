@@ -238,6 +238,8 @@ export default class Detail extends wepy.page {
                 this.info = data
                 this.$apply()
                 this.$invoke('Consult', 'init', {id: data.id})
+                // 记录浏览数
+                this.handleSetCount(0, true)
                 this.handleSetHistory('article', data)
             } else {
                 api.toast(data.msg, 'none')
@@ -251,7 +253,7 @@ export default class Detail extends wepy.page {
         let vm = this
         let params = {}
         let count = isCollect ? 1 : -1
-        let keys = ['', 'collect_count', '', 'up_count', '']
+        let keys = ['view_count', 'collect_count', '', 'up_count', '']
         params[keys[type]] = vm.info[keys[type]] + count
         api.$request(['articles_update', vm.info.id], params , true, false).then(({data}) => {
             if (data && data.id) {
