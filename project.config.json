@@ -35,7 +35,7 @@
         "minifyWXML": true
     },
     "compileType": "miniprogram",
-    "appid": "wxe89bc122e9ccd65b",
+    "appid": "wx431d27fb79c87c91",
     "projectname": "助农小程序",
     "miniprogramRoot": "dist/",
     "libVersion": "2.24.1",

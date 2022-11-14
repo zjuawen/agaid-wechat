@@ -4,8 +4,9 @@ import wepy from 'wepy'
 const qs = require('qs');
 const debug = false
 const urlPrefixLocal = './data/'
-const urlPrefixRemote = 'http://192.168.88.166:5337' // 本地
-// const urlPrefixRemote = 'http://localhost:5337' // 本地
+// const urlPrefixRemote = 'http://192.168.88.166:5337' // 本地
+// const urlPrefixRemote = 'http://localhost:1337' // 本地
+const urlPrefixRemote = 'https://agaid.microripples.cn' 
 // const urlPrefixRemote = 'http://192.168.88.166:5337' // 远程
 const attachmentPath = urlPrefixRemote + '/attachment'
 const methods = { GET: 'GET', POST: 'POST', PUT: 'PUT', DELETE: 'DELETE' }
