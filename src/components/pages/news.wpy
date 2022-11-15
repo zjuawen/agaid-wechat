@@ -17,7 +17,7 @@
                     indicator-dots="{{indicatorDots}}" 
                     interval="{{interval}}" 
                     circular="{{true}}">
-                    <swiper-item wx:for="{{carousel}}" wx:key="this" data-index="{{ index }}" @tap="handleToCarouselDetail({{item}})">
+                    <swiper-item wx:for="{{carousel}}" wx:key="this" data-index="{{ index }}" @tap="handleToCusDetail({{item}})">
                         <image class="banner" src="{{item.media.url}}" mode="aspectFill" />
                     </swiper-item>
                 </swiper>
@@ -37,7 +37,7 @@
                                     <image wx:else class="avatar" src="/public/img/avatar.png" mode="scaleToFill" />
                                     <view class="text-20 flex-main wl-margin-left-xs">{{item.author.username}}</view>
                                 </view>
-                                <view  class="text-28 {{item.thumbsup?'color-green':'color-gray'}}" catchtap="handleCollect(4, {{item}}, {{index}})"><i class="icon-thumbs-up"></i> {{item.up_count||0}}</view>
+                                <view  class="text-28 {{item.thumbsup?'color-green':'color-gray'}}" catchtap="handleCollect(4, {{item}}, {{index}})"><i class="icon-thumbs-up text-36"></i> {{item.up_count||0}}</view>
                             </view>
                         </view>
                     </view>
@@ -95,7 +95,7 @@ export default class News extends wepy.component {
         handleToSearch() {
             this.$parent.$navigate('/pages/search/index', { type: 1 })
         },
-        handleToCarouselDetail(item) {
+        handleToCusDetail(item) {
             if (item.target) {
                 this.$parent.$navigate('/pages/news/detail', {id: item.target})
             }
@@ -147,6 +147,11 @@ export default class News extends wepy.component {
     handleFetchCarousel() {
         api.$request('carousels_list', { type: 1 } , true, false).then(({data}) => {
             if (data && data.length > 0) {
+                if (data[0].medias && data[0].medias.length > 0) {
+                    data[0].medias.forEach(v => {
+                        v.media.url = api.attachmentPath + v.media.id
+                    })
+                }
                 this.carousel = data[0].medias || []
                 this.$apply()
             }
@@ -173,6 +178,12 @@ export default class News extends wepy.component {
             if (tidx > -1) {
                 v.thumbsup = true
                 v.thumbsupId = vm.collectList[tidx].id
+            }
+            if (v.image && v.image.id) {
+                v.image.url = api.attachmentPath + v.image.id
+            }
+            if (v.video && v.video.id) {
+                v.video.url = api.attachmentPath + v.video.id
             }
         })
         return list

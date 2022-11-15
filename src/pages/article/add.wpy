@@ -142,6 +142,7 @@ export default class add extends wepy.page {
             api.uploadMedia({ max: max }, function(res){
                 if(res && res.length > 0) {
                     res.forEach(file => {
+                        file.url = api.attachmentPath + file.id
                         if (file.type == 'image') {
                             vm.submitData.images.push(file)
                         } else if (file.type == 'video') {
@@ -149,7 +150,6 @@ export default class add extends wepy.page {
                         }
                     })
                     vm.$apply()
-                    console.log(vm.submitData)
                 }
             });
         },

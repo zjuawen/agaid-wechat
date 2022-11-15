@@ -100,6 +100,9 @@ export default class Category extends wepy.component {
             if (data && data.length > 0) {
                 data.forEach(v => {
                     v.parentId = (v.parent&&v.parent.id) ? v.parent.id : 0
+                    if (v.thumb && v.thumb.id) {
+                        v.thumb.url = api.attachmentPath + v.thumb.id
+                    }
                 })
                 this.clists = data || []
                 this.ctrees = this.$parent.treeDataTranslate(data)

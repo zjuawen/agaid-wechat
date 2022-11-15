@@ -7,7 +7,7 @@
                         <view class="flex flex-ai-start">
                             <view>
                                 <image wx:if="{{item.customer&&item.customer.avatar}}" class="icon-60 circle" src="{{item.customer.avatar}}" mode="scaleToFill" />
-                                <image wx:else class="icon-60 circle" src="/public/img/logo.jpg" mode="scaleToFill" />
+                                <image wx:else class="icon-60 circle" src="/public/img/avatar.png" mode="scaleToFill" />
                                 <!-- <view class="text-20 text-ellipsis text-center w-100r">{{item.customer.nickname}}</view> -->
                             </view>
                             <view class="flex-main wl-margin-left-sm wl-padding-top-xs flow-hide">

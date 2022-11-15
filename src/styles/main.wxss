@@ -27,8 +27,8 @@ input::-webkit-input-placeholder, textarea::-webkit-input-placeholder { color: #
  +------------------------------------- */
 .flow-hide { overflow: hidden;}
 .flow-auto { overflow: auto;}
-.flow-x-auto { overflow-x: auto;}
-.flow-y-auto { overflow-y: auto;}
+.flow-x-auto { overflow-x: auto;-webkit-overflow-scrolling: touch;}
+.flow-y-auto { overflow-y: auto;-webkit-overflow-scrolling: touch;}
 
 
 /* +-------------------------------------

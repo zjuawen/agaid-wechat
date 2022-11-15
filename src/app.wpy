@@ -51,8 +51,8 @@
                     "desc": "为了信息的精准性，小程序将获取您的位置权限"
                 }
             },
-            requiredPrivateInfos: ['getLocation', 'onLocationChange', 'startLocationUpdate']
-
+            requiredPrivateInfos: ['getLocation', 'onLocationChange', 'startLocationUpdate'],
+            lazyCodeLoading: "requiredComponents"
         }
 
         globalData = {

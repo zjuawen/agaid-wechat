@@ -156,6 +156,13 @@ export default class Detail extends wepy.page {
                     data.thumbsup = true
                     data.thumbsupId = vm.collectList[tidx].id
                 }
+                
+                if (data.image && data.image.id) {
+                    data.image.url = api.attachmentPath + data.image.id
+                }
+                if (data.video && data.video.id) {
+                    data.video.url = api.attachmentPath + data.video.id
+                }
                 this.info = data
                 this.$apply()
                 this.$invoke('Consult', 'init', {id: data.id})

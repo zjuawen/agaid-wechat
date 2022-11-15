@@ -92,14 +92,17 @@ export default class Chat extends wepy.page {
     }
     
     methods = {
+        // 输入框 - 输入
         handleInput(e) {
             this.submitData.content = e.detail.value
             this.$apply()
         },
+        // 输入框 - 聚焦
         handleSetFocus() {
             this.isFocus = true
             this.$apply()
         },
+        // 输入框 - 离开
         handleSetBlur() {
             this.isFocus = false
             this.$apply()
@@ -114,9 +117,9 @@ export default class Chat extends wepy.page {
                 if(res && res.length > 0) {
                     let file = res[0]
                     if (file.type == 'image') {
-                        vm.handleDoSend(1, file.url)
+                        vm.handleDoSend(1, file.id)
                     } else if (file.type == 'video') {
-                        vm.handleDoSend(2, file.url)
+                        vm.handleDoSend(2, file.id)
                     }
                 }
             });
@@ -132,6 +135,7 @@ export default class Chat extends wepy.page {
                 current: 0
             })
         },
+        // 发送消息
         handleSend() {
             this.handleDoSend(0, this.submitData.content)
         }
@@ -139,7 +143,7 @@ export default class Chat extends wepy.page {
 
     events = {
     }
-
+    // 获取聊天记录
     handleFetchList() {
         let vm = this
         let params = { customer: vm.wxuserInfo.id, professor: vm.professorId, _sort: 'created_at:ASC' }
@@ -152,6 +156,13 @@ export default class Chat extends wepy.page {
                         v.sendType = 2
                     } else {
                         v.sendType = 1
+                    }
+                    if (v.professor && v.professor.image && v.professor.image.id) {
+                        v.professor.image.url = api.attachmentPath + v.professor.image.id
+                    }
+                    // 图片、视频
+                    if (v.type == 1 || v.type == 2) {
+                        v.content = api.attachmentPath + v.content
                     }
                 })
                 data = vm.handleSetTime(data)
@@ -171,7 +182,7 @@ export default class Chat extends wepy.page {
             this.$apply()
         })
     }
-
+    // 加入时间标签
     handleSetTime(data) {
         let sdata = JSON.parse(JSON.stringify(data))
         let curDate = new Date()
@@ -209,7 +220,7 @@ export default class Chat extends wepy.page {
         }
         return sdata
     }
-
+    // 加入时间标签 - 单个
     handleSetTimeSingle(data) {
         let timeItems = this.messages.filter(v => { return v.sendType == 9 })
         if (timeItems && timeItems.length > 0) {
@@ -225,7 +236,7 @@ export default class Chat extends wepy.page {
             }
         }
     }
-
+    // 发送消息
     handleDoSend(_type, _content) {
         if (this.submitLoading) {
             return
@@ -248,6 +259,10 @@ export default class Chat extends wepy.page {
                 data.sendType = 2
                 data.animation = null
                 data.created_at = this.handleDateView(data.created_at)
+                // 图片、视频
+                if (data.type == 1 || data.type == 2) {
+                    data.content = api.attachmentPath + data.content
+                }
                 this.handleSetTimeSingle(data)
                 this.messages.push(data)
                 this.lastChat = data
@@ -264,7 +279,7 @@ export default class Chat extends wepy.page {
             this.$apply()
         })
     }
-
+    // 滚动到底部
     pageScrollToBottom(_id, isNew) {
         var vm = this;
         vm.scrollView = 'message_item_' + _id

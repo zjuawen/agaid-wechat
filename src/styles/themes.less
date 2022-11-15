@@ -377,6 +377,7 @@
     overflow-x: auto;
     overflow-y: hidden;
     white-space:nowrap;
+    -webkit-overflow-scrolling: touch;
     &::-webkit-scrollbar{// 滚动条整体
         display: none;
     }
@@ -630,7 +631,7 @@
 			}
 		}
 		&-left {
-			width: 160rpx;overflow-y: auto;
+			width: 160rpx;overflow-y: auto;-webkit-overflow-scrolling: touch;
 			&-item {
 				position: relative;height: 100rpx;padding: 0 10rpx;font-size: 28rpx;color: #949494;
 				&.active {
@@ -642,7 +643,7 @@
 			}
 		}
 		&-right {
-			background-color: #ffffff;padding: 20rpx 40rpx;overflow-y: auto;
+			background-color: #ffffff;padding: 20rpx 40rpx;overflow-y: auto;-webkit-overflow-scrolling: touch;
 			&-item {
 				display: inline-block;margin-right: 50rpx;margin-bottom: 40rpx;
 				&>image {

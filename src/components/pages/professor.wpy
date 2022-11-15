@@ -159,6 +159,9 @@ export default class Professor extends wepy.component {
                 v.isCollect = true
                 v.collectId = vm.collectList[cidx].id
             }
+            if (v.image && v.image.id) {
+                v.image.url = api.attachmentPath + v.image.id
+            }
         })
         return list
     }

@@ -86,6 +86,7 @@ export default class Article extends wepy.component {
         // _where[_or][0][stars]=1&_where[_or][1][pricing_gt]=30
         queryParams: {
             '_or[0][state]': 1,
+            is_delete: false,
             _sort: 'up_count:DESC'
         },
         collectList: [],
@@ -197,6 +198,16 @@ export default class Article extends wepy.component {
             if (tidx > -1) {
                 v.thumbsup = true
                 v.thumbsupId = vm.collectList[tidx].id
+            }
+            if (v.images && v.images.length > 0) {
+                v.images.forEach(m => {
+                    m.url = api.attachmentPath + m.id
+                })
+            }
+            if (v.videos && v.videos.length > 0) {
+                v.videos.forEach(m => {
+                    m.url = api.attachmentPath + m.id
+                })
             }
         })
         return list

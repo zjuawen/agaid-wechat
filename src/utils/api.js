@@ -8,7 +8,7 @@ const urlPrefixLocal = './data/'
 // const urlPrefixRemote = 'http://localhost:1337' // 本地
 const urlPrefixRemote = 'https://agaid.microripples.cn' 
 // const urlPrefixRemote = 'http://192.168.88.166:5337' // 远程
-const attachmentPath = urlPrefixRemote + '/attachment'
+const attachmentPath = urlPrefixRemote + '/attachment/'
 const methods = { GET: 'GET', POST: 'POST', PUT: 'PUT', DELETE: 'DELETE' }
 // +-------------------------------------
 // | 接口Api配置
@@ -210,11 +210,11 @@ const commonAjax = (urlPara, data, types, loading) => {
               isLoading = false
               setTimeout(() => {
                 wx.hideLoading()
-              }, 1000)
+              }, 100)
               requestLimitConfig = {}
             }
 
-          }, 1000)
+          }, 100)
           // if (isLoading === true) {
           //     isLoading = false
           //     wx.hideLoading()

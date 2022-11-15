@@ -144,6 +144,33 @@ export default class Index extends wepy.page {
 
     handleListBefore(vm, list) {
         list.forEach(v => {
+            if (vm.searchType == 0) {
+                if (v.thumb && v.thumb.id) {
+                    v.thumb.url = api.attachmentPath + v.thumb.id
+                }
+            } else if (vm.searchType == 1) {
+                if (v.image && v.image.id) {
+                    v.image.url = api.attachmentPath + v.image.id
+                }
+                if (v.video && v.video.id) {
+                    v.video.url = api.attachmentPath + v.video.id
+                }
+            } else if (vm.searchType == 2) {
+                if (v.image && v.image.id) {
+                    v.image.url = api.attachmentPath + v.image.id
+                }
+            } else if (vm.searchType == 3) {
+                if (v.images && v.images.length > 0) {
+                    v.images.forEach(m => {
+                        m.url = api.attachmentPath + m.id
+                    })
+                }
+                if (v.videos && v.videos.length > 0) {
+                    v.videos.forEach(m => {
+                        m.url = api.attachmentPath + m.id
+                    })
+                }
+            }
             v.created_at = vm.handleDateView(v.created_at)
         })
         return list

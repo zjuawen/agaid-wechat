@@ -53,7 +53,7 @@ export default class Consult extends wepy.page {
     config = {
         navigationBarTitleText: '咨询回复',
         usingComponents: {
-            "van-dialog": "@vant/weapp/dialog/index",
+            // "van-dialog": "@vant/weapp/dialog/index",
             "van-tabs": "@vant/weapp/tabs/index",
             "van-tab": "@vant/weapp/tab/index",
             "van-popup": "@vant/weapp/popup/index"
@@ -120,6 +120,16 @@ export default class Consult extends wepy.page {
 
     handleListBefore(vm, list) {
         list.forEach(v => {
+            if (v.images && v.images.length > 0) {
+                v.images.forEach(m => {
+                    m.url = api.attachmentPath + m.id
+                })
+            }
+            if (v.videos && v.videos.length > 0) {
+                v.videos.forEach(m => {
+                    m.url = api.attachmentPath + m.id
+                })
+            }
             v.created_at = vm.handleDateView(v.created_at)
         })
         return list
