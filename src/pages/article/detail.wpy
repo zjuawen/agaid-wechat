@@ -16,9 +16,9 @@
                     <block wx:if="{{info.images&&info.images.length>0}}">
                         <image wx:for="{{info.images}}" wx:for-item="file" wx:for-index="fidx" class="list-pics-item sm" src="{{file.url}}"  mode="aspectFill" @tap="handlePreview({{fidx}}, 0)" />
                     </block>
-                    <block wx:if="{{info.videos&&info.videos.length>0}}">
-                        <video wx:for="{{info.videos}}" wx:for-item="file" wx:for-index="fidx" class="list-pics-item sm" src="{{file.url}}" controls="{{false}}" show-center-play-btn="{{false}}" @tap="handlePreview({{fidx}}, {{info.images.length}})" />
-                    </block>
+                </view>
+                <view wx:if="{{info.videos&&info.videos.length>0}}" class="live wl-margin-top-sm bg-white">
+                    <video  wx:for="{{info.videos}}" wx:for-item="file" wx:for-index="fidx" class="video w-full box-radius-20" src="{{file.url}}" />
                 </view>
                 <view wx:if="{{info.type==2&&!isReply}}" class="reply wl-padding-sm bg-gray text-30 wl-margin-top-sm box-radius-20">
                     <text>{{info.professor.name}}：<text class="color-gray">{{info.reply_content}}</text></text>
@@ -122,7 +122,7 @@ export default class Detail extends wepy.page {
         },
         // 图片预览
         handlePreview(idx, len) {
-            let medisa = [].concat(this.info.images).concat(this.info.videos)
+            let medisa = [].concat(this.info.images)
             this.handlePreviewMedia(medisa, ((+len||0) + idx))
         },
         // 点赞收藏

@@ -10,13 +10,16 @@
                     <view class="fa fa-clock-o text-24 color-gray wl-margin-right-xs"></view>
                     <view class="text-26 color-gray">{{info.created_at}}</view>
                 </view>
-                <view wx:if="{{info.description}}" class="description text-30 color-gray wl-margin-bottom-sm">{{info.description}}</view>
+                <view wx:if="{{info.type==1}}" class="live wl-margin-bottom-sm bg-white">
+                    <image class="w-full box-radius-20" src="{{info.image.url}}"  mode="aspectFill" />
+                </view>
+                <view wx:if="{{info.description}}" style="line-height: 1.6;" class="description text-30 color-gray wl-margin-bottom-sm">{{info.description}}</view>
             </view>
             <view wx:if="{{info.content}}" class="list-item wl-padding-sm bg-white wl-margin-bottom-sm">
                 <rich-text class="text-30 color-title sc-regular line-40" nodes="{{info.content}}"></rich-text>
             </view>
             <view wx:if="{{info.type==2}}" class="live wl-padding-sm bg-white">
-                <video class="video w-full" src="{{info.video.url}}" />
+                <video class="video w-full box-radius-20" src="{{info.video.url}}" />
             </view>
             <view class="flex flex-ai-center flex-jc-center wl-padding-page wl-margin-top-lg">
                 <view class="nav-bar-item text-center {{info.isCollect?'active':''}}" @tap="handleCollect(5)">
