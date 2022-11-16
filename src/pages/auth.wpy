@@ -3,7 +3,7 @@
         <view class="text-center">
             <view class="logo">
                 <image mode="aspectFill" src="/public/img/logo.jpg" />
-                <view class="text-38 color-title text-sc-bold text-center wl-margin-top-xl line-1">秀屿区疫情防控</view>
+                <view class="text-38 color-title text-sc-bold text-center wl-margin-top-xl line-1">助农小程序</view>
             </view>
             <view class="text-28 color-title text-center wl-margin-bottom-50">点击授权将获取您的信息（昵称，头像等）</view>
             <view class="wl-padding-page">
