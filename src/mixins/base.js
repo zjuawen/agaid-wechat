@@ -135,7 +135,7 @@ export default class baseMixin extends wepy.mixin {
         if (_this.collectLoading) {
             return
         }
-        let collectCN = ['', '收藏', '关注', '点赞', '点赞']
+        let collectCN = ['', '收藏', '关注', '点赞', '点赞', '收藏']
         if (isCollect) {
             _this.collectLoading = true
             api.$request('collects_save', params , true, false).then(({data}) => {

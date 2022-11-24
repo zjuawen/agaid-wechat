@@ -76,7 +76,7 @@ export default class Category extends wepy.component {
             this.$apply()
         },
         handleClick(item) {
-            console.log(item)
+            this.$parent.$navigate('/pages/news/list', { category: item.id })
         },
         handleToSearch() {
             this.$parent.$navigate('/pages/search/index', { type: 0 })

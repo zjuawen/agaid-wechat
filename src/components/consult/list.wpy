@@ -116,13 +116,14 @@ export default class list extends wepy.component {
     }
 
     init(params) {
-        let reload = this.articleId != params.id
+        let reload = true
         this.showPopup = true
         this.queryConfig.key = 'consults_list'
         this.queryParams.article = params.id
-        this.queryParams['_or[1][customer]'] = wepy.$instance.globalData.wxuser.id
+        this.queryParams['_or[1][customer]'] = this.userInfo.id
         this.articleId = params.id
         this.$apply()
+
         if (reload) {
             this.handleFetchList(true, this.handleListBefore)            
         }

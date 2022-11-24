@@ -126,6 +126,7 @@ export default class Dialog extends wepy.component {
             this.submitLoading = true
             api.$request('consults_save', submitData , true, false).then(({data}) => {
                 if (data && data.id) {
+                    data.created_at = this.handleDateView(data.created_at)
                     this.formData.content = ''
                     this.queryConfig.list.unshift(data)
                     this.$apply()
@@ -141,7 +142,8 @@ export default class Dialog extends wepy.component {
     }
 
     init(params) {
-        let reload = this.articleId != params.id
+        // let reload = this.articleId != params.id
+        let reload = true
         this.showPopup = true
         this.queryConfig.key = 'consults_list'
         this.queryParams.article = params.id

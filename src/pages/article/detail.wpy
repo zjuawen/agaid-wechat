@@ -104,6 +104,9 @@ export default class Detail extends wepy.page {
     computed = {
         userInfo() {
             return this.$parent.globalData.appuser
+        },
+        wxuserInfo() {
+            return this.$parent.globalData.wxuser
         }
     }
     
@@ -168,7 +171,7 @@ export default class Detail extends wepy.page {
                 parent: 0,
                 status: 0,
                 article: this.info.id,
-                customer: this.userInfo.id
+                customer: this.wxuserInfo.id
             }
             this.submitLoading = true
             api.$request('consults_save', submitData , true, false).then(({data}) => {

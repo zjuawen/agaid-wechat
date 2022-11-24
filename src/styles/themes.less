@@ -610,9 +610,11 @@
 						&::before {
 							content: '';
 							position: absolute;
-							width: 88rpx;height: 88rpx;border: 6rpx solid #419912;border-radius: 16rpx;
+							border: 6rpx solid #419912;border-radius: 16rpx;
 							top: 0;
 							left: 0;
+							right: 0;
+							bottom: 0;
 						}
 					}
 					.category-head-item-text {
@@ -645,7 +647,10 @@
 		&-right {
 			background-color: #ffffff;padding: 20rpx 40rpx;overflow-y: auto;-webkit-overflow-scrolling: touch;
 			&-item {
-				display: inline-block;margin-right: 50rpx;margin-bottom: 40rpx;
+				display: inline-block;margin-right: 50rpx;margin-bottom: 40rpx;width: calc((100% - 100rpx) / 3);
+				&:nth-child(3n) {
+					margin-right: 0;
+				}
 				&>image {
 					width: 120rpx;height: 120rpx;border-radius: 50%;
 				}

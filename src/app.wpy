@@ -36,6 +36,7 @@
                 'pages/my/consult',
                 'pages/article/add',
                 'pages/article/detail',
+                'pages/news/list',
                 'pages/news/detail',
                 'pages/professor/chat'
             ],

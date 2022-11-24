@@ -40,6 +40,7 @@
                             </view>
                         </view>
                     </view>
+                    <view wx:if="{{queryConfig.finished}}" class="color-gray text-26 text-center wl-padding-top-xl wl-padding-bottom-sm">没有更多了~</view>
                 </view>
             </view>
             <view wx:if="{{isEmpty}}" class="card-body">
