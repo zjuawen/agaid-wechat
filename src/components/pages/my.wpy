@@ -32,10 +32,19 @@
                         <i class="fa fa-angle-right color-sub-green text-bold text-40"></i>
                     </view>
                 </navigator>
-                <navigator class="menu-item flex flex-ai-center" hover-class="none" url="/pages/my/consult">
-                    <i class="fa fa-comments text-60 color-green wl-margin-right-sm relative"><text wx:if="{{replyCount>0}}" class="dot-single"></text></i>
+                <view wx:if="{{isProfessor}}" class="menu-item flex flex-ai-center" @tap="handleToConsult">
+                    <i class="fa fa-comments text-60 {{appuser.professor.state==1?'color-green':'color-gray'}} wl-margin-right-sm relative">
+                        <text wx:if="{{replyCount>0}}" class="dot-single"></text>
+                    </i>
                     <view class="flex-main flex flex-ai-center">
-                        <text class="flex-main text-32 text-sc-medium"> 咨询回复</text>
+                        <text class="flex-main text-32 text-sc-medium {{appuser.professor.state==1?'':'color-gray'}}"> 咨询回复</text>
+                        <i class="fa fa-angle-right color-sub-green text-bold text-40"></i>
+                    </view>
+                </view>
+                <navigator wx:if="{{!isProfessor}}" class="menu-item flex flex-ai-center" hover-class="none" url="/pages/professor/bind">
+                    <i class="fa fa-user text-60 color-green wl-margin-right-sm relative"></i>
+                    <view class="flex-main flex flex-ai-center">
+                        <text class="flex-main text-32 text-sc-medium"> 我是专家</text>
                         <i class="fa fa-angle-right color-sub-green text-bold text-40"></i>
                     </view>
                 </navigator>
@@ -70,15 +79,31 @@ export default class My extends wepy.component {
     }
 
     computed = {
-        isAreaAdmin() {
-            const baseUser = this.$parent.$parent.globalData.baseUser
-            const areaPrimss = [4, 5, 6]
-            let isAreaAdmin = baseUser!=null && areaPrimss.includes(baseUser.userType)
-            return isAreaAdmin
-        }
     }
     
     methods = {
+        handleToConsult() {
+            if (this.appuser.professor && this.appuser.professor.id) {
+                if (this.appuser.professor.state == 1) {
+                    this.$parent.$navigate('/pages/my/consult')
+                } else if (this.appuser.professor.state == 0) {
+                    api.toast('请等待管理员审核', 'none')
+                } else if (this.appuser.professor.state == 2) {
+                    let vm = this
+                    wx.showModal({
+                        title: '提示',
+                        content: vm.appuser.professor.auth_content,
+                        confirmText: '去修改',
+                        cancelText: '先不了',
+                        success: function (res) {
+                            if (res.confirm) {
+                                vm.$parent.$navigate('/pages/professor/bind')
+                            }
+                        }
+                    })
+                }
+            }
+        }
     }
 
     events = {

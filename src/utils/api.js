@@ -48,11 +48,13 @@ const urlConfig = {
     collects_update:        ['', '/collects/${0}', methods.PUT],
     collects_delete:        ['', '/collects/${0}', methods.DELETE],
 
-
     professor_list:         ['', '/professors', methods.GET],
     professor_collect:      ['', '/professors/bycollect', methods.GET],
     professor_info:         ['', '/professors/${0}', methods.GET],
     professor_update:       ['', '/professors/${0}', methods.PUT],
+    professor_save:         ['', '/professors', methods.POST],
+
+    users_update:           ['', '/users/${0}', methods.PUT],
 }
 
 // +-------------------------------------
@@ -357,7 +359,6 @@ const uploadMedia = (config, callback) => {
             var _mediaList = [];
             for (var i = 0, h = tempFiles.length; i < h; i++) {
                 var file = tempFiles[i];
-                console.log('tempFiles', tempFiles[i])
                 wx.uploadFile({
                     url: url,
                     filePath: file.tempFilePath,

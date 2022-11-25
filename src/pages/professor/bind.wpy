@@ -1,0 +1,245 @@
+<template>
+    <view class="page-work-unit">
+        <view class="wl-form head-view bg-head wl-padding-page wl-padding-vertical-xl">
+            <view class="form-card">
+                <view class="form-group flex box-border-none files">
+                    <view class="form-label must" style="margin-top: 30rpx;">头像</view>
+                    <view class="form-control file-list flex flex-wrap">
+                        <view class="file-item">
+                            <block wx:if="{{submitData.image&&submitData.image.id}}" wx:key="index">
+                                <view class="relative inline">
+                                    <image mode="aspectFill" class="wl-margin-0" src="{{submitData.image.url}}" @tap="handleAddMedia" />
+                                    <i class="fa fa-times-circle file-del" @tap="handleDelImage"></i>
+                                </view>
+                            </block>
+                            <view wx:else class="file-upload" hover-class='none' @tap="handleAddMedia()">
+                                <view class="box-center fa fa-camera upload-icon"></view>
+                            </view>
+                        </view>
+                    </view>
+                </view>
+                <view class="form-group flex">
+                    <view class="form-label must">专家姓名</view>
+                    <view class="flex flex-ai-center flex-main">
+                        <view class="form-control">
+                            <input type="text" 
+                                    class="flex-main" 
+                                    placeholder="请输入" 
+                                    data-key="name"
+                                    placeholder-class="color-desc"
+                                    @input="inputValue" value="{{submitData.name}}" />
+                        </view>
+                    </view>
+                </view>
+                <view class="form-group flex">
+                    <view class="form-label must">联系电话</view>
+                    <view class="flex flex-ai-center flex-main">
+                        <view class="form-control">
+                            <input type="text" 
+                                   class="flex-main" 
+                                   placeholder="请输入" 
+                                   data-key="phone"
+                                    placeholder-class="color-desc"
+                                   @input="inputValue" value="{{submitData.phone}}" />
+                        </view>
+                    </view>
+                </view>
+                <view class="form-group flex">
+                    <view class="form-label must">服务区域</view>
+                    <view class="flex flex-ai-center flex-main">
+                        <view class="form-control">
+                            <input type="text" 
+                                   class="flex-main" 
+                                   placeholder="请输入" 
+                                   data-key="area"
+                                    placeholder-class="color-desc"
+                                   @input="inputValue" value="{{submitData.area}}" />
+                        </view>
+                    </view>
+                </view>
+                <view class="form-group flex textarea">
+                    <view class="form-label must">专家介绍</view>
+                    <view class="flex flex-ai-center flex-main">
+                        <view class="form-control wl-padding-0">
+                            <textarea
+                                class="flex-main" 
+                                placeholder="请输入" 
+                                data-key="description"
+                                @input="inputValue" 
+                                placeholder-class="color-desc"
+                                value="{{submitData.description}}" />
+                        </view>
+                    </view>
+                </view>
+            </view>
+        </view>
+        <view class="wl-padding-page wl-margin-vertical-xl">
+            <button class="btn btn-submit border-none" hover-class='none' @tap="handleSave"> 提交申请 </button>
+        </view>
+    </view>
+</template>
+<script>
+import wepy from 'wepy'
+import api from '@/utils/api'
+import baseMixin from '@/mixins/base'
+export default class Bind extends wepy.page {
+    config = {
+        navigationBarTitleText: '专家信息',
+    }
+    
+    mixins = [ baseMixin ]
+    
+    components = {}
+
+    data = {
+        submitLoading: false,
+        submitData: {
+            name: '',
+            description: '',
+            image: null,
+            phone: '',
+            area: '',
+            state: 0,
+            author: null
+        }
+    }
+
+    computed = {
+        userInfo() {
+            return this.$parent.globalData.appuser
+        },
+        wxuserInfo() {
+            return this.$parent.globalData.wxuser
+        }
+    }
+    
+    methods = {
+        inputValue(e) {
+            let data = e.currentTarget.dataset
+            let _value = e.detail.value
+            let _key = data.key
+
+            this.submitData[_key] = _value
+            this.$apply()
+        },
+        // 添加图片
+        handleAddMedia() {
+            let vm = this
+            api.uploadMedia({ max: 1, mediaType: ['image'] }, function(res){
+                if(res && res.length > 0) {
+                    let file = res[0]
+                        file.url = api.attachmentPath + file.id
+                    vm.submitData.image = file
+                    vm.$apply()
+                }
+            });
+        },
+        // 删除图片
+        handleDelImage() {
+            let _this = this
+            wx.showModal({
+                title: '删除',
+                content: '您确定要删除该头像吗？',
+                confirmText: '确定',
+                cancelText: '先不了',
+                success: function (res) {
+                    if (res.confirm) {
+                        _this.submitData.image = null;
+                        _this.$apply()
+                    }
+                }
+            })
+        },
+        // 图片预览
+        handlePreview() {
+            this.handlePreviewMedia([this.submitData.image], 0)
+        },
+        handleSave() {
+            if (this.submitLoading) {
+                return
+            }
+            if (!this.submitData.image||!this.submitData.image.id) {
+                api.toast('请上传头像', 'none')
+                return
+            }
+            if (!this.submitData.name) {
+                api.toast('请填写姓名', 'none')
+                return
+            }
+            if (!this.submitData.phone) {
+                api.toast('请填写电话', 'none')
+                return
+            }
+            if (!this.submitData.area) {
+                api.toast('请填写服务区域', 'none')
+                return
+            }
+            if (!this.submitData.description) {
+                api.toast('请填写介绍', 'none')
+                return
+            }
+            let sdata = JSON.parse(JSON.stringify(this.submitData))
+                sdata.state = 0
+            this.submitLoading = true
+            if (sdata.id) {
+                api.$request(['professor_update', sdata.id], sdata, true, false).then(({data}) => {
+                    if (data && data.id) {
+                        api.toast('提交成功', 'success')
+                        this.$parent.globalData.appuser.professor = data
+                        this.$apply()
+                        this.pageBack(true, true)
+                    } else {
+                        api.toast(data.msg, 'none')
+                    }
+                }).finally(() => {
+                    this.submitLoading = false
+                    this.$apply()
+                })
+            } else {
+                api.$request('professor_save', sdata, true, false).then(({data}) => {
+                    if (data && data.id) {
+                        api.$request(['users_update', this.userInfo.id], { professor: data.id }, true, false).then((ret) => {
+                            if (ret.data && ret.data.id) {
+                                api.toast('提交成功', 'success')
+                                this.$parent.globalData.appuser.professor = data
+                                this.$apply()
+                                this.pageBack(true, true)
+                            } else {
+                                api.toast(ret.data.msg, 'none')
+                            }
+                        })
+                    } else {
+                        api.toast(data.msg, 'none')
+                    }
+                }).finally(() => {
+                    this.submitLoading = false
+                    this.$apply()
+                })
+            }
+        }
+    }
+
+    events = {
+    }
+
+    onLoad (params, data) {
+        this.submitData.author = this.userInfo.id
+        if (this.userInfo.professor && this.userInfo.professor.id) {
+            this.submitData = this.userInfo.professor
+            if (this.userInfo.professor.image && this.userInfo.professor.image.id) {
+                let headurl = api.attachmentPath + this.userInfo.professor.image.id
+                this.submitData.image.url = headurl
+            }
+        }
+        this.$apply()
+    }
+    onShow () {
+        
+    }
+    onReady () {
+
+    }
+}
+</script>
+<style lang="css">
+</style>

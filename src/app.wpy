@@ -38,7 +38,8 @@
                 'pages/article/detail',
                 'pages/news/list',
                 'pages/news/detail',
-                'pages/professor/chat'
+                'pages/professor/chat',
+                'pages/professor/bind'
             ],
             window: {
                 backgroundTextStyle: 'light',
