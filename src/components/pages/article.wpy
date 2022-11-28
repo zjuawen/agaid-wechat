@@ -19,7 +19,7 @@
                     <view wx:for="{{queryConfig.list}}" wx:key="index" class="list-item wl-padding-sm box-radius-20 bg-white wl-margin-bottom-sm">
                         <navigator hover-class="none" url="/pages/article/detail?id={{item.id}}">
                             <view class="flex flex-ai-center wl-margin-bottom-lg">
-                                <image wx:if="{{item.author&&item.author.customer&&item.author.customer.avatar}}" class="avatar" src="{{item.author.customer.avatar}}" mode="scaleToFill" />
+                                <image wx:if="{{item.customer&&item.customer.avatar}}" class="avatar" src="{{item.customer.avatar}}" mode="scaleToFill" />
                                 <image wx:else class="avatar" src="/public/img/avatar.png" mode="scaleToFill" />
                                 <view class="flex-main wl-margin-left-sm">
                                     <view class="text-30">{{item.customer?item.customer.nickname:'-'}}</view>

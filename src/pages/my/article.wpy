@@ -1,0 +1,123 @@
+<template>
+    <view class="page-article">
+        <scroll-view scroll-y="true" class="list z-100 bg-tran" @scrolltolower="handleNext">
+            <view wx:if="{{!isEmpty}}" class="list-card wl-margin-bottom-xl">
+                <view class="card-body">
+                    <view wx:for="{{queryConfig.list}}" wx:key="index" class="list-item wl-padding-sm box-radius-20 bg-white wl-margin-top-sm">
+                        <navigator hover-class="none" url="/pages/article/detail?id={{item.id}}">
+                            <view class="flex flex-ai-center wl-margin-bottom-lg">
+                                <image wx:if="{{item.customer&&item.customer.avatar}}" class="avatar" src="{{item.customer.avatar}}" mode="scaleToFill" />
+                                <image wx:else class="avatar" src="/public/img/avatar.png" mode="scaleToFill" />
+                                <view class="flex-main wl-margin-left-sm">
+                                    <view class="text-30">{{item.customer?item.customer.nickname:'-'}}</view>
+                                    <view class="color-gray text-24 wl-margin-top-5">{{item.created_at}}</view>
+                                </view>
+                                <i class="fa fa-angle-right color-gray text-bold text-40"></i>
+                            </view>
+                            <view wx:if="{{item.title}}" class="title text-36 wl-margin-bottom-sm text-ellipsis-2">{{item.title}}</view>
+                            <view wx:if="{{item.description}}" class="description text-30 color-gray wl-margin-bottom-sm text-ellipsis-2">{{item.description}}</view>
+                            <view wx:if="{{(item.images&&item.images.length>0)||(item.videos&&item.videos.length>0)}}" class="list-pics scroll-x ">
+                                <block wx:if="{{item.images&&item.images.length>0}}">
+                                    <image wx:for="{{item.images}}" wx:for-item="file" wx:for-index="fidx" class="list-pics-item sm" src="{{file.url}}"  mode="aspectFill" />
+                                </block>
+                                <block wx:if="{{item.videos&&item.videos.length>0}}">
+                                    <video wx:for="{{item.videos}}" wx:for-item="file" wx:for-index="fidx" controls="{{false}}" show-center-play-btn="{{false}}" class="list-pics-item sm" src="{{file.url}}" />
+                                </block>
+                            </view>
+                            <view wx:if="{{item.type==2&&item.reply_content}}" class="reply wl-padding-sm bg-gray text-30 wl-margin-top-sm box-radius-20">
+                                <text class="text-ellipsis-2">{{item.professor.name}}：<text class="color-gray">{{item.reply_content}}</text></text>
+                            </view>
+                        </navigator>
+                    </view>
+                    <view wx:if="{{queryConfig.finished}}" class="color-gray text-26 text-center wl-padding-top-xl wl-padding-bottom-sm">没有更多了~</view>
+                </view>
+            </view>
+            <view  wx:if="{{isEmpty}}" class="card-body">
+                <view class="empty">
+                    <i class="icon icon-empty"></i>
+                    <view class="wl-margin-top-sm">~还没有信息</view>
+                </view>
+            </view>
+        </scroll-view>
+    </view>
+</template>
+<script>
+import wepy from 'wepy'
+import api from '@/utils/api'
+import baseMixin from '@/mixins/base'
+export default class Article extends wepy.page {
+    config = {
+        navigationBarTitleText: '我的提问'
+    }
+
+    components = {}
+
+    mixins = [ baseMixin ]
+
+    data = {
+        queryParams: {
+            is_delete: false,
+            _sort: 'created_at:DESC'
+        },
+        list: [],
+    }
+
+    computed = {
+        isEmpty() {
+            return (!this.queryConfig.loading&&this.queryConfig.finished&&this.queryConfig.list.length==0)
+        },
+        userInfo() {
+            return this.$parent.globalData.appuser
+        }
+    }
+    
+    methods = {
+        // 下一页
+        handleNext() {
+            if (this.queryConfig.finished) {
+                return
+            }
+            this.handleFetchList(false, false, this.handleListBefore)
+        },
+        // 图片预览
+        handlePreview(item, idx, len) {
+            let medisa = [].concat(item.images).concat(item.videos)
+            this.handlePreviewMedia(medisa, ((+len||0) + idx))
+        },
+    }
+
+    events = {
+    }
+
+    onLoad (params, data) {
+        this.queryConfig.key = 'articles_list'
+        this.init()
+    }
+    onShow () { }
+    onReady () { }
+
+    init(params) {
+        this.queryParams['author'] = wepy.$instance.globalData.appuser.id
+        this.handleFetchList(true, false, this.handleListBefore)
+    }
+
+    handleListBefore(vm, list) {
+        list.forEach(v => {
+            v.created_at = vm.handleDateView(v.created_at)
+            if (v.images && v.images.length > 0) {
+                v.images.forEach(m => {
+                    m.url = api.attachmentPath + m.id
+                })
+            }
+            if (v.videos && v.videos.length > 0) {
+                v.videos.forEach(m => {
+                    m.url = api.attachmentPath + m.id
+                })
+            }
+        })
+        return list
+    }
+}
+</script>
+<style lang="css" scoped>
+</style>

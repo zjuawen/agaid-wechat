@@ -89,6 +89,7 @@ export default class add extends wepy.page {
             description: '',
             images: [],
             videos: [],
+            customer: null,
             professor: null,
             author: null,
             created_by: null
@@ -194,6 +195,7 @@ export default class add extends wepy.page {
                 api.toast('请选择要询问的专家', 'none')
                 return
             }
+            this.submitData.customer = this.wxuserInfo.id
             this.submitLoading = true
             api.$request('articles_save', this.submitData , true, false).then(({data}) => {
                 if (data && data.id) {

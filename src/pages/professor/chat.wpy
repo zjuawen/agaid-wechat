@@ -31,15 +31,19 @@
             </view>
             <view id="message_bottom" class="blank-send"></view>
         </scroll-view>
+        <view wx:if="{{isEmpty}}" class="box-center text-28 color-gray">~还没有消息</view>
         <view class="nav-bar flex flex-ai-center box-shadow {{isIphoneX?'fix-iphonex-bottom':''}} {{isFocus?'wl-padding-bottom-lg':''}}">
             <view class="flex-main flex flex-ai-center wl-padding-page">
                 <view class="relative consult-tab flex flex-ai-center flex-main">
                     <i class="left-icon icon-comment text-32 color-blue"></i>
                     <input type="text"  class="consult-input w-full" confirm-type="send" placeholder="说点什么吧" placeholder-class="search-pholder" value="{{submitData.content}}" @input="handleInput" @focus="handleSetFocus" @blur="handleSetBlur" bindconfirm="handleSend" />
-                    <i wx:if="{{submitData.content!=''}}" class="text-40 clear-icon fa fa-times-circle color-gray" catchtap="handleClear('content')"></i>
+                    <!-- <i wx:if="{{submitData.content!=''}}" class="text-40 clear-icon fa fa-times-circle color-gray" @catchtap="handleClear('content')"></i> -->
                 </view>
-                <view class="nav-bar-item text-center wl-margin-left-xl active" @tap="handleAddMedia">
+                <view wx:if="{{!isFocus||submitData.content==''}}" class="nav-bar-item text-center wl-margin-left-xl active" @tap="handleAddMedia">
                     <i class="fa fa-picture-o text-40 color-green relative bar-icon"></i>
+                </view>
+                <view wx:else class="nav-bar-item text-center wl-margin-left-xl active" @tap="handleSend">
+                    <view class="text-32 btn btn-min btn-send">发送</view>
                 </view>
             </view>
         </view>
@@ -135,6 +139,10 @@ export default class Chat extends wepy.page {
                 current: 0
             })
         },
+        handleClear() {
+            this.submitData.content = ''
+            this.$apply()
+        },
         // 发送消息
         handleSend() {
             this.handleDoSend(0, this.submitData.content)
@@ -175,7 +183,7 @@ export default class Chat extends wepy.page {
                     vm.$apply()
                 },600)
             } else {
-                api.toast(data.msg, 'none')
+
             }
         }).finally(() => {
             this.loading = false
@@ -245,6 +253,7 @@ export default class Chat extends wepy.page {
             api.toast('内容不能为空', 'none')
             return
         }
+        let vm = this
         let sdata = {
             customer: this.wxuserInfo.id,
             professor: this.professorId,
@@ -252,31 +261,35 @@ export default class Chat extends wepy.page {
             user: this.userInfo.id,
             type: _type
         }
-        this.submitLoading = true
+        vm.submitLoading = true
         api.$request('chats_save', sdata , false, false).then(({data}) => {
             if (data && data.id) {
                 data.new = true
                 data.sendType = 2
                 data.animation = null
-                data.created_at = this.handleDateView(data.created_at)
+                data.created_at = vm.handleDateView(data.created_at)
                 // 图片、视频
                 if (data.type == 1 || data.type == 2) {
                     data.content = api.attachmentPath + data.content
                 }
-                this.handleSetTimeSingle(data)
-                this.messages.push(data)
-                this.lastChat = data
+                vm.handleSetTimeSingle(data)
+                vm.messages.push(data)
+                vm.lastChat = data
                 if (_type == 0) {
-                    this.submitData.content = ''
+                    vm.submitData.content = ''
                 }
-                this.$apply()
-                this.pageScrollToBottom(data.id, true);
+                vm.$apply()
+                setTimeout(function(){
+                    vm.pageScrollToBottom(data.id, true);
+                    vm.showScroll = 1
+                    vm.$apply()
+                }, 600)
             } else {
                 api.toast(data.msg, 'none')
             }
         }).finally(() => {
-            this.submitLoading = false
-            this.$apply()
+            vm.submitLoading = false
+            vm.$apply()
         })
     }
     // 滚动到底部

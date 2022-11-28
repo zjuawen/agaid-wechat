@@ -34,6 +34,7 @@
                 'pages/my/history',
                 'pages/my/collect',
                 'pages/my/consult',
+                'pages/my/article',
                 'pages/article/add',
                 'pages/article/detail',
                 'pages/news/list',

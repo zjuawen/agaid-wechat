@@ -25,6 +25,13 @@
                         <i class="fa fa-angle-right color-sub-green text-bold text-40"></i>
                     </view>
                 </navigator>
+                <navigator class="menu-item flex flex-ai-center" hover-class="none" url="/pages/my/article">
+                    <i class="fa fa-file-text-o text-60 color-green wl-margin-right-sm"></i>
+                    <view class="flex-main flex flex-ai-center">
+                        <text class="flex-main text-32 text-sc-medium"> 我的提问</text>
+                        <i class="fa fa-angle-right color-sub-green text-bold text-40"></i>
+                    </view>
+                </navigator>
                 <navigator class="menu-item flex flex-ai-center" hover-class="none" url="/pages/my/collect">
                     <i class="fa fa-star-half-o text-60 color-green wl-margin-right-sm"></i>
                     <view class="flex-main flex flex-ai-center">
