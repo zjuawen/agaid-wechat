@@ -68,7 +68,13 @@ export default class Category extends wepy.component {
     
     methods = {
         handleSetActive(sort, idx) {
+            if (this.activeTab[sort] == idx) {
+                return
+            }
             this.activeTab[sort] = idx
+            if (sort == 0) {
+                this.activeTab[1] = 0
+            }
             this.$apply()
         },
         handleInput (key, e) {
