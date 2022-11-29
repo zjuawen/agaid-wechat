@@ -1,16 +1,36 @@
 <template>
     <view class="page-auth h-full-v flex flex-col bg-white">
-        <view class="text-center">
-            <view class="logo">
-                <image mode="aspectFill" src="/public/img/logo.jpg" />
-                <view class="text-38 color-title text-sc-bold text-center wl-margin-top-xl line-1">助农小程序</view>
+        <block wx:if="{{!loading}}">
+            <view wx:if="{{version>2270}}" class="text-center">
+                <view class="logo" style="margin-bottom: 50rpx;">
+                    <image mode="aspectFill" src="/public/img/logo.jpg" />
+                    <view class="text-38 color-title text-sc-bold text-center wl-margin-top-xl line-1">助农小程序</view>
+                </view>
+                <view class="text-28 color-title text-center wl-margin-bottom-50">申请获取您的信息（昵称，头像）</view>
+                <view class="wl-margin-bottom-50">
+                    <button class="avatar-btn" open-type="chooseAvatar" hover-class='none' bind:chooseavatar="onChooseAvatar">
+                        <image wx:if="{{avatarUrl}}" class="avatar" src="{{avatarUrl}}"></image>
+                        <view wx:else class="add"><i class="box-center fa fa-camera color-gray text-40"></i></view>
+                    </button>
+                    <input type="nickname" class="text-32 color-title wl-margin-top-xl box-border-bottom wl-padding-bottom-sm" placeholder="请输入昵称" value="{{nickname}}" @change="inputValue" />
+                </view>
+                <view class="wl-padding-page">
+                    <button class="w-full btn btn-submit border-none wl-margin-top-xl wl-margin-bottom-50" style="background: #3cb035;" bindtap="handleSave"> 授权 </button>
+                    <view class="text-28 color-blue text-center line-1" @tap="handleBack">暂不授权</view>
+                </view>                
             </view>
-            <view class="text-28 color-title text-center wl-margin-bottom-50">点击授权将获取您的信息（昵称，头像等）</view>
-            <view class="wl-padding-page">
-                <button class="w-full btn btn-submit border-none wl-margin-top-xl wl-margin-bottom-50" style="background: #3cb035;" hover-class='none' open-type="getUserProfile" bindtap="getUserProfile"> 授权 </button>
-                <view class="text-28 color-blue text-center line-1" @tap="handleBack">暂不授权</view>
+            <view wx:else class="text-center">
+                <view class="logo">
+                    <image mode="aspectFill" src="/public/img/logo.jpg" />
+                    <view class="text-38 color-title text-sc-bold text-center wl-margin-top-xl line-1">助农小程序</view>
+                </view>
+                <view class="text-28 color-title text-center wl-margin-bottom-50">点击授权将获取您的信息（昵称，头像等）</view>
+                <view class="wl-padding-page">
+                    <button class="w-full btn btn-submit border-none wl-margin-top-xl wl-margin-bottom-50" style="background: #3cb035;" hover-class='none' open-type="getUserProfile" bindtap="getUserProfile"> 授权 </button>
+                    <view class="text-28 color-blue text-center line-1" @tap="handleBack">暂不授权</view>
+                </view>
             </view>
-        </view>
+        </block>
     </view>
 </template>
 <script>
@@ -29,6 +49,11 @@ export default class Auth extends wepy.component {
     }
 
     data = {
+        loading: true,
+        version: 0,
+        callbackUrl: '',
+        nickname: '',
+        avatarUrl: ''
     }
 
     computed = {
@@ -45,6 +70,39 @@ export default class Auth extends wepy.component {
                     console.log(res)
                     _this.handleUpdate(res.userInfo)
                 }
+            })
+        },
+        inputValue(e) {
+            this.nickname = e.detail.value
+            this.$apply()
+        },
+        onChooseAvatar(e) {
+            const { avatarUrl } = e.detail
+            this.avatarUrl = avatarUrl
+            this.$apply()
+        },
+        handleSave() {
+            let vm = this
+            if (!vm.avatarUrl) {
+                api.toast('请上传头像', 'none')
+                return
+            }
+            if (!vm.nickname) {
+                api.toast('请输入昵称', 'none')
+                return
+            }
+            api.uploadPicture(vm.avatarUrl, (file) => {
+                let info = {
+                    nickName: vm.nickname,
+                    avatarUrl: '/attachment/' + file.id,
+                    gender: 0,
+                    province: '',
+                    city: '',
+                    country: '',
+                    language: ''
+                }
+                console.log(info)
+                vm.handleUpdate(info)
             })
         },
         handleBack() {
@@ -73,8 +131,21 @@ export default class Auth extends wepy.component {
     }
 
     onLoad (params, data) {
+        let vm = this
+        vm.callbackUrl = wx.getStorageSync('bind-navigate')
+        wx.getSystemInfo({
+            success: function (res) {
+                let _version = res.SDKVersion;
+                    _version = _version.replace(/\./g, "")
+                vm.version = _version
+                vm.loading = false
+                vm.$apply()
+            }
+        })
     }
     onShow () {
+        this.loading = true
+        this.$apply()
     }
     onReady () {
     }

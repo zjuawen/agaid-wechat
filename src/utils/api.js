@@ -397,6 +397,46 @@ const uploadMedia = (config, callback) => {
         }
     });
 }
+const uploadPicture = (tempFilePath, callback) => {
+  var _url = getUrl('upload');
+  if (!_url) {
+      return null
+  }
+  var url = _url[0];
+  var up_path = 'customer/' + getUploadDate()
+  var _header = {
+      'content-type': 'multipart/form-data',
+      'Authorization': 'Bearer ' + wx.getStorageSync('agaid-weapp-token')
+  };
+  wx.showToast({
+      title: '正在上传...',
+      icon: 'loading',
+      mask: true,
+      duration: 10000
+  })
+  wx.uploadFile({
+    url: url,
+    filePath: tempFilePath,
+    name: 'files',
+    header: _header,
+    formData: { fileInfo: JSON.stringify({alternativeText: 'wechat', caption: 'wechat'}), path: up_path},
+    success: function (ret) {
+        var data = JSON.parse(ret.data);
+        let media = data[0]
+        wx.hideToast();
+        typeof callback == "function" && callback(media)
+    },
+    fail: function (res) {
+        wx.hideToast();
+        wx.showModal({
+            title: '出错了~',
+            content: '上传失败',
+            showCancel: false,
+            success: function (res) { }
+        })
+    }
+});
+}
 // 上传封面图
 const uploadMediaCover = (_mediaList, coverFiles, callback) => {
     var uploadCount = 0;
@@ -455,6 +495,8 @@ module.exports = {
   getUrl: getUrl,
   toast: toast,
   msgModal: msgModal,
+  urlPrefixRemote: urlPrefixRemote,
   attachmentPath: attachmentPath,
-  uploadMedia: uploadMedia
+  uploadMedia: uploadMedia,
+  uploadPicture: uploadPicture
 }

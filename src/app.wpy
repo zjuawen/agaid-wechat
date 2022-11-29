@@ -127,6 +127,9 @@
                     }
                     if (data.user) {
                         _this.globalData.appuser = data.user
+                        // if (data.user.customer && data.user.customer.avatar && data.user.customer.avatar.indexOf('/attachment/') == 0) {
+                        //     data.user.customer.avatar = api.urlPrefixRemote + data.user.customer.avatar
+                        // }
                         _this.globalData.wxuser = data.user.customer||null
                         _this.globalData.collects = data.collects || []
                         _this.globalData.config = data.config || null
