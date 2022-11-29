@@ -85,7 +85,7 @@ export default class Category extends wepy.component {
             this.$parent.$navigate('/pages/news/list', { category: item.id })
         },
         handleToSearch() {
-            this.$parent.$navigate('/pages/search/index', { type: 0 })
+            this.$parent.$navigate('/pages/search/index', { type: 1 })
         }
     }
 
