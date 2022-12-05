@@ -106,7 +106,7 @@ export default class baseMixin extends wepy.mixin {
                     }
                 })
                 this.queryConfig.list = this.queryConfig.list.concat(data)
-                if (data.length <= this.queryConfig.base.limit) {
+                if (data.length < this.queryConfig.base.limit) {
                     this.queryConfig.finished = true
                 }
                 if (beforeFnc) {

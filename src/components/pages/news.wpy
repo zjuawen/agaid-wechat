@@ -33,10 +33,10 @@
                         <view class="info wl-padding-xs box-shadow">
                             <view class="title text-ellipsis text-26 text-bold">{{item.title}}</view>
                             <view class="author flex flex-ai-end">
-                                <view class="flex-main flex flex-ai-center">
+                                <view class="flex-main flex flex-ai-center text-ellipsis">
                                     <image wx:if="{{item.author&&item.author.customer&&item.author.customer.avatar}}" class="avatar" src="{{item.author.customer.avatar}}" mode="scaleToFill" />
                                     <image wx:else class="avatar" src="/public/img/avatar.png" mode="scaleToFill" />
-                                    <view class="text-20 flex-main wl-margin-left-xs">{{item.author.username}}</view>
+                                    <view class="text-20 flex-main wl-margin-left-xs text-ellipsis wl-margin-right-sm">{{item.author.username}}</view>
                                 </view>
                                 <view  class="text-28 {{item.thumbsup?'color-green':'color-gray'}}" catchtap="handleCollect(4, {{item}}, {{index}})"><i class="icon-thumbs-up text-36"></i> {{item.up_count||0}}</view>
                             </view>
@@ -72,9 +72,7 @@ export default class News extends wepy.component {
         currentIndex: 1, // 轮播图指针
         carousel: [],
         collectList: [],
-        queryParams: {
-            title_contains: ''
-        }
+        queryParams: {}
     }
 
     computed = {
