@@ -11,8 +11,8 @@
                 <view class="card-body flex flex-flow flex-jc-between">
                     <view wx:for="{{queryConfig.list}}" wx:key="index" class="list-item w-full box-radius-20 wl-margin-bottom-lg flow-hide bg-white">
                         <view class="live" @tap="handleToDetail({{item}})">
-                            <image wx:if="{{item.type==1}}" class="thumb w-full h-300" src="{{item.image.url}}" mode="aspectFill" />
-                            <video wx:elif="{{item.type==2}}" class="video w-full h-300" src="{{item.video.url}}" controls="{{false}}" show-center-play-btn="{{false}}" />
+                            <image wx:if="{{item.image&&item.image.url}}" class="thumb w-full h-300" src="{{item.image.url}}" mode="aspectFill" />
+                            <view wx:else class="thumb relative"><i class="icon-news box-center text-80 color-desc"></i></view>
                         </view>
                         <view class="info wl-padding-vertical-sm wl-padding-horizontal-lg box-shadow">
                             <view class="title text-ellipsis text-26 text-bold wl-margin-bottom-sm">{{item.title}}</view>
@@ -30,6 +30,7 @@
                         </view>
                     </view>
                 </view>
+                <view wx:if="{{queryConfig.loading}}" class="color-gray text-26 text-center wl-padding-top-xl wl-padding-bottom-sm">加载中...</view>
                 <view wx:if="{{queryConfig.finished}}" class="color-gray text-26 text-center wl-padding-top-xl wl-padding-bottom-sm">没有更多了~</view>
             </view>
             <view  wx:if="{{isEmpty}}" class="card-body">

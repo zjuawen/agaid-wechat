@@ -82,6 +82,9 @@ export default class baseMixin extends wepy.mixin {
 
     // 获取列表
     handleFetchList (reload, callback, beforeFnc) {
+        if (this.queryConfig.loading) {
+            return
+        }
         this.queryConfig.loading = true
         if (reload) {
             this.queryConfig.base.page = 1

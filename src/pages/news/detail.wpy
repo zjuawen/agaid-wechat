@@ -19,7 +19,7 @@
                 <rich-text class="text-30 color-title sc-regular line-40" nodes="{{info.content}}"></rich-text>
             </view>
             <view wx:if="{{info.type==2}}" class="live wl-padding-sm bg-white">
-                <video class="video w-full box-radius-20" src="{{info.video.url}}" />
+                <video class="video w-full box-radius-20" autoplay="{{true}}" custom-cache="{{false}}" controls="{{true}}" show-center-play-btn="{{true}}" src="{{info.video.url}}" />
             </view>
             <view class="flex flex-ai-center flex-jc-center wl-padding-page wl-margin-top-lg">
                 <view class="nav-bar-item text-center {{info.isCollect?'active':''}}" @tap="handleCollect(5)">
