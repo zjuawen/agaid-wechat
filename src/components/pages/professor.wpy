@@ -5,7 +5,7 @@
                 <i class="left-icon fa fa-search text-32 color-blue"></i>
                 <input class="search-input" type="text" disabled placeholder="搜索" placeholder-class="search-pholder" />
             </view>
-            <view class="btn btn-search wl-margin-left-xs"><i class="icon-filter icon"></i> 筛选</view>
+            <!-- <view class="btn btn-search wl-margin-left-xs"><i class="icon-filter icon"></i> 筛选</view> -->
         </view>
         <van-tabs v-model="activeTab" class="text-32 inline-tabs wl-margin-bottom-sm" tab-class="inline" line-width="30" line-height="3" color="#1F8C48" title-active-color="#1F8C48" title-inactive-color="#949494" @change="handleChangeTab">
             <van-tab title="热门专家"></van-tab>
