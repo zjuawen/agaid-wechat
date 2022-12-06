@@ -15,7 +15,7 @@
                 <view class="category-head-item-text">{{item.name}}</view>
             </view>
         </view>
-        <view class="flex flex-main flow-hide">
+        <view class="flex flex-main flow-hide fix-iphonex-bottom">
             <view class="category-left">
                 <view wx:for="{{ctrees[activeTab[0]].children}}" class="category-left-item {{index==activeTab[1]?'active':''}}" @tap="handleSetActive(1, {{index}})">
                     <view class="box-center text-center w-full">

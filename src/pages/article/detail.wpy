@@ -1,5 +1,5 @@
 <template>
-    <view class="page-task-driver">
+    <view class="page-task-driver fix-iphonex-bottom">
         <view class="relative list z-100 bg-tran wl-padding-top-sm">
             <view class="list-item wl-padding-sm box-radius-20 bg-white wl-margin-bottom-sm">
                 <view class="flex flex-ai-center wl-margin-bottom-lg">
@@ -50,7 +50,7 @@
                 <view class="wl-padding-page wl-padding-top-sm wl-padding-bottom-lg text-34 color-title text-left"><text class="box-border-title wl-padding-bottom-xs">评论</text></view>
                 <Consult />
             </view>
-            <view wx:if="{{!isReply}}" class="nav-bar flex flex-ai-center {{isIphoneX?'fix-iphonex-bottom':''}}">
+            <view wx:if="{{!isReply}}" class="nav-bar flex flex-ai-center fix-iphonex-bottom">
                 <view class="flex-main flex flex-ai-center wl-padding-page">
                     <view class="relative consult-tab flex flex-ai-center flex-main">
                         <i class="left-icon icon-comment text-32 color-blue"></i>

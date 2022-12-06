@@ -32,7 +32,7 @@
             <view id="message_bottom" class="blank-send"></view>
         </scroll-view>
         <view wx:if="{{isEmpty}}" class="box-center text-28 color-gray">~还没有消息</view>
-        <view class="nav-bar flex flex-ai-center box-shadow {{isIphoneX?'fix-iphonex-bottom':''}} {{isFocus?'wl-padding-bottom-lg':''}}">
+        <view class="nav-bar flex flex-ai-center box-shadow fix-iphonex-bottom {{isFocus?'wl-padding-bottom-lg':''}}">
             <view class="flex-main flex flex-ai-center wl-padding-page">
                 <view class="relative consult-tab flex flex-ai-center flex-main">
                     <i class="left-icon icon-comment text-32 color-blue"></i>

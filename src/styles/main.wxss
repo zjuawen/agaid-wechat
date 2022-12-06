@@ -4,7 +4,10 @@
 /* +-------------------------------------
  | Common
  +------------------------------------- */
-page { height: 100%;font-size: 16rpx;font-family: '\5FAE\8F6F\96C5\9ED1', arial;background-color: #f0eff5;}
+page { 
+	height: 100%;font-size: 16rpx;font-family: '\5FAE\8F6F\96C5\9ED1', arial;background-color: #f0eff5;
+
+}
 view, text { font-family: PingFang-SC-Medium;}
 view.tag { font-family: PingFang-SC-Regular;}
 
@@ -19,7 +22,9 @@ view.tag { font-family: PingFang-SC-Regular;}
 input::-webkit-input-placeholder, textarea::-webkit-input-placeholder { color: #999;}
 
 .fix-iphonex-bottom{
-  padding-bottom: 34px;
+  /*padding-bottom: 34px;*/
+  	padding-bottom: constant(safe-area-inset-bottom);
+	padding-bottom: env(safe-area-inset-bottom);
 }
 
 /* +-------------------------------------

@@ -73,7 +73,7 @@
                 </view>
             </view>
         </view>
-        <view class="wl-padding-page wl-margin-vertical-xl">
+        <view class="wl-padding-page wl-margin-vertical-xl fix-iphonex-bottom">
             <button class="btn btn-submit border-none" hover-class='none' @tap="handleSave"> 提交申请 </button>
         </view>
     </view>

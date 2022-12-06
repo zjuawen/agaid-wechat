@@ -1,6 +1,6 @@
 <template>
     <view class="page-article flex flex-col flow-hide">
-        <van-tabs v-model="activeTab" class="text-32 inline-tabs wl-margin-bottom-sm" tab-class="inline" line-width="30" line-height="3" color="#1F8C48" title-active-color="#1F8C48" title-inactive-color="#949494" @change="handleChangeTab">
+        <van-tabs v-model="activeTab" class="text-32 inline-tabs wl-margin-bottom-sm fix-iphonex-bottom" tab-class="inline" line-width="30" line-height="3" color="#1F8C48" title-active-color="#1F8C48" title-inactive-color="#949494" @change="handleChangeTab">
             <van-tab title="待回复"></van-tab>
             <van-tab title="已回复"></van-tab>
         </van-tabs>

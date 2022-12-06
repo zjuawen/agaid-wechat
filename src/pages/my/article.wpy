@@ -1,6 +1,6 @@
 <template>
     <view class="page-article">
-        <scroll-view scroll-y="true" class="list z-100 bg-tran" @scrolltolower="handleNext">
+        <scroll-view scroll-y="true" class="list z-100 bg-tran fix-iphonex-bottom" @scrolltolower="handleNext">
             <view wx:if="{{!isEmpty}}" class="list-card wl-margin-bottom-xl">
                 <view class="card-body">
                     <view wx:for="{{queryConfig.list}}" wx:key="index" class="list-item wl-padding-sm box-radius-20 bg-white wl-margin-top-sm">

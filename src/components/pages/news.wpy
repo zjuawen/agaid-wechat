@@ -6,7 +6,7 @@
                 <input class="search-input" type="text" disabled placeholder="搜索" placeholder-class="search-pholder" />
             </view>
         </view>
-        <scroll-view scroll-y="true" class="flex-main flow-y-auto list z-100 bg-tran" @scrolltolower="handleNext">
+        <scroll-view scroll-y="true" class="flex-main flow-y-auto list z-100 bg-tran fix-iphonex-bottom" @scrolltolower="handleNext">
             <view class="wl-padding-horizontal-lg wl-margin-bottom-lg">
                 <swiper 
                     wx:if="{{carousel&&carousel.length>0}}"

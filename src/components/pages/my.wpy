@@ -16,7 +16,7 @@
 
             </view>
         </view>
-        <view class="wl-padding-page z-500 relative">
+        <view class="wl-padding-page z-500 relative fix-iphonex-bottom">
             <view class="menu-nav flow-hide">
                 <navigator class="menu-item flex flex-ai-center" hover-class="none" url="/pages/my/history">
                     <i class="fa fa-file-text-o text-60 color-green wl-margin-right-sm"></i>

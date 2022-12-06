@@ -13,7 +13,7 @@
                 <News wx:if="{{navCode=='News'}}" />
                 <Professor wx:if="{{navCode=='Professor'}}" />
                 <My wx:if="{{navCode=='My'}}" />
-                <view wx:if="{{showNav}}" class="nav-bar flex flex-ai-center {{isIphoneX?'fix-iphonex-bottom':''}}">
+                <view wx:if="{{showNav}}" class="nav-bar flex flex-ai-center fix-iphonex-bottom">
                     <view 
                         wx:for="{{navItems}}" wx:key="index" 
                         class="nav-bar-item flex-main text-center {{navActive==index?'active':''}}" 

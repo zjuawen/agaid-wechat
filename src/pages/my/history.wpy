@@ -1,6 +1,6 @@
 <template>
     <view class="page-my-history relative bg-body">
-        <view class="relative wl-margin-top-lg list z-100 bg-tran">
+        <view class="relative wl-margin-top-lg list z-100 bg-tran fix-iphonex-bottom">
             <view wx:if="{{!loading&&history&&history.length>0}}" class="list-card bg-white wl-margin-bottom-sm wl-padding-top-0">
                 <view class="card-body wl-padding-bottom-lg">
                     <view wx:for="{{history}}" wx:key="index" class="flex flex-ai-start list-item" @tap="handleToDetail({{item}})">

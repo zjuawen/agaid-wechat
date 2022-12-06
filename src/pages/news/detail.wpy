@@ -1,5 +1,5 @@
 <template>
-    <view class="page-task-driver">
+    <view class="page-task-driver fix-iphonex-bottom">
         <view class="relative list z-100 bg-tran">
             <view class="list-item bg-white wl-padding-sm wl-margin-bottom-sm">
                 <view class="title text-36 text-center wl-margin-bottom-sm">{{info.title}}</view>

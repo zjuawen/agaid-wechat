@@ -1,5 +1,5 @@
 <template>
-    <view class="page-article-add">
+    <view class="page-article-add fix-iphonex-bottom">
         <view class="wl-form head-view bg-head wl-padding-page wl-padding-vertical-xl">
             <view class="form-card wl-padding-sm">
                 <!-- <view class="form-group flex">

@@ -1,6 +1,6 @@
 <template>
     <view class="page-work-unit">
-        <view class="wl-form head-view bg-head wl-padding-page wl-padding-vertical-xl">
+        <view class="wl-form head-view bg-head wl-padding-page wl-padding-vertical-xl fix-iphonex-bottom">
             <view class="text-center wl-padding-vertical-xl">
                 <image wx:if="{{submitData.avatar}}" class="icon-158 circle" src="{{submitData.avatar}}" mode="scaleToFill" />
                 <image wx:else class="icon-158 circle" src="/public/img/avatar.png" mode="scaleToFill" />

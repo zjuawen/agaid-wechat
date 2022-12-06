@@ -11,7 +11,7 @@
             <van-tab title="热门专家"></van-tab>
             <van-tab title="关注专家"></van-tab>
         </van-tabs>
-        <scroll-view scroll-y="true" class="flex-main flow-y-auto list z-100 bg-tran" @scrolltolower="handleNext">
+        <scroll-view scroll-y="true" class="flex-main flow-y-auto list z-100 bg-tran fix-iphonex-bottom" @scrolltolower="handleNext">
             <view wx:if="{{!isEmpty}}" class="list-card wl-margin-bottom-xl">
                 <view class="card-body">
                     <view wx:for="{{queryConfig.list}}" wx:key="index" class="list-item wl-padding-sm box-radius-20 bg-white wl-margin-bottom-sm">
