@@ -1,0 +1,730 @@
+<template>
+    <view class="page bg-white">
+        <view wx:if="{{!loadFail}}" class="w-full text-32 wl-form">
+            <block wx:for="{{ questions }}" wx:for-item="group" wx:for-index="groupIndex" wx:key="groupIndex">
+                <view class="wl-padding-bottom-xl">
+                    <view wx:if="{{ group.title }}" class="box-border-bottom wl-padding-sm">
+                        <text class="fa fa-th-large wl-margin-right-sm"></text><text class="bold">{{group.title}}</text>
+                    </view>
+                    <repeat for="{{group.items}}" key="index" index="index" item="item">
+                        <formview
+                            :disabled="disabled"
+                            :question.sync="item" 
+                            :sort.sync="index+1" 
+                            :node="[groupIndex, index, -1, -1]"
+                            level="1" 
+                            @formChange.user="handleFormChange"
+                            @formInputChange.user="inputValue"
+                            @formSortChange.user="handleFormSort"
+                            @dragStart.user="handleDragStart"
+                            @dragMove.user="handleDragMove"
+                            @dragEnd.user="handleDragEnd" />
+                        <view wx:if="{{ item.hasChildren && item.showChildren }}" class="wl-padding-left-sm">
+                            <repeat  for="{{item.children}}" key="secondIndex" index="secondIndex" item="second">
+                                <block wx:if="{{!item.childCode||(item.childCode&&item.childCode==second.code)}}">
+                                    <formview2
+                                        :disabled="disabled"
+                                        :question.sync="second" 
+                                        :node="[groupIndex, index, secondIndex, -1]"
+                                        level="2" 
+                                        @formChange.user="handleFormChange"
+                                        @formInputChange.user="inputValue"
+                                        @formSortChange.user="handleFormSort"
+                                        @dragStart.user="handleDragStart"
+                                        @dragMove.user="handleDragMove"
+                                        @dragEnd.user="handleDragEnd" />
+                                    <view wx:if="{{ second.hasChildren && second.showChildren }}" class="wl-padding-left-sm">
+                                    <repeat for="{{second.children}}" key="threeIndex" index="threeIndex" item="three">
+                                        <formview3 
+                                        :disabled="disabled"
+                                            :question.sync="three" 
+                                            :sort.sync="threeIndex+1" 
+                                            :node="[groupIndex, index, secondIndex, threeIndex]"
+                                            level="3"
+                                            @formChange.user="handleFormChange"
+                                            @formInputChange.user="inputValue"
+                                            @formSortChange.user="handleFormSort"
+                                            @dragStart.user="handleDragStart"
+                                            @dragMove.user="handleDragMove"
+                                            @dragEnd.user="handleDragEnd" />
+                                        <repeat wx:if="{{ three.hasChildren && three.showChildren }}" for="{{three.children}}" key="fourIndex" index="fourIndex" item="four">
+                                            <formview4 
+                                                :disabled="disabled"
+                                                :question.sync="four" 
+                                                :node="[groupIndex, index, secondIndex, threeIndex, fourIndex]"
+                                                level="4"
+                                                @formChange.user="handleFormChange"
+                                                @formInputChange.user="inputValue"
+                                                @formSortChange.user="handleFormSort"
+                                                @dragStart.user="handleDragStart"
+                                                @dragMove.user="handleDragMove"
+                                                @dragEnd.user="handleDragEnd" />
+                                        </repeat>
+                                    </repeat>
+                                    </view>
+                                </block>
+                            </repeat>
+                        </view>
+                    </repeat>
+                </view>
+                <view class="blank-20 bg-body"></view>
+            </block>
+
+        
+            <view class="kelong form-control wl-padding-left-xl lh-60" hidden='{{!showkelong}}' style='position: fixed;top:{{kelong.top}}px'>
+                {{kelong.name}}
+            </view>
+            <view class="blank-32"></view>
+            <view wx:if="{{!disabled&&questions&&questions.length>0}}" class="wl-padding-page">
+                <button class="btn btn-submit border-none" hover-class='none' bindtap="handleSubscribeMessage"> 保存 </button>
+            </view>
+            <view class="blank-32"></view>
+        </view>
+        <view wx:else class="box-center error-view">
+            <image class="icon-error" mode="aspectFit"  src="../../public/img/error-view/error.png" />
+            <view class="text-center color-gray text-32 wl-margin-top-sm">{{loadFailMsg}}</view>
+            <button style="width: 80%;" class="btn btn-submit border-none wl-margin-top-sm" hover-class='none' bindtap="handleFetchSurvey"> 
+                刷新
+            </button>
+        </view>
+    </view>
+</template>
+<script>
+import wepy from 'wepy'
+import api from '@/utils/api'
+import baseMixin from '@/mixins/base'
+import { qsdata } from '@/data/signItem.js'
+import FormView from '@/components/formview'
+
+export default class Sign extends wepy.page {
+    config = {
+        navigationBarTitleText: '报名信息'
+    }
+
+    mixins = [ baseMixin ]
+    components = {
+        formview: FormView,
+        formview2: FormView,
+        formview3: FormView,
+        formview4: FormView
+    }
+    data = {
+        loading: true,
+        newsId: null,
+        user: null,
+        survey: null,
+        patient: null,
+        userType: null,
+        disabled: false,
+        loadFail: false,
+        loadFailMsg: '',
+        errMsg: '',
+        errRow: {},
+        questions: [],
+        utype: null,
+        step: null,
+        showkelong: false,
+        kelong: {
+            top: 0,
+        },
+        replace: {},
+    }
+
+    computed = {
+        userInfo() {
+            return this.$parent.globalData.appuser
+        },
+        wxuserInfo() {
+            return this.$parent.globalData.wxuser
+        }
+    }
+
+    methods = {
+        handleFormChange(e) {
+            try{
+                let ret = e.currentTarget.dataset
+                let level = ret.level
+                let node = ret.node
+                let subOptions = ret.sub
+                let item = {}
+                let option = {}
+                let key = ''
+                if (level == 1) {
+                    item = this.questions[node[0]].items[node[1]]
+                    option = this.questions[node[0]].items[node[1]].options[e.detail.value]
+                    key = 'questions['+node[0]+'].items['+node[1]+']'
+                } else if (level == 2) {
+                    item = this.questions[node[0]].items[node[1]].children[node[2]]
+                    option = this.questions[node[0]].items[node[1]].children[node[2]].options[e.detail.value]
+                    key = 'questions['+node[0]+'].items['+node[1]+'].children['+node[2]+']'
+                } else if (level == 3) {
+                    item = this.questions[node[0]].items[node[1]].children[node[2]].children[node[3]]
+                    option = this.questions[node[0]].items[node[1]].children[node[2]].children[node[3]].options[e.detail.value]
+                    key = 'questions['+node[0]+'].items['+node[1]+'].children['+node[2]+'].children['+node[3]+']'
+                } else if (level == 4) {
+                    item = this.questions[node[0]].items[node[1]].children[node[2]].children[node[3]].children[node[4]]
+                    option = this.questions[node[0]].items[node[1]].children[node[2]].children[node[3]].children[node[4]].options[e.detail.value]
+                    key = 'questions['+node[0]+'].items['+node[1]+'].children['+node[2]+'].children['+node[3]+'].children['+node[4]+']'
+                }
+                let type = item.type
+                if (subOptions) {
+                    type = item.subOptionsType
+                }
+                if (item.max && item.max > 0 && item.value.length >= item.max && !option.checked) {
+                    return
+                }
+                if (type == 'radio') {
+                    this.handleRadioChange(key, item, option, e.detail.value, subOptions, node)
+                } else if (type == 'checkbox') {
+                    this.handleCheckboxChange(key, item, option, e.detail.value, subOptions, node)
+                }
+                this.$apply()
+            } catch(e) {
+                api.toast(e.message, 'none')
+            }
+        },
+        inputValue(key, e) {
+            this.setData({
+                [key]: e.detail.value
+            })
+            this.handeCheckForm(false)
+        },
+        handleFormSort(e) {
+            let ret = e.currentTarget.dataset
+            let level = ret.level
+            let node = ret.node
+            let optIdx = ret.oid
+            let item = {}
+            let key = ''
+            if (optIdx == 0) {
+                return
+            }
+            if (level == 1) {
+                item = this.questions[node[0]].items[node[1]]
+                key = 'questions['+node[0]+'].items['+node[1]+']'
+            } else if (level == 2) {
+                item = this.questions[node[0]].items[node[1]].children[node[2]]
+                key = 'questions['+node[0]+'].items['+node[1]+'].children['+node[2]+']'
+            } else if (level == 3) {
+                item = this.questions[node[0]].items[node[1]].children[node[2]].children[node[3]]
+                key = 'questions['+node[0]+'].items['+node[1]+'].children['+node[2]+'].children['+node[3]+']'
+            } else if (level == 4) {
+                item = this.questions[node[0]].items[node[1]].children[node[2]].children[node[3]].children[node[4]]
+                key = 'questions['+node[0]+'].items['+node[1]+'].children['+node[2]+'].children['+node[3]+'].children['+node[4]+']'
+            }
+            let options = JSON.parse(JSON.stringify(item.options))
+            let values = []
+            options[optIdx] = item.options[optIdx-1]
+            options[optIdx-1] = item.options[optIdx]
+            options.forEach((v, idx) => {
+                if (v.checked === true) {
+                    values.push(idx)
+                }
+            })
+            this.setData({
+                [key + '.options']: options,
+                [key + '.value']: values
+            })
+        },
+        handleSubscribeMessage() {            
+            let isErr = this.handeCheckForm(true)
+            if (isErr) {
+                return
+            }
+            let _this = this
+            _this.handleSave()
+            // wx.requestSubscribeMessage({
+            //     tmplIds: ['sxyAVT74dpwVSqtEulr6PZQ8T2Sjnk_LAO5mKvl-fYs', 'CDEM4mlVcMS5reZSXiMo2h5620AyaYCvtbZHZo7ONLg', 'YZ0WmK0R96kwHglv7pCcpBWcR9ZZ3YbEEgDRDLgrLik'],
+            //     success: (ret) => { 
+                    
+            //     },
+            //     complete: (ret) => {
+            //         _this.handleSave()
+            //     }
+            // })
+            _this.$apply()
+        },
+        handleDragStart(e) {
+            let ret = e.currentTarget.dataset
+            let level = ret.level
+            let node = ret.node
+            let optIdx = ret.oid
+            let item = {}
+            let key = ''
+
+            if (level == 1) {
+                item = this.questions[node[0]].items[node[1]]
+                key = 'questions['+node[0]+'].items['+node[1]+']'
+            } else if (level == 2) {
+                item = this.questions[node[0]].items[node[1]].children[node[2]]
+                key = 'questions['+node[0]+'].items['+node[1]+'].children['+node[2]+']'
+            } else if (level == 3) {
+                item = this.questions[node[0]].items[node[1]].children[node[2]].children[node[3]]
+                key = 'questions['+node[0]+'].items['+node[1]+'].children['+node[2]+'].children['+node[3]+']'
+            } else if (level == 4) {
+                item = this.questions[node[0]].items[node[1]].children[node[2]].children[node[3]].children[node[4]]
+                key = 'questions['+node[0]+'].items['+node[1]+'].children['+node[2]+'].children['+node[3]+'].children['+node[4]+']'
+            }
+            let options = JSON.parse(JSON.stringify(item.options))
+
+            var that = this
+            var kelong = this.kelong
+            var code = item.code
+
+            kelong.name = options[optIdx].name
+            kelong.value = options[optIdx].value
+            var query = wx.createSelectorQuery();
+            //选择id
+            query.select('#'+code).boundingClientRect(function(rect) {
+                kelong.top = e.changedTouches[0].clientY - 20
+                that.showkelong = true
+                that.kelong = kelong
+                that.$apply()
+            }).exec();
+        },
+        handleDragMove(e) {
+            let ret = e.currentTarget.dataset
+            let level = ret.level
+            let node = ret.node
+            let optIdx = ret.oid
+            let item = {}
+            let key = ''
+
+            if (level == 1) {
+                item = this.questions[node[0]].items[node[1]]
+                key = 'questions['+node[0]+'].items['+node[1]+']'
+            } else if (level == 2) {
+                item = this.questions[node[0]].items[node[1]].children[node[2]]
+                key = 'questions['+node[0]+'].items['+node[1]+'].children['+node[2]+']'
+            } else if (level == 3) {
+                item = this.questions[node[0]].items[node[1]].children[node[2]].children[node[3]]
+                key = 'questions['+node[0]+'].items['+node[1]+'].children['+node[2]+'].children['+node[3]+']'
+            } else if (level == 4) {
+                item = this.questions[node[0]].items[node[1]].children[node[2]].children[node[3]].children[node[4]]
+                key = 'questions['+node[0]+'].items['+node[1]+'].children['+node[2]+'].children['+node[3]+'].children['+node[4]+']'
+            }
+            let options = JSON.parse(JSON.stringify(item.options))
+
+            var that = this
+            var kelong = this.kelong
+            var code = item.code
+
+            kelong.name = options[optIdx].name
+            kelong.value = options[optIdx].value
+            var listnum = options.length
+            var optionList = options
+
+            var query = wx.createSelectorQuery();
+            query.select('#'+code).boundingClientRect(function(rect) {
+                if (e.changedTouches[0].clientY > 0) {
+                    kelong.top = e.changedTouches[0].clientY - 20
+                    if (kelong.top < rect.top + 30) {
+                        kelong.top = rect.top + 30
+                    } else if (kelong.top > rect.top + rect.height - 30) {
+                        kelong.top = rect.top + rect.height - 30
+                    }
+                    that.kelong = kelong
+                    that.$apply()
+                }
+                
+            }).exec();
+        },
+        handleDragEnd(e) {
+            let ret = e.currentTarget.dataset
+            let level = ret.level
+            let node = ret.node
+            let optIdx = ret.oid
+            let item = {}
+            let key = ''
+
+            if (level == 1) {
+                item = this.questions[node[0]].items[node[1]]
+                key = 'questions['+node[0]+'].items['+node[1]+']'
+            } else if (level == 2) {
+                item = this.questions[node[0]].items[node[1]].children[node[2]]
+                key = 'questions['+node[0]+'].items['+node[1]+'].children['+node[2]+']'
+            } else if (level == 3) {
+                item = this.questions[node[0]].items[node[1]].children[node[2]].children[node[3]]
+                key = 'questions['+node[0]+'].items['+node[1]+'].children['+node[2]+'].children['+node[3]+']'
+            } else if (level == 4) {
+                item = this.questions[node[0]].items[node[1]].children[node[2]].children[node[3]].children[node[4]]
+                key = 'questions['+node[0]+'].items['+node[1]+'].children['+node[2]+'].children['+node[3]+'].children['+node[4]+']'
+            }
+            key += '.options'
+            let options = JSON.parse(JSON.stringify(item.options))
+
+            var that = this
+            var kelong = this.kelong
+            var code = item.code
+            var listnum = options.length
+            var optionList = options
+
+            var query = wx.createSelectorQuery();
+            query.select('#'+code).boundingClientRect(function (rect) {
+                if (kelong.top < rect.top || !that.showkelong) {
+                    return
+                }
+                query.select('#'+code+'_title').boundingClientRect(function (ret) {
+                    if (!that.showkelong) {
+                        return
+                    }
+                    let titleH = ret.height
+                    kelong.top = e.changedTouches[0].clientY - (rect.top + titleH)
+                    var target = parseInt(kelong.top / 40)
+                    var replace = that.data.replace
+                    target = (target <= 0) ? 0 : target
+                    target = (target > (listnum - 1)) ? (listnum - 1) : target
+                    if (target >= 0) {
+
+                        replace = JSON.parse(JSON.stringify(optionList[optIdx]))
+                        optionList.splice(optIdx, 1)
+                        optionList.splice(target, 0, replace)
+                        that.setData({
+                            [key]: optionList
+                        })
+                        // console.log('end', that.showkelong, target, replace, optionList)
+                        // optionList[target] = optionList[optIdx]
+                        // optionList[optIdx] = replace
+                    }
+                    that.showkelong = false
+                    that.$apply()
+                }).exec();
+                
+            }).exec();
+        }
+    }
+
+    events = {
+    }
+
+    onLoad (params, data) {
+        this.user = this.$parent.globalData.appuser
+        this.newsId = params.id
+        this.handleFetchSurvey()
+        this.$apply()
+    }
+    onShow () {
+    }
+    onReady () {
+    }
+
+    handleSave() {
+        let _this = this
+        wx.showLoading({
+            title: '努力保存中',
+        })
+        let uri = 'sign_save'
+        let items = JSON.stringify(_this.questions)
+        let submitData = {
+            customer: this.wxuserInfo.id,
+            user: this.userInfo.id,
+            news: this.newsId,
+            infos: items
+        }
+        if (_this.survey && _this.survey.id) {
+            submitData = JSON.parse(JSON.stringify(_this.survey))
+            submitData.infos = items
+            uri = ['sign_update', _this.survey.id]
+        }
+
+        api.$request(uri, submitData).then(({data}) => {
+            if (data && data.id) {
+                api.toast('保存成功', 'none')
+                _this.pageBack(true, true)
+                _this.$apply()
+            } else {
+                api.toast(data.msg, 'none')
+                _this.$apply()
+            }
+        }).finally(() => {
+            wx.hideLoading()
+            _this.$apply()
+        })
+        // wx.showModal({
+        //     title: '提示',
+        //     content: '请确认您所提交的答案准确，提交后不能更改',
+        //     success (res) {
+        //         if (res.confirm) {
+        //             wx.showLoading({
+        //                 title: '努力保存中',
+        //             })
+        //             let qs = JSON.stringify(_this.questions)
+        //             let cols = _this.columns[_this.utype][_this.step]
+        //             _this.survey[cols[1]] = qs
+        //             _this.survey[cols[2]] = _this.getCurrentTime()
+        //             api.$request('survey_save', _this.survey).then(({data}) => {
+        //                 if (data.code === 0) {
+        //                     api.toast('保存成功', 'none')
+        //                     _this.pageBack(true, true)
+        //                     _this.$apply()
+        //                 } else {
+        //                     api.toast(data.msg, 'none')
+        //                     _this.$apply()
+        //                 }
+        //             }).finally(() => {
+        //                 wx.hideLoading()
+        //                 _this.$apply()
+        //             })
+        //         }
+        //     }
+        // })
+    }
+
+    handleFetchSurvey() {
+        let params = { customer: this.wxuserInfo.id, news: this.newsId, _sort: 'id:DESC' }
+        api.$request('signs_list', params).then(({data}) => {
+            if (data && data.length > 0) {
+                this.survey = data[0]
+                this.loadFail = false
+                this.loadFailMsg = ''
+                this.$apply()
+            }
+            this.$nextTick(() => {
+                this.handleSetSurvey()
+            })
+        }).catch((e) => {
+            this.loadFail = true
+            this.loadFailMsg = '网络请求失败'
+        }).finally(() => {
+            wx.hideLoading()
+        })
+    }
+
+    handleSetSurvey() {
+        let qsItems = qsdata
+        if (this.survey) {
+            qsItems = JSON.parse(this.survey.infos) || qsdata
+        }
+        this.questions = qsItems
+        this.loading = false
+        this.handeCheckForm(false)
+        this.$apply()
+    }
+    // 单选
+    handleRadioChange(key, item, option, value, isSub, node) {
+        let vk = isSub ? (key + '.subValue') : (key +'.value')
+        this.setData({
+            [vk]: value
+        })
+        if (!isSub) {
+            if (item.hasChildren) {
+                let checked = option.child
+                let childCode = option.childCode
+                if (item.childrenType==2) {
+                    checked = !!value
+                }
+                this.setData({
+                    [key + '.showChildren']: checked
+                })
+                if (childCode) {
+                    this.setData({
+                        [key + '.childCode']: childCode
+                    })
+                }
+            }
+            if (item.hasSubOption) {
+                this.setData({
+                    [key + '.showSubOption']: option.option
+                })
+            }
+        }
+        this.handeCheckForm(false)
+        this.$apply()
+    }
+    // 多选
+    handleCheckboxChange(key, item, option, value, isSub, node) {
+        // 排他性
+        if (option.group && !option.checked) {
+            if (!item.optionGroup) {
+                item.optionGroup = option.group
+            } else if (item.optionGroup != option.group) {
+                item.value = []
+                this.setData({
+                    [key + '.value']: []
+                })
+                item.options.forEach((v, k) => {
+                    if (k != value) {
+                        this.setData({
+                            [key + '.options['+ k +'].checked']: false
+                        })
+                    }
+                })
+            }
+            this.setData({
+                [key + '.optionGroup']: option.group
+            })
+        }
+        if (option.checked) {
+            let idx = item.value.findIndex(v => { return v == value})
+            if (idx > -1) {
+                item.value.splice(idx, 1)
+            }
+        } else {
+            item.value.push(value)
+        }
+        this.setData({
+            [key + '.options['+ value +'].checked']: !option.checked,
+            [key + '.value']: item.value
+        })
+        if (!isSub) {
+            if (item.hasChildren) {
+                if (item.childrenType==2) {
+                    let checked = item.value.length > 0
+                    this.setData({
+                        [key + '.showChildren']: checked
+                    })
+                } else if (option.child) {
+                    this.setData({
+                        [key + '.showChildren']: option.checked
+                    })
+                }
+            }
+            if (item.hasSubOption && option.option) {
+                this.setData({
+                    [key + '.showSubOption']: option.checked
+                })
+            }
+            if (item.relatedCode) {
+                let ridx = this.questions[node[0]].items.findIndex(v => { return v.code == item.relatedCode})
+                if (ridx > -1) {
+                    let ritem = this.questions[node[0]].items[ridx]
+                    if (option.checked) {
+                        this.questions[node[0]].items[ridx][item.relatedKey].push({ name: option.name, value: option.name, type: 5, checked: true })
+                        let len = this.questions[node[0]].items[ridx][item.relatedKey].length
+                        this.questions[node[0]].items[ridx].value.push((len - 1))
+                    } else {
+                        let vidx = this.questions[node[0]].items[ridx][item.relatedKey].findIndex(v => { return v.name == option.name })
+                        let vaidx = this.questions[node[0]].items[ridx].value.findIndex(v => {return v == vidx})
+                        if (vidx > -1) {
+                            this.questions[node[0]].items[ridx][item.relatedKey].splice(vidx, 1)
+                        }
+                        if (vaidx > -1) {
+                            this.questions[node[0]].items[ridx].value.splice(vaidx, 1)
+                        }
+                    }
+                }
+            }
+        }
+        this.$apply()
+        this.handeCheckForm(false)
+    }
+    // 页面滚动
+    handleScrollTo(id) {
+        if (id) {
+            let idStr = '#' + id
+            wx.pageScrollTo({
+                selector: idStr, //滚动到页面节点的上边界坐标
+                duration: 300 // 滚动动画的时长
+            });
+        }
+    }
+    // 验证表单
+    handeCheckForm(isToast = true) {
+        this.errMsg = '您还有信息没填写'
+        let isErr = false
+        this.questions.forEach(group => {
+            group.items.forEach(item => {
+                if (!isToast || !isErr) {
+                    isErr = this.handleCheckItem(item)
+                }
+            })
+        })
+        if (isErr) {
+            if (isToast) {
+                api.toast(this.errMsg, 'none')   
+                this.handleScrollTo(this.errRow.code)             
+            }
+        }
+        return isErr
+    }
+    // 验证表单
+    handleCheckItem (item) {
+        let isErr = false
+        let errObj = {}
+        if (!item.uncheck && (item.type == 'radio' || item.type == 'checkbox') && (!item.value || item.value.length == 0)) {
+            isErr = true
+            errObj = item
+        }
+        if (!isErr && item.uncheck && item.linkCheck) {
+            let childErr = true
+            item.children.forEach(c => {
+                if (childErr && (c.value && c.value.length > 0)) {
+                    childErr = false
+                }
+            })
+            isErr = childErr
+            if (isErr) {
+                errObj = item              
+            }
+        }
+        if (!isErr && !item.uncheck && item.options && item.options.length > 0) {
+            if (item.type == 'radio') {
+                let option = item.options[item.value]
+                if (option.type == 2 && !option.other) {
+                    isErr = true
+                    errObj = item
+                    this.errMsg = '请填写选项-【其他】的内容'
+                } else if (option.type == 3) {
+                    option.options.forEach(op => {
+                        if (!isErr && (!op.value || op.value.length == 0)) {
+                            isErr = true
+                            errObj = item
+                        }
+                    })
+                }
+            } else if (item.type == 'checkbox') {
+                item.value.forEach(v => {
+                    let option = item.options[v]
+                    if (!isErr && option.type == 2 && !option.other) {
+                        isErr = true
+                        errObj = item
+                        this.errMsg = '请填写选项-【其他】的内容'
+                    }
+                    if (!isErr && option.type == 4 && !option.optionValue) {
+                        isErr = true
+                        errObj = item
+                        this.errMsg = '请填写选项的内容'
+                    }
+                })
+            } else if (item.type == 'input') {
+                item.options.forEach(op => {
+                    if (!isErr && (!op.value || op.value.length == 0)) {
+                        isErr = true
+                        errObj = item
+                    }
+                })
+            }
+        }
+        if (!isErr && item.hasChildren && item.showChildren) {
+            item.children.forEach(c => {
+                if (!isErr && (!item.childCode || (item.childCode && item.childCode == c.code))) {
+                    isErr = this.handleCheckItem(c)
+                }
+            })
+            if (isErr) {
+                errObj = item
+            }
+        }
+        if (!isErr && item.hasSubOption && item.showSubOption) {
+            if (!item.subValue || item.subValue.length == 0) {
+                isErr = true
+                errObj = item
+            }
+        }
+        this.errRow = errObj
+        item.filled = !isErr
+        return isErr
+    }
+
+}
+</script>
+<style lang="css">
+.kelong {
+    box-shadow: 3px -1px 37px 6px rgb(134 134 134 / 35%);
+    width: 100%;
+    z-index: 1001;
+    background-color: #ffffff;
+}
+.error-view { top: 40%; }
+.icon-error { height: 240rpx; }
+</style>

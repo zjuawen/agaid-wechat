@@ -1,6 +1,6 @@
 <template>
-    <view class="page-task-driver fix-iphonex-bottom">
-        <view class="relative list z-100 bg-tran">
+    <view class="page-task-driver flex flex-col h-full-v flow-hide">
+        <view class="relative flex-main flow-y-auto list z-100 bg-tran fix-iphonex-bottom">
             <view class="list-item bg-white wl-padding-sm wl-margin-bottom-sm">
                 <view class="title text-36 text-center wl-margin-bottom-sm">{{info.title}}</view>
                 <view class="flex flex-ai-center flex-jc-center wl-padding-bottom-xl">
@@ -31,7 +31,11 @@
                     <view class="text-24 nav-title">{{info.up_count||'点赞'}}</view>
                 </view>
             </view>
+            
             <view class="wl-padding-bottom-nav"></view>
+        </view>
+        <view wx:if="{{info.is_sign}}" class="consult-tab fix-iphonex-bottom text-center box-shadow wl-padding-page wl-padding-top-sm wl-padding-bottom-sm z-100">
+            <view class="btn btn-search wl-margin-auto" style="width: 60%;" @tap="handleToSign">我要报名</view>
         </view>
     </view>
 </template>
@@ -129,6 +133,9 @@ export default class Detail extends wepy.page {
                 this.submitLoading = false
                 this.$apply()
             })
+        },
+        handleToSign() {
+            this.$navigate('/pages/news/sign', { id: this.info.id })
         }
     }
 

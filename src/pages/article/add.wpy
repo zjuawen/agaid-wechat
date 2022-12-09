@@ -20,15 +20,17 @@
                     <view class="flex flex-ai-center flex-main">
                         <view class="form-control wl-padding-0">
                             <textarea
-                                class="flex-main" 
+                                class="flex-main wl-padding-top-0" 
                                 placeholder="请输入" 
                                 data-key="description"
                                 @input="inputValue" 
                                 placeholder-class="color-desc"
+                                maxlength="500"
                                 value="{{submitData.description}}" />
                         </view>
                     </view>
                 </view>
+                <view class="text-24 text-right color-gray">{{submitData.description.length}}/500</view>
 
                 <SelectProfessor wx:if="{{submitData.type==2}}" title="专家" required="true" @selectCallback.user="handleSelectProfessor" />
                

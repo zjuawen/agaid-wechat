@@ -38,6 +38,7 @@
                             data-key="description"
                             @input="inputReply" 
                             placeholder-class="color-desc"
+                            maxlength="-1"
                             value="{{info.reply_content}}" />
                         <view class="text-right color-green">
                             <view wx:if="{{info.reply_content}}" class="inline color-gray wl-margin-right-xl" @tap="handleShowEdit"><text>取消</text></view>

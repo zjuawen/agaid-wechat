@@ -6,7 +6,7 @@
                 <image wx:else class="icon-158 circle" src="/public/img/avatar.png" mode="scaleToFill" />
                 <view class="text-center text-30 color-white wl-margin-top-xs">{{submitData.nickname}}</view>
             </view>
-            <view class="form-card">
+            <view class="form-card wl-padding-vertical-sm">
                  <!-- <view class="form-group flex">
                     <view class="form-label must">昵称</view>
                     <view class="flex flex-ai-center flex-main">
@@ -20,12 +20,12 @@
                         </view>
                     </view>
                 </view> -->
-                <view class="form-group flex">
+                <view class="form-group flex wl-margin-bottom-sm">
                     <view class="form-label">姓名</view>
                     <view class="flex flex-ai-center flex-main">
                         <view class="form-control">
                             <input type="text" 
-                                    class="flex-main" 
+                                    class="flex-main no-border" 
                                     placeholder="请输入" 
                                     data-key="name"
                                     placeholder-class="color-desc"
@@ -38,7 +38,7 @@
                     <view class="flex flex-ai-center flex-main">
                         <view class="form-control">
                             <input type="number" 
-                                   class="flex-main" 
+                                   class="flex-main no-border" 
                                    placeholder="请输入" 
                                    data-key="phone_number"
                                     placeholder-class="color-desc"

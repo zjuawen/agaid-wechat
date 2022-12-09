@@ -1,0 +1,88 @@
+<template>
+    <movable-area class="page-message-list w-full h-full relative bg-body">
+        <scroll-view scroll-y="true" class="list z-100 bg-tran fix-iphonex-bottom" @scrolltolower="handleNext">
+            <view wx:if="{{!isEmpty}}" class="list-card bg-white wl-margin-bottom-sm wl-padding-top-0">
+                <view wx:for="{{queryConfig.list}}" wx:key="index" class="card-body wl-padding-vertical-lg border-bottom">
+                    <view class="flex flex-ai-center list-item" @tap="handleToDetail({{item}})">
+                        <view class="flex-main">
+                            <view class="flex-main color-title text-30" style="word-break: break-word;">{{item.content}}</view>
+                            <view wx:if="{{item.reply_content}}" class="bg-gray wl-padding-sm wl-margin-top-xs box-radius">
+                                <text class="color-gray text-26">回复：{{item.reply_content}}</text>
+                            </view>
+                            <view class="color-gray text-24 wl-margin-top-sm">{{item.created_at}}</view>
+                        </view>
+                    </view>
+                </view>
+            </view>
+            <view  wx:if="{{isEmpty}}" class="card-body">
+                <view class="empty">
+                    <i class="icon icon-empty"></i>
+                    <view class="wl-margin-top-sm">~还没有收藏</view>
+                </view>
+            </view>
+        </scroll-view>
+        <movable-view direction="all" class="drift-btn" x="{{driftx?driftx:'1000'}}" y="{{drifty?drifty:'1000'}}" @tap="handleToAdd()"><i class="fa fa-plus text-50 box-center"></i></movable-view>
+    </movable-area>
+</template>
+<script>
+import wepy from 'wepy'
+import api from '@/utils/api'
+import baseMixin from '@/mixins/base'
+export default class MessageList extends wepy.page {
+    config = {
+        navigationBarTitleText: '我的留言',
+    }
+    
+    mixins = [ baseMixin ]
+    
+    components = {
+    }
+
+    data = {
+        loading: true,
+        driftx: null,
+        drifty: null,
+        queryParams: {
+            customer: null
+        }
+    }
+
+    computed = {
+        isEmpty() {
+            return (!this.queryConfig.loading&&this.queryConfig.finished&&this.queryConfig.list.length==0)
+        },
+    }
+    
+    methods = {
+        handleToAdd() {
+            this.$navigate('/pages/message/add')
+        },
+        handleToDetail(item) {
+            this.$navigate('/pages/message/detail?id='+item.id)
+        }
+    }
+
+    events = {
+    }
+
+
+    onLoad (params, data) {
+        const sysInfo = wx.getSystemInfoSync()
+        this.driftx = sysInfo.windowWidth - 60
+        this.drifty = sysInfo.windowHeight - 100
+        this.queryConfig.key = 'messages_list'
+        this.queryParams.customer = wepy.$instance.globalData.wxuser.id
+        this.handleFetchList(true, false)
+    }
+    onShow () {
+        this.handleCheckPageBackReload((res)=>{
+            this.handleFetchList(true, false)
+        })
+    }
+    onReady () {
+        
+    }
+}
+</script>
+<style lang="css">
+</style>

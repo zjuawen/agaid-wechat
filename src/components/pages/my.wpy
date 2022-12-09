@@ -55,13 +55,13 @@
                         <i class="fa fa-angle-right color-sub-green text-bold text-40"></i>
                     </view>
                 </navigator>
-                <view class="menu-item flex flex-ai-center">
+                <navigator class="menu-item flex flex-ai-center" hover-class="none" url="/pages/message/list">
                     <i class="fa fa-flickr text-60 color-green wl-margin-right-sm"></i>
                     <view class="flex-main flex flex-ai-center">
-                        <text class="flex-main text-32 text-sc-medium">我的消息</text>
+                        <text class="flex-main text-32 text-sc-medium">我的留言</text>
                         <i class="fa fa-angle-right color-sub-green text-bold text-40"></i>
                     </view>
-                </view>
+                </navigator>
             </view>
         </view>
     </view>

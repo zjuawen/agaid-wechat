@@ -39,8 +39,11 @@
                 'pages/article/detail',
                 'pages/news/list',
                 'pages/news/detail',
+                'pages/news/sign',
                 'pages/professor/chat',
-                'pages/professor/bind'
+                'pages/professor/bind',
+                'pages/message/list',
+                'pages/message/add'
             ],
             window: {
                 backgroundTextStyle: 'light',

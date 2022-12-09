@@ -56,6 +56,15 @@ const urlConfig = {
     professor_save:         ['', '/professors', methods.POST],
 
     users_update:           ['', '/users/${0}', methods.PUT],
+
+    signs_list:             ['', '/signs', methods.GET],
+    sign_save:              ['', '/signs', methods.POST],
+    sign_update:            ['', '/signs/${0}', methods.PUT],
+
+    messages_list:          ['', '/messages', methods.GET],
+    messages_info:          ['', '/messages/${0}', methods.GET],
+    messages_update:        ['', '/messages/${0}', methods.PUT],
+    messages_save:          ['', '/messages', methods.POST],
 }
 
 // +-------------------------------------

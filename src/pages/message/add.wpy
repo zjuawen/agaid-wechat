@@ -1,0 +1,105 @@
+<template>
+    <view class="page-article-add fix-iphonex-bottom">
+        <view class="wl-form head-view bg-head wl-padding-page wl-padding-vertical-xl">
+            <view class="form-card wl-padding-sm">
+                <view class="form-group flex textarea">
+                    <view class="flex flex-ai-center flex-main">
+                        <view class="form-control wl-padding-0">
+                            <textarea
+                                class="flex-main wl-padding-top-0" 
+                                placeholder="请输入留言" 
+                                data-key="content"
+                                @input="inputValue" 
+                                placeholder-class="color-desc"
+                                maxlength="300"
+                                value="{{submitData.content}}" />
+                        </view>
+                    </view>
+                </view>
+                <view class="text-24 text-right color-gray">{{submitData.content.length}}/300</view>
+            </view>
+        </view>
+        <view class="wl-padding-page wl-margin-vertical-xl">
+            <button class="btn btn-submit border-none" hover-class='none' @tap="handleSave"> 确定 </button>
+        </view>
+    </view>
+</template>
+<script>
+import wepy from 'wepy'
+import api from '@/utils/api'
+import baseMixin from '@/mixins/base'
+export default class add extends wepy.page {
+    config = {
+        navigationBarTitleText: '留言'
+    }
+    
+    mixins = [ baseMixin ]
+    
+    components = {
+    }
+
+    data = {
+        submitLoading: false,
+        submitData: {
+            content: '',
+            customer: ''
+        }
+    }
+
+    computed = {
+        wxuserInfo() {
+            return this.$parent.globalData.wxuser
+        }
+    }
+    
+    methods = {
+        inputValue(e) {
+            let data = e.currentTarget.dataset
+            let _value = e.detail.value
+            let _key = data.key
+
+            this.submitData[_key] = _value
+            this.$apply()
+        },
+        handleSave() {
+            if (this.submitLoading) {
+                return
+            }
+            if (!this.submitData.content) {
+                api.toast('请填写您的留言', 'none')
+                return
+            }
+            this.submitData.customer = this.wxuserInfo.id
+            this.submitLoading = true
+            api.$request('messages_save', this.submitData , true, false).then(({data}) => {
+                if (data && data.id) {
+                    api.toast('保存成功', 'success')
+                    this.$apply()
+                    this.pageBack(true, true)
+                } else {
+                    api.toast(data.msg, 'none')
+                }
+            }).finally(() => {
+                this.submitLoading = false
+                this.$apply()
+            })
+        }
+    }
+
+    events = {
+    }
+
+    onLoad (params, data) {
+        this.submitData.customer = this.wxuserInfo.id
+        this.$apply()
+    }
+    onShow () {
+        
+    }
+    onReady () {
+
+    }
+}
+</script>
+<style lang="css">
+</style>

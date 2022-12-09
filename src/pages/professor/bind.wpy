@@ -23,7 +23,7 @@
                     <view class="flex flex-ai-center flex-main">
                         <view class="form-control">
                             <input type="text" 
-                                    class="flex-main" 
+                                    class="flex-main bottom" 
                                     placeholder="请输入" 
                                     data-key="name"
                                     placeholder-class="color-desc"
@@ -32,11 +32,11 @@
                     </view>
                 </view>
                 <view class="form-group flex">
-                    <view class="form-label must">联系电话</view>
+                    <view class="form-label">联系电话</view>
                     <view class="flex flex-ai-center flex-main">
                         <view class="form-control">
                             <input type="text" 
-                                   class="flex-main" 
+                                   class="flex-main bottom" 
                                    placeholder="请输入" 
                                    data-key="phone"
                                     placeholder-class="color-desc"
@@ -49,7 +49,7 @@
                     <view class="flex flex-ai-center flex-main">
                         <view class="form-control">
                             <input type="text" 
-                                   class="flex-main" 
+                                   class="flex-main bottom" 
                                    placeholder="请输入" 
                                    data-key="area"
                                     placeholder-class="color-desc"
@@ -62,7 +62,7 @@
                     <view class="flex flex-ai-center flex-main">
                         <view class="form-control wl-padding-0">
                             <textarea
-                                class="flex-main" 
+                                class="flex-main wl-padding-top-0" 
                                 placeholder="请输入" 
                                 data-key="description"
                                 @input="inputValue" 
@@ -166,10 +166,10 @@ export default class Bind extends wepy.page {
                 api.toast('请填写姓名', 'none')
                 return
             }
-            if (!this.submitData.phone) {
-                api.toast('请填写电话', 'none')
-                return
-            }
+            // if (!this.submitData.phone) {
+            //     api.toast('请填写电话', 'none')
+            //     return
+            // }
             if (!this.submitData.area) {
                 api.toast('请填写服务区域', 'none')
                 return

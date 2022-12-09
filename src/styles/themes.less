@@ -431,9 +431,9 @@
 		}
 	}
 	.form-group { 
-		clear:both;height: 90rpx;padding: 0 30rpx;
+		clear:both;padding: 0 30rpx;
 		&:not(:last-child) {
-			border-bottom: 1rpx solid #e6e6e6;
+			/*border-bottom: 1rpx solid #e6e6e6;*/
 		}
 		&.submit{ margin-top: 40rpx;}
 		&.flex { 
@@ -468,7 +468,7 @@
 			}
 		}
 		.form-label { 
-			display: inline-block;max-width: 100%;margin-bottom: 20rpx;font-size: 28rpx;color: #2f3034;
+			max-width: 100%;margin-bottom: 20rpx;font-size: 28rpx;
 			&.title {
 				font-size: 30rpx;color: #000000;
 			}
@@ -477,7 +477,7 @@
 			padding-left: 20px;color: #F751A5;font-size: 24rpx;
 		}
 		.form-control { 
-			display: flex;align-items:center;min-height: 60rpx;line-height: 60rpx;font-size: 28rpx;border-radius: 8rpx;
+			align-items:center;min-height: 60rpx;line-height: 60rpx;font-size: 28rpx;border-radius: 8rpx;
 			&.border {
 				border: 1rpx solid #e5e5e5;padding: 10rpx 20rpx;
 			}
@@ -495,6 +495,23 @@
 			}
 			input {
 				height: 100%;
+				border: 1rpx solid #e6e6e6;
+			    padding: 5px 10px;
+			    border-radius: 8rpx;
+
+			    &.bottom {
+			    	border-width: 0 0 1rpx 0;padding-left: 0;
+			    }
+			    &.no-border {
+			    	border-width: 0;
+			    }
+
+				&.option-input {
+					width: 200rpx;
+				    border-width: 0 0 1rpx 0;
+				    border-radius: none;
+				    padding: 10rpx 0;
+				}
 			}
 
 			&.file-list {
@@ -941,4 +958,17 @@
 		border-radius: 4rpx;
 		font-style: normal;
 	}
+}
+
+.drift-btn { width: 100rpx;height: 100rpx;line-height: 100rpx;text-align: center;background-color: #187ee3;border-radius: 50%;color: #FFFFFF;font-size: 28rpx;z-index: 5999;    box-shadow: 0 0 17rpx 0 rgba(0, 0, 0, 0.3); }
+.drift-desc {
+	word-break:keep-all;
+	word-wrap:break-word;
+	position:absolute;
+	width:65rpx;
+	height:65rpx;
+	display:block;
+	align-items:center;
+	font-size:28rpx;
+	line-height:34rpx;
 }

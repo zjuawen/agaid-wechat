@@ -1,0 +1,200 @@
+<template>
+    <view class="form-group wl-padding-bottom-sm wl-margin-top-sm {{question.class}}" id="{{question.code}}">
+        <view wx:if="{{ question.header }}" class="title wl-margin-bottom-sm bold">
+            *{{ question.header.title }}
+        </view>
+        <view wx:if="{{ question.type=='radio' || question.type=='checkbox' }}" id="{{question.code}}_title" class="flex form-label wl-margin-bottom-sm {{question.labelClass}} {{question.filled?'':'color-red'}}">
+            {{ sort?(sort+(level==3?'）':'、')):'' }}<rich-text class="inline" nodes="{{question.title}}"></rich-text>
+        </view>
+        <!-- 单选 -->
+        <view wx:if="{{ question.type=='radio'}}" class="form-control flex-main lh-60">
+            <radio-group wx:if="{{question.options&&question.options.length>0}}" data-level="{{level}}" data-node="{{node}}" @change="radioChange" class="{{question.optionClass}} wl-padding-left-xl">
+                <label wx:for="{{question.options}}" wx:for-item="option" wx:for-index="optionIndex" wx:key="optionIndex" class="flex flex-flow flex-ai-center">
+                    <radio disabled="{{disabled}}" class="size-mini" value="{{optionIndex}}" checked="{{question.value!=''&&question.value==optionIndex}}" />{{option.name}}
+                    <input disabled="{{disabled}}" wx:if="{{option.type==2}}" class="box-border-bottom wl-margin-left-xs" data-oid="{{optionIndex}}" data-level="{{level}}" data-node="{{node}}" value="{{option.other}}" @input="inputValue('other')"/>
+                    <view wx:if="{{option.type==3}}" class="wl-padding-left-xl">
+                        <view wx:for="{{option.options}}" wx:for-item="opt" wx:for-index="optIndex" wx:key="optIndex" style="display: inline-flex;">
+                            {{opt.prefix}}
+                            <input disabled="{{disabled}}" class="box-border-bottom option-input wl-margin-left-xs text-center" style="width: {{opt.width ? opt.width+'rpx':'200rpx'}};" data-oid="{{optionIndex}}" data-level="{{level}}" data-node="{{node}}" value="{{opt.value}}" @input="inputValue('options[{{optIndex}}].value')" placeholder="{{opt.placeholder}}" />{{opt.suffix}}
+                        </view>
+                    </view>
+                </label>
+            </radio-group>
+            <view wx:if="{{ question.hasSubOption && question.showSubOption}}" class="flex wl-margin-top-sm">
+                <view>{{question.subPrefix}}</view>
+                <radio-group class="flex-main" data-level="{{level}}" data-node="{{node}}" data-sub="true" @change="radioSubChange">
+                    <label wx:for="{{question.subOptions}}" wx:for-item="sp" wx:for-index="spIndex" wx:key="spIndex" class="flex">
+                        <radio disabled="{{disabled}}" class="size-mini" value="{{spIndex}}" checked="{{question.subValue!=''&&question.subValue==spIndex}}" />{{sp.name}}
+                    </label>
+                </radio-group>
+            </view>
+        </view>
+        <!-- 多选 -->
+        <view wx:if="{{ question.type=='checkbox'}}" class="form-control wl-padding-left-xl lh-60">
+            <view class="flex flex-ai-center" wx:for="{{question.options}}" wx:for-item="option" wx:for-index="optionIndex" wx:key="optionIndex">
+                <view class="flex-main">
+                    <label class="flex" data-level="{{level}}" data-node="{{node}}" catchtap="checkboxChange({{optionIndex}})">
+                        <checkbox disabled="{{disabled||(question.max&&question.max>0&&!option.checked&&question.value.length>=question.max)}}" class="size-mini {{question.sort&&option.type==5?'hide':''}}" value="{{optionIndex}}" checked="{{option.checked}}" /><text wx:if="{{question.sort&&option.type==5}}">{{optionIndex+1}}、</text>{{option.name}}
+                    </label>
+                    <input disabled="{{disabled}}" wx:if="{{option.type==2}}" class="box-border-bottom wl-margin-left-xs" data-oid="{{optionIndex}}" data-level="{{level}}" data-node="{{node}}" value="{{option.other}}" @input="inputValue('other')" />
+                    <view wx:if="{{option.type==3}}" wx:for="{{option.options}}" wx:for-item="opt" wx:for-index="optIndex" wx:key="optIndex" style="display: inline-flex;">
+                        {{opt.prefix}}
+                        <input disabled="{{disabled}}" class="box-border-bottom wl-margin-left-xs text-center" style="width: {{opt.width ? opt.width+'rpx':'100rpx'}};" data-oid="{{optionIndex}}" data-level="{{level}}" data-node="{{node}}" value="{{opt.value}}" @input="inputValue('options[{{optIndex}}].value')" />{{opt.suffix}}
+                    </view>
+                    <picker wx:if="{{option.type==4}}" value="{{option.optionValue}}" data-oid="{{optionIndex}}" data-level="{{level}}" data-node="{{node}}" range-key="name" range="{{option.options}}" disabled="{{disabled}}" @change="inputValue('optionValue')">
+                        <view class="picker">
+                            <view class="box-border-bottom wl-margin-left-xs wl-padding-horizontal-sm text-center" style="width: 100rpx;">{{option.options[option.optionValue].name||'请选择'}}</view>
+                        </view>
+                    </picker>
+                    <view wx:if="{{option.suffix}}">{{option.suffix}}</view>
+                   <!--  <view wx:if="{{option.type==5&&optionIndex>0}}" class="flex-main text-right">
+                        <view class="color-blue"  data-oid="{{optionIndex}}" data-level="{{level}}" data-node="{{node}}" catchtap="handleSortUp"><i class="fa fa-long-arrow-up wl-margin-left-sm"></i> 上移</view>
+                    </view> -->
+                </view>
+                <view wx:if="{{option.type==5}}" data-oid="{{optionIndex}}" data-level="{{level}}" data-node="{{node}}" catchtouchstart='dragStart' catchtouchmove='dragMove' catchtouchend='dragEnd'><i class="fa fa-list-ul wl-margin-left-sm"></i></view>
+            </view>
+            <view wx:if="{{ question.hasSubOption && question.showSubOption}}" class="flex wl-margin-top-sm">
+                <view>{{question.subPrefix}}</view>
+                <radio-group class="flex-main" data-level="{{level}}" data-node="{{node}}" data-sub="true" @change="radioSubChange">
+                    <label wx:for="{{question.subOptions}}" wx:for-item="sp" wx:for-index="spIndex" wx:key="spIndex" class="flex">
+                        <radio disabled="{{disabled}}" class="size-mini" value="{{spIndex}}" checked="{{question.subValue!=''&&question.subValue==spIndex}}" />{{sp.name}}
+                    </label>
+                </radio-group>
+            </view>
+        </view>
+        <!-- 输入框 -->
+        <view wx:if="{{ question.type=='input'}}" class="form-control">
+            <view class="{{question.filled?'':'color-red'}}">{{ sort?(sort+'、'):'' }}{{ question.title }}</view>
+            <view wx:for="{{question.options}}" wx:for-item="option" wx:for-index="optionIndex" wx:key="optionIndex" class="flex wl-padding-left-xl">
+                {{option.prefix}}
+                <picker wx:if="{{option.inpType=='picker'}}" value="{{option.value}}" data-oid="{{optionIndex}}" data-level="{{level}}" data-node="{{node}}" range-key="name" range="{{option.options}}" disabled="{{disabled}}" @change="inputValue('value')">
+                    <view class="picker">
+                        <view class="box-border-bottom wl-margin-left-xs wl-padding-horizontal-sm text-center" style="width: 100rpx;">{{option.options[option.value].name||'请选择'}}</view>
+                    </view>
+                </picker>
+                <picker wx:elif="{{option.inpType=='region'}}" mode="region" level="city" class="box-border-bottom wl-padding-horizontal-sm" value="{{option.value}}" data-oid="{{optionIndex}}" data-level="{{level}}" data-node="{{node}}" disabled="{{disabled}}" @change="inputValue('value')">
+                    <view class="picker">
+                        <text wx:if="{{option.value&&option.value.length>0}}">{{option.value[0]}} {{option.value[1]}} {{option.value[2]}}</text>
+                        <text wx:else>请选择</text>
+                    </view>
+                </picker>
+                <input wx:else disabled="{{disabled}}" class="text-left flex-main" type="{{option.inpType?option.inpType:'text'}}" style="width: {{option.width ? option.width+'rpx':'100rpx'}};" data-max="{{option.max?option.max:-1}}" data-min="{{option.min?option.min:-1}}"  data-oid="{{optionIndex}}" data-level="{{level}}" data-node="{{node}}" value="{{option.value}}" @input="inputValue('value')" />
+                {{option.suffix}}
+            </view>
+        </view>
+    </view>
+</template>
+<script>
+import wepy from 'wepy'
+export default class FormView extends wepy.component {
+    props = {
+        question: {
+            type: Object,
+            default: {},
+            twoWay: true
+        },
+        sort: {
+            type: String,
+            default: '',
+            twoWay: true
+        },
+        level: {
+            type: Number,
+            default: 0
+        },
+        disabled: {
+            type: Boolean,
+            default: false
+        },
+        node: {
+            type: Array,
+            default: []
+        }
+    }
+
+    data = {
+        item: {},
+    }
+
+    methods = {
+        radioChange(e) {
+            this.$emit('formChange', e)
+        },
+        radioSubChange(e) {
+            this.$emit('formChange', e)
+        },
+        checkboxChange(val, e) {
+            if (this.disabled) {
+                return
+            }
+            e.detail.value = val
+            this.$emit('formChange', e)
+        },
+        inputValue(k, e) {
+            if (this.disabled) {
+                return
+            }
+            let d = e.currentTarget.dataset
+            let level = d.level
+            let node = d.node
+            let optionIdx = d.oid
+            let max = d.max
+            let min = d.min
+            if (max > 0 && max < e.detail.value) {
+                e.detail.value = max
+            } else if (min > -1 && min > e.detail.value) {
+                e.detail.value = min
+            }
+            let key = ''
+            if (level == 1) {
+                key = 'questions['+node[0]+'].items['+node[1]+']'
+            } else if (level == 2) {
+                key = 'questions['+node[0]+'].items['+node[1]+'].children['+node[2]+']'
+            } else if (level == 3) {
+                key = 'questions['+node[0]+'].items['+node[1]+'].children['+node[2]+'].children['+node[3]+']'
+            } else if (level == 4) {
+                key = 'questions['+node[0]+'].items['+node[1]+'].children['+node[2]+'].children['+node[3]+'].children['+node[4]+']'
+            }
+            key += '.options['+optionIdx+'].' + k
+            this.$emit('formInputChange', key, e)
+        },
+        handleSortUp(e) {
+            if (this.disabled) {
+                return
+            }
+            this.$emit('formSortChange', e)
+        },
+        dragStart(e) {
+            this.$emit('dragStart', e)
+        },
+        dragMove(e) {
+            this.$emit('dragMove', e)
+        },
+        dragEnd(e) {
+            this.$emit('dragEnd', e)
+        }
+    }
+  }
+</script>
+<style lang="css">
+radio .wx-radio-input.wx-radio-input-checked::before {
+    border-radius: 50%; /* 圆角 */
+    width: 40rpx; /* 选中后对勾大小，不要超过背景的尺寸 */
+    height: 40rpx; /* 选中后对勾大小，不要超过背景的尺寸 */
+    line-height: 40rpx;
+    text-align: center;
+    font-size: 30rpx; /* 对勾大小 30rpx */
+    color: #ffffff; /* 对勾颜色 白色 */
+    background: #09BB07;
+    transform: translate(-50%, -50%) scale(1);
+    -webkit-transform: translate(-50%, -50%) scale(1);
+}
+/*复选框选中后内部样式*/
+checkbox .wx-checkbox-input.wx-checkbox-input-checked::before {
+    width: 60%;
+    height: 60%;
+    color: #09BB07;
+    transform: translate(-70%, -70%) scale(0.7);
+    -webkit-transform: translate(-70%, -70%) scale(0.7);
+}
+</style>
