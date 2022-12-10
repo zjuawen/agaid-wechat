@@ -182,34 +182,33 @@ export default class add extends wepy.page {
             this.$apply()
         },
         handleSave() {
-            if (this.submitLoading) {
+            let vm = this
+            if (vm.submitLoading) {
                 return
             }
-            // if (!this.submitData.title) {
-            //     api.toast('请填写标题', 'none')
-            //     return
-            // }
-            if (!this.submitData.description) {
-                api.toast('请填写问题', 'none')
-                return
-            }
-            if (this.submitData.type == 2 && (!this.submitData.professor || !this.submitData.professor.id)) {
-                api.toast('请选择要询问的专家', 'none')
-                return
-            }
-            this.submitData.customer = this.wxuserInfo.id
-            this.submitLoading = true
-            api.$request('articles_save', this.submitData , true, false).then(({data}) => {
-                if (data && data.id) {
-                    api.toast('保存成功', 'success')
-                    this.$apply()
-                    this.pageBack(true, true)
-                } else {
-                    api.toast(data.msg, 'none')
+            vm.handleCheckWords(vm.wxuserInfo.openid, vm.submitData.description, () => {
+                if (!vm.submitData.description) {
+                    api.toast('请填写问题', 'none')
+                    return
                 }
-            }).finally(() => {
-                this.submitLoading = false
-                this.$apply()
+                if (vm.submitData.type == 2 && (!vm.submitData.professor || !vm.submitData.professor.id)) {
+                    api.toast('请选择要询问的专家', 'none')
+                    return
+                }
+                vm.submitData.customer = vm.wxuserInfo.id
+                vm.submitLoading = true
+                api.$request('articles_save', vm.submitData , true, false).then(({data}) => {
+                    if (data && data.id) {
+                        api.toast('保存成功', 'success')
+                        vm.$apply()
+                        vm.pageBack(true, true)
+                    } else {
+                        api.toast(data.msg, 'none')
+                    }
+                }).finally(() => {
+                    vm.submitLoading = false
+                    vm.$apply()
+                })
             })
         }
     }

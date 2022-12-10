@@ -159,32 +159,36 @@ export default class Detail extends wepy.page {
                 vm.handleSetCount(type, isCollect)
             })
         },
+
         handleSendConsult(e) {
-            if (this.submitLoading) {
+            let vm = this
+            if (vm.submitLoading) {
                 return
             }
-            if (!this.formData.content) {
+            if (!vm.formData.content) {
                 api.toast('请输入您的评论', 'none')
                 return
             }
-            let submitData = {
-                content: this.formData.content,
-                parent: 0,
-                status: 0,
-                article: this.info.id,
-                customer: this.wxuserInfo.id
-            }
-            this.submitLoading = true
-            api.$request('consults_save', submitData , true, false).then(({data}) => {
-                if (data && data.id) {
-                    this.formData.content = ''
-                    data.created_at = this.handleDateView(data.created_at)
-                    this.$invoke('Consult', 'add', data)
-                    this.$apply()
+            vm.handleCheckWords(vm.wxuserInfo.openid, vm.formData.content, () => {
+                let submitData = {
+                    content: vm.formData.content,
+                    parent: 0,
+                    status: 1,
+                    article: vm.info.id,
+                    customer: vm.wxuserInfo.id
                 }
-            }).finally(() => {
-                this.submitLoading = false
-                this.$apply()
+                vm.submitLoading = true
+                api.$request('consults_save', submitData , true, false).then(({data}) => {
+                    if (data && data.id) {
+                        vm.formData.content = ''
+                        data.created_at = vm.handleDateView(data.created_at)
+                        vm.$invoke('Consult', 'add', data)
+                        vm.$apply()
+                    }
+                }).finally(() => {
+                    vm.submitLoading = false
+                    vm.$apply()
+                })
             })
         },
         handleSendReply() {

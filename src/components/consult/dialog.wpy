@@ -109,31 +109,34 @@ export default class Dialog extends wepy.component {
             this.$apply()
         },
         handleSendConsult(e) {
-            if (this.submitLoading) {
+            let vm = this
+            if (vm.submitLoading) {
                 return
             }
-            if (!this.formData.content) {
+            if (!vm.formData.content) {
                 api.toast('请输入您的评论', 'none')
                 return
             }
-            let submitData = {
-                content: this.formData.content,
-                parent: 0,
-                status: 0,
-                article: this.articleId,
-                customer: this.userInfo.id
-            }
-            this.submitLoading = true
-            api.$request('consults_save', submitData , true, false).then(({data}) => {
-                if (data && data.id) {
-                    data.created_at = this.handleDateView(data.created_at)
-                    this.formData.content = ''
-                    this.queryConfig.list.unshift(data)
-                    this.$apply()
+            vm.handleCheckWords(vm.userInfo.openid, vm.formData.content, () => {
+                let submitData = {
+                    content: vm.formData.content,
+                    parent: 0,
+                    status: 1,
+                    article: vm.articleId,
+                    customer: vm.userInfo.id
                 }
-            }).finally(() => {
-                this.submitLoading = false
-                this.$apply()
+                vm.submitLoading = true
+                api.$request('consults_save', submitData , true, false).then(({data}) => {
+                    if (data && data.id) {
+                        data.created_at = vm.handleDateView(data.created_at)
+                        vm.formData.content = ''
+                        vm.queryConfig.list.unshift(data)
+                        vm.$apply()
+                    }
+                }).finally(() => {
+                    vm.submitLoading = false
+                    vm.$apply()
+                })
             })
         }
     }

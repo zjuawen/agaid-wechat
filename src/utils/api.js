@@ -19,7 +19,9 @@ const methods = { GET: 'GET', POST: 'POST', PUT: 'PUT', DELETE: 'DELETE' }
 const urlConfig = {
     login:                  ['', '/customers/login', methods.POST, false],   // 登录{code}
     upload:                 ['', '/upload', methods.POST],
-
+    check_word:             ['', '/wechat/check', methods.POST],
+    check_file:             ['', '/wechat/checkFile', methods.POST],
+    
     articles_list:          ['', '/articles', methods.GET],
     articles_info:          ['', '/articles/${0}', methods.GET],
     articles_save:          ['', '/articles', methods.POST],
@@ -483,7 +485,6 @@ const uploadMediaCover = (_mediaList, coverFiles, callback) => {
 
                 //如果是最后一张,则隐藏等待中
                 if (uploadCount >= coverFiles.length) {
-                    console.log(_mediaList)
                     wx.hideToast();
                     typeof callback == "function" && callback(_mediaList)
                 }

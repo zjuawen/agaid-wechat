@@ -73,7 +73,6 @@ export default class History extends wepy.page {
 
     onLoad (params, data) {
         this.history = wx.getStorageSync('AGAID_HISTORY')
-        console.log(this.history)
         this.$apply()
         setTimeout(() => {
             this.loading = false

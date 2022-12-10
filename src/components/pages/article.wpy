@@ -8,7 +8,7 @@
             <navigator hover-class="none" url="/pages/article/add?type=1" class="btn btn-search wl-margin-left-sm"><i class="icon-edit icon"></i> 发布问题</navigator>
             <navigator hover-class="none" url="/pages/article/add?type=2" class="btn btn-search wl-margin-left-xs"><i class="icon-professor icon"></i> 问专家</navigator>
         </view>
-        <van-tabs v-model="activeTab" class="text-32 inline-tabs wl-margin-bottom-sm" tab-class="inline" line-width="30" line-height="3" color="#1F8C48" title-active-color="#1F8C48" title-inactive-color="#949494" @change="handleChangeTab">
+        <van-tabs active="{{activeTab}}" class="text-32 inline-tabs wl-margin-bottom-sm" tab-class="inline" line-width="30" line-height="3" color="#1F8C48" title-active-color="#1F8C48" title-inactive-color="#949494" @change="handleChangeTab">
             <van-tab title="热门"></van-tab>
             <van-tab title="最新"></van-tab>
             <van-tab title="推荐"></van-tab>
@@ -80,13 +80,13 @@ export default class Article extends wepy.component {
     mixins = [ baseMixin ]
 
     data = {
-        activeTab: 0,
+        activeTab: 1,
         sorts: ['up_count:DESC', 'created_at:DESC', 'collect_count:DESC'],
         // _where[_or][0][stars]=1&_where[_or][1][pricing_gt]=30
         queryParams: {
             '_or[0][state]': 1,
             is_delete: false,
-            _sort: 'up_count:DESC'
+            _sort: 'created_at:DESC'
         },
         collectList: [],
         list: [],
@@ -113,7 +113,8 @@ export default class Article extends wepy.component {
             this.$parent.$navigate('/pages/search/index', { type: 3})
         },
         handleChangeTab(e) {
-            this.queryParams._sort = this.sorts[e.detail.index]
+            this.activeTab = e.detail.index
+            this.queryParams._sort = this.sorts[this.activeTab]
             this.handleFetchList(true, false, this.handleListBefore)
         },
         // 点赞收藏
@@ -215,7 +216,6 @@ export default class Article extends wepy.component {
                 v.videos = []
             }
             v.files = [...v.images, ...v.videos]
-            console.log(v.files)
         })
         return list
     }

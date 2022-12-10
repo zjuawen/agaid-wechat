@@ -40,7 +40,6 @@ export default class Bulletin extends wepy.page {
     onLoad (params, data) {
         this.info = wx.getStorageSync('covid-bulletin-info')
         this.$apply()
-        console.log(this.info)
     }
     onShow () {
         

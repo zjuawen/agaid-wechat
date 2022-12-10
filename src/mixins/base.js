@@ -47,6 +47,43 @@ export default class baseMixin extends wepy.mixin {
         api.$request('bind', wxuser).then(({data}) => {})
     }
 
+    handleCheckWords(_openid, _content, callback) {
+        let checkForm = {
+            openid: _openid,
+            content: _content
+        }
+        api.$request('check_word', checkForm , true, false).then(({data}) => {
+            if (data.errcode==0) {
+                if (data.result.suggest == 'pass') {
+                    callback && callback()
+                } else {
+                    api.toast('提交的内容不合规，请重新填写', 'none')
+                }
+            } else {
+                api.toast('操作失败', 'none')
+            }
+        })
+    }
+
+    handleCheckFile(_openid, _url, _type, callback) {
+        let checkForm = {
+            openid: _openid,
+            medias: _url,
+            type: _type
+        }
+        api.$request('check_file', checkForm , true, false).then(({data}) => {
+            if (data.errcode==0) {
+                if (data.result.suggest == 'pass') {
+                    callback && callback()
+                } else {
+                    api.toast('提交的内容不合规，请重新填写', 'none')
+                }
+            } else {
+                api.toast('操作失败', 'none')
+            }
+        })
+    }
+
     // 获取对象多层级对应key的值
     handleGetObjectValue(data, key) {
         let value = ''

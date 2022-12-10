@@ -246,50 +246,52 @@ export default class Chat extends wepy.page {
     }
     // 发送消息
     handleDoSend(_type, _content) {
-        if (this.submitLoading) {
+        let vm = this
+        if (vm.submitLoading) {
             return
         }
         if (!_content) {
             api.toast('内容不能为空', 'none')
             return
         }
-        let vm = this
-        let sdata = {
-            customer: this.wxuserInfo.id,
-            professor: this.professorId,
-            content: _content,
-            user: this.userInfo.id,
-            type: _type
-        }
-        vm.submitLoading = true
-        api.$request('chats_save', sdata , false, false).then(({data}) => {
-            if (data && data.id) {
-                data.new = true
-                data.sendType = 2
-                data.animation = null
-                data.created_at = vm.handleDateView(data.created_at)
-                // 图片、视频
-                if (data.type == 1 || data.type == 2) {
-                    data.content = api.attachmentPath + data.content
-                }
-                vm.handleSetTimeSingle(data)
-                vm.messages.push(data)
-                vm.lastChat = data
-                if (_type == 0) {
-                    vm.submitData.content = ''
-                }
-                vm.$apply()
-                setTimeout(function(){
-                    vm.pageScrollToBottom(data.id, true);
-                    vm.showScroll = 1
-                    vm.$apply()
-                }, 600)
-            } else {
-                api.toast(data.msg, 'none')
+        vm.handleCheckWords(vm.wxuserInfo.openid, _content, () => {
+            let sdata = {
+                customer: vm.wxuserInfo.id,
+                professor: vm.professorId,
+                content: _content,
+                user: vm.userInfo.id,
+                type: _type
             }
-        }).finally(() => {
-            vm.submitLoading = false
-            vm.$apply()
+            vm.submitLoading = true
+            api.$request('chats_save', sdata , false, false).then(({data}) => {
+                if (data && data.id) {
+                    data.new = true
+                    data.sendType = 2
+                    data.animation = null
+                    data.created_at = vm.handleDateView(data.created_at)
+                    // 图片、视频
+                    if (data.type == 1 || data.type == 2) {
+                        data.content = api.attachmentPath + data.content
+                    }
+                    vm.handleSetTimeSingle(data)
+                    vm.messages.push(data)
+                    vm.lastChat = data
+                    if (_type == 0) {
+                        vm.submitData.content = ''
+                    }
+                    vm.$apply()
+                    setTimeout(function(){
+                        vm.pageScrollToBottom(data.id, true);
+                        vm.showScroll = 1
+                        vm.$apply()
+                    }, 600)
+                } else {
+                    api.toast(data.msg, 'none')
+                }
+            }).finally(() => {
+                vm.submitLoading = false
+                vm.$apply()
+            })
         })
     }
     // 滚动到底部
