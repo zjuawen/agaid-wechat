@@ -36,7 +36,6 @@
                             class="w-full" 
                             placeholder="请输入回复" 
                             data-key="description"
-                            maxlength="-1"
                             @input="inputReply" 
                             placeholder-class="color-desc"
                             maxlength="-1"
