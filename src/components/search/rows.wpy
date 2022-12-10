@@ -1,5 +1,6 @@
 <template>
     <view class="list-item {{type==1?'flex-item':''}} wl-padding-sm box-radius-20 bg-white wl-margin-bottom-sm">
+        <!-- 分类 -->
         <navigator wx:if="{{type==0}}" hover-class="none">
             <view class="flex flex-ai-center">
                 <image wx:if="{{item.thumb&&item.thumb.url}}" class="avatar" src="{{item.thumb.url}}" mode="scaleToFill" />
@@ -11,6 +12,7 @@
                 </view>
             </view>
         </navigator>
+        <!-- 资讯 -->
         <navigator wx:if="{{type==1}}" hover-class="none" url="/pages/news/detail?id={{item.id}}">
             <view class="live">
                 <image wx:if="{{item.type==1}}" class="thumb" src="{{item.image.url}}" mode="scaleToFill" />
@@ -18,15 +20,14 @@
             </view>
             <view class="info wl-padding-xs">
                 <view class="title text-ellipsis text-26 text-bold">{{item.title}}</view>
-                <view class="author flex flex-ai-end">
-                    <view class="flex-main flex flex-ai-center">
-                        <image wx:if="{{item.author&&item.author.customer&&item.author.customer.avatar}}" class="avatar" src="{{item.author.customer.avatar}}" mode="scaleToFill" />
-                        <image wx:else class="avatar" src="/public/img/logo.jpg" mode="scaleToFill" />
-                        <view class="text-20 flex-main wl-margin-left-xs">{{item.author.username}}</view>
-                    </view>
+                <view class="author flex flex-ai-center wl-margin-top-xs">
+                    <image wx:if="{{item.author&&item.author.customer&&item.author.customer.avatar}}" class="avatar" src="{{item.author.customer.avatar}}" mode="scaleToFill" />
+                    <image wx:else class="avatar" src="/public/img/logo.jpg" mode="scaleToFill" />
+                    <view class="text-20 flex-main wl-margin-left-xs text-ellipsis">{{item.author.username}}</view>
                 </view>
             </view>
         </navigator>
+        <!-- 专家 -->
         <navigator wx:if="{{type==2}}" hover-class="none">
             <view class="flex flex-ai-center wl-margin-bottom-lg">
                 <image wx:if="{{item.image&&item.image.url}}" class="avatar" src="{{item.image.url}}" mode="scaleToFill" />
@@ -51,6 +52,7 @@
                 </view>
             </view>
         </navigator>
+        <!-- 提问 -->
         <navigator wx:if="{{type==3}}" hover-class="none" url="/pages/article/detail?id={{item.id}}">
             <view class="flex flex-ai-center wl-margin-bottom-lg">
                 <image wx:if="{{item.author&&item.author.customer&&item.author.customer.avatar}}" class="avatar" src="{{item.author.customer.avatar}}" mode="scaleToFill" />

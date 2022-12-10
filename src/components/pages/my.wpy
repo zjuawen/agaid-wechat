@@ -31,7 +31,7 @@
                     <view class="text-28 text-sc-medium wl-margin-top-xs"> 我的提问</view>
                 </navigator>
                 <navigator class="menu-item text-center color-green" hover-class="none" url="/pages/my/sign">
-                    <i class="fa fa-edit text-50"></i>
+                    <i class="fa fa-edit text-60"></i>
                     <view class="text-28 text-sc-medium wl-margin-top-xs"> 我的报名</view>
                 </navigator>
             </view>

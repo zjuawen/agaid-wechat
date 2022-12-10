@@ -29,13 +29,12 @@
                             </view>
                             <view wx:if="{{item.title}}" class="title text-36 wl-margin-bottom-sm text-ellipsis-2">{{item.title}}</view>
                             <view wx:if="{{item.description}}" class="description text-30 color-gray wl-margin-bottom-sm text-ellipsis-2">{{item.description}}</view>
-                            <view wx:if="{{(item.images&&item.images.length>0)||(item.videos&&item.videos.length>0)}}" class="list-pics scroll-x ">
-                                <block wx:if="{{item.images&&item.images.length>0}}">
-                                    <image wx:for="{{item.images}}" wx:for-item="file" wx:for-index="fidx" class="list-pics-item sm" src="{{file.url}}"  mode="aspectFill" @catchtap="handlePreview({{item}}, {{index}}, 0)" />
+                            <view wx:if="{{item.files&&item.files.length>0}}" class="list-pics scroll-x ">
+                                <block wx:for="{{item.files}}" wx:for-item="file" wx:for-index="fidx" wx:if="{{fidx<3}}">
+                                    <image wx:if="{{file.type==1}}" class="list-pics-item sm" src="{{file.url}}"  mode="aspectFill" />
+                                    <video wx:if="{{file.type==2}}" controls="{{false}}" show-center-play-btn="{{false}}" class="list-pics-item sm" src="{{file.url}}" />
                                 </block>
-                                <block wx:if="{{item.videos&&item.videos.length>0}}">
-                                    <video wx:for="{{item.videos}}" wx:for-item="file" wx:for-index="fidx" controls="{{false}}" show-center-play-btn="{{false}}" class="list-pics-item sm" src="{{file.url}}" @catchtap="handlePreview({{item}}, {{index}}, {{item.images.length}})" />
-                                </block>
+                                <view wx:if="{{item.files.length>3}}" style="width: auto;line-height: 180rpx;" class="text-30 inline flow-hide list-pics-item sm">···</view>
                             </view>
                             <view wx:if="{{item.type==2&&item.reply_content}}" class="reply wl-padding-sm bg-gray text-30 wl-margin-top-sm box-radius-20">
                                 <text class="text-ellipsis-2">{{item.professor.name}}：<text class="color-gray">{{item.reply_content}}</text></text>
@@ -201,14 +200,22 @@ export default class Article extends wepy.component {
             }
             if (v.images && v.images.length > 0) {
                 v.images.forEach(m => {
+                    m.type = 1
                     m.url = api.attachmentPath + m.id
                 })
+            } else {
+                v.images = []
             }
             if (v.videos && v.videos.length > 0) {
                 v.videos.forEach(m => {
+                    m.type = 2
                     m.url = api.attachmentPath + m.id
                 })
+            } else {
+                v.videos = []
             }
+            v.files = [...v.images, ...v.videos]
+            console.log(v.files)
         })
         return list
     }

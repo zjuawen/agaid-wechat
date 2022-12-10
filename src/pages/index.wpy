@@ -18,10 +18,20 @@
                         wx:for="{{navItems}}" wx:key="index" 
                         class="nav-bar-item flex-main text-center {{navActive==index?'active':''}}" 
                         @tap="handleNavbarClick({{index}})">
-                        <i class="{{item.icon}} relative bar-icon">
-                            <!-- <text wx:if="{{index==0}}" class="tip">2</text> -->
-                        </i>
-                        <view class="text-24 nav-title">{{item.text}}</view>
+                        <view wx:if="{{item.isHome&&navActive==index}}" class="box-center home">
+                            <view class="box-center">
+                                <i class="{{item.icon}} relative bar-icon" style="font-size: {{item.size}}rpx;">
+                                    <!-- <text wx:if="{{index==0}}" class="tip">2</text> -->
+                                </i>
+                                <view class="text-24 nav-title">{{item.text}}</view>
+                            </view>
+                        </view>
+                        <block wx:else>
+                            <i class="{{item.icon}} relative bar-icon" style="font-size: {{item.size}}rpx;">
+                                <!-- <text wx:if="{{index==0}}" class="tip">2</text> -->
+                            </i>
+                            <view class="text-24 nav-title">{{item.text}}</view>
+                        </block>
                     </view>
                 </view>
             </block>
@@ -88,11 +98,11 @@ export default class Index extends wepy.page {
         navActive: 2,
         navCode: '',
         navItems: [
-            { text: '品种', code: 'Category', icon: 'icon-category'},
-            { text: '提问', code: 'Article', icon: 'icon-article'},
-            { text: '首页', code: 'News', icon: 'fa fa-home'},
-            { text: '专家', code: 'Professor', icon: 'icon-professor'},
-            { text: '我的', code: 'My', icon: 'icon-user'},
+            { text: '品种', code: 'Category', icon: 'icon-category', size: 40},
+            { text: '提问', code: 'Article', icon: 'icon-ques', size: 36},
+            { text: '首页', code: 'News', icon: 'icon-news', size: 46, isHome: true},
+            { text: '专家', code: 'Professor', icon: 'icon-professor', size: 40},
+            { text: '我的', code: 'My', icon: 'icon-user', size: 40},
         ]
 
     }
