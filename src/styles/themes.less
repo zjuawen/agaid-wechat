@@ -753,9 +753,14 @@
 	}
 
 	.menu-nav {
-		margin-top: -82rpx;
 		.menu-item { 
 			background-color: #ffffff;height: 100rpx;line-height: 100rpx;padding: 0 30rpx 0 58rpx;border-radius: 20rpx;margin-bottom: 20rpx;
+		}
+		&-horizontal {
+			margin-top: -82rpx;background-color: #ffffff;border-radius: 20rpx;margin-bottom: 40rpx;padding: 30rpx;box-shadow: 0 0 17rpx 0 rgba(60, 176, 53, 0.5);
+			.menu-item { 
+				flex: 1;
+			}
 		}
 	}
 
@@ -971,4 +976,11 @@
 	align-items:center;
 	font-size:28rpx;
 	line-height:34rpx;
+}
+
+
+.words {
+	p, .p {
+		word-break: break-all；white-space: pre-warp;
+	}
 }

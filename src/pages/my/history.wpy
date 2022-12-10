@@ -4,11 +4,11 @@
             <view wx:if="{{!loading&&history&&history.length>0}}" class="list-card bg-white wl-margin-bottom-sm wl-padding-top-0">
                 <view class="card-body wl-padding-bottom-lg">
                     <view wx:for="{{history}}" wx:key="index" class="flex flex-ai-start list-item" @tap="handleToDetail({{item}})">
-                        <view class="flex-main flex flex-ai-center wl-padding-vertical-lg line">
-                            <view class="tag {{typeDict[item.type].cls}} wl-margin-top-0 wl-margin-right-xs">{{typeDict[item.type].name}}</view>
+                        <view class="flex-main flex flex-ai-start wl-padding-vertical-lg line">
+                            <view class="tag {{typeDict[item.type].cls}} wl-margin-top-xs wl-margin-right-xs">{{typeDict[item.type].name}}</view>
                             <view class="flex-main">
-                                <view class="color-title text-30 text-sc-bold line-1">{{item.type=='news'?item.data.title:item.data.description}}</view>
-                                <!-- <view class="color-desc text-20 wl-margin-top-sm">{{item.createTime}}</view> -->
+                                <view class="color-title text-30 text-sc-bold">{{item.type=='news'?item.data.title:item.data.description}}</view>
+                                <!-- <view class="color-desc text-20 wl-margin-top-sm">{{item.created_at}}</view> -->
                                 <!-- <view class="tag text-20"></view> -->
                             </view>
                             <i class="fa fa-angle-right color-green text-40 wl-margin-left-8"></i>

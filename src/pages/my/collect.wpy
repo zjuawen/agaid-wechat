@@ -4,10 +4,10 @@
             <view wx:if="{{!isEmpty}}" class="list-card bg-white wl-margin-bottom-sm wl-padding-top-0">
                 <view class="card-body wl-padding-bottom-lg">
                     <view wx:for="{{queryConfig.list}}" wx:key="index" class="flex flex-ai-start list-item" @tap="handleToDetail({{item}})">
-                        <view class="flex-main flex flex-ai-center wl-padding-vertical-lg line">
-                            <view class="tag {{typeDict['t_'+item.type].cls}} wl-margin-top-0 wl-margin-right-xs">{{typeDict['t_'+item.type].name}}</view>
+                        <view class="flex-main flex flex-ai-start wl-padding-vertical-lg line">
+                            <view class="tag {{typeDict['t_'+item.type].cls}} wl-margin-top-xs wl-margin-right-xs">{{typeDict['t_'+item.type].name}}</view>
                             <view class="flex-main">
-                                <view class="color-title text-30 text-sc-bold line-1">{{item.type==5?item.target.title:item.target.description}}</view>
+                                <view class="color-title text-30 text-sc-bold">{{item.type==5?item.target.title:item.target.description}}</view>
                             </view>
                             <i class="fa fa-angle-right color-green text-40 wl-margin-left-8"></i>
                         </view>

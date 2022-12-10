@@ -1,0 +1,79 @@
+<template>
+    <view class="page-message-list relative">
+        <scroll-view scroll-y="true" class="list z-100 bg-tran fix-iphonex-bottom" @scrolltolower="handleNext">
+            <view wx:if="{{!isEmpty}}" class="list-card bg-white wl-margin-bottom-sm wl-padding-top-0">
+                <view wx:for="{{queryConfig.list}}" wx:key="index" class="card-body wl-padding-vertical-lg border-bottom">
+                    <view class="flex flex-ai-center list-item" @tap="handleToDetail({{item}})">
+                        <view class="flex-main">
+                            <view class="flex-main color-title text-30" style="word-break: break-word;">{{item.news.title}}</view>
+                            <view class="color-gray text-24 wl-margin-top-sm">{{item.created_at}}</view>
+                        </view>
+                        <i class="fa fa-angle-right color-green text-40 wl-margin-left-8"></i>
+                    </view>
+                </view>
+            </view>
+            <view  wx:if="{{isEmpty}}" class="card-body">
+                <view class="empty">
+                    <i class="icon icon-empty"></i>
+                    <view class="wl-margin-top-sm">~还没有报名信息</view>
+                </view>
+            </view>
+        </scroll-view>
+    </view>
+</template>
+<script>
+import wepy from 'wepy'
+import api from '@/utils/api'
+import baseMixin from '@/mixins/base'
+export default class Sign extends wepy.page {
+    config = {
+        navigationBarTitleText: '我的报名',
+    }
+    
+    mixins = [ baseMixin ]
+    
+    components = {
+    }
+
+    data = {
+        loading: true,
+        driftx: null,
+        drifty: null,
+        queryParams: {
+            customer: null
+        }
+    }
+
+    computed = {
+        isEmpty() {
+            return (!this.queryConfig.loading&&this.queryConfig.finished&&this.queryConfig.list.length==0)
+        },
+    }
+    
+    methods = {
+        handleToDetail(item) {
+            this.$navigate('/pages/my/signdetail?id='+item.id)
+        }
+    }
+
+    events = {
+    }
+
+
+    onLoad (params, data) {
+        this.queryConfig.key = 'signs_list'
+        this.queryParams.customer = wepy.$instance.globalData.wxuser.id
+        this.handleFetchList(true, false)
+    }
+    onShow () {
+        this.handleCheckPageBackReload((res)=>{
+            this.handleFetchList(true, false)
+        })
+    }
+    onReady () {
+        
+    }
+}
+</script>
+<style lang="css">
+</style>

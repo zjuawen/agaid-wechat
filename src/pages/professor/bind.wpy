@@ -18,7 +18,7 @@
                         </view>
                     </view>
                 </view>
-                <view class="form-group flex">
+                <view class="form-group flex wl-margin-bottom-sm">
                     <view class="form-label must">专家姓名</view>
                     <view class="flex flex-ai-center flex-main">
                         <view class="form-control">
@@ -31,7 +31,7 @@
                         </view>
                     </view>
                 </view>
-                <view class="form-group flex">
+                <view class="form-group flex wl-margin-bottom-sm">
                     <view class="form-label">联系电话</view>
                     <view class="flex flex-ai-center flex-main">
                         <view class="form-control">
@@ -44,7 +44,7 @@
                         </view>
                     </view>
                 </view>
-                <view class="form-group flex">
+                <view class="form-group flex wl-margin-bottom-sm">
                     <view class="form-label must">服务区域</view>
                     <view class="flex flex-ai-center flex-main">
                         <view class="form-control">
@@ -74,7 +74,7 @@
             </view>
         </view>
         <view class="wl-padding-page wl-margin-vertical-xl fix-iphonex-bottom">
-            <button class="btn btn-submit border-none" hover-class='none' @tap="handleSave"> 提交申请 </button>
+            <button class="btn btn-submit border-none" hover-class='none' @tap="handleSave"> {{submitData.id?'保存修改':'提交申请'}} </button>
         </view>
     </view>
 </template>
@@ -179,7 +179,6 @@ export default class Bind extends wepy.page {
                 return
             }
             let sdata = JSON.parse(JSON.stringify(this.submitData))
-                sdata.state = 0
             this.submitLoading = true
             if (sdata.id) {
                 api.$request(['professor_update', sdata.id], sdata, true, false).then(({data}) => {
@@ -196,6 +195,7 @@ export default class Bind extends wepy.page {
                     this.$apply()
                 })
             } else {
+                sdata.state = 0
                 api.$request('professor_save', sdata, true, false).then(({data}) => {
                     if (data && data.id) {
                         api.$request(['users_update', this.userInfo.id], { professor: data.id }, true, false).then((ret) => {

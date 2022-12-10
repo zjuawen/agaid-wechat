@@ -48,7 +48,7 @@
                 </view>
             </view>
             <view class="list-item wl-padding-bottom-nav box-radius-20 bg-white wl-margin-bottom-sm">
-                <view class="wl-padding-page wl-padding-top-sm wl-padding-bottom-lg text-34 color-title text-left"><text class="box-border-title wl-padding-bottom-xs">评论</text></view>
+                <view style="position: sticky;top: 0;z-index: 1001;" class="bg-white box-shadow wl-padding-page wl-padding-top-sm wl-padding-bottom-lg text-34 color-title text-left"><text class="box-border-title wl-padding-bottom-xs">评论</text></view>
                 <Consult />
             </view>
             <view wx:if="{{!isReply}}" class="nav-bar flex flex-ai-center fix-iphonex-bottom">

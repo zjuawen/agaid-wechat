@@ -1,0 +1,83 @@
+<template>
+    <view class="page-bulletin-detail">
+        <view class="relative flex-main flow-y-auto list z-100 bg-tran fix-iphonex-bottom">
+            <view class="list-item bg-white wl-padding-sm wl-margin-bottom-sm">
+                <view class="title text-36 text-center wl-margin-bottom-sm">{{info.title}}</view>
+                <view class="flex flex-ai-center flex-jc-center wl-padding-bottom-xl">
+                    <view class="icon-user text-24 color-gray wl-margin-right-xs"></view>
+                    <view class="text-24 color-gray">{{info.author.username}}</view>
+                    <view class="text-24 color-gray wl-margin-horizontal-sm">|</view>
+                    <view class="fa fa-clock-o text-24 color-gray wl-margin-right-xs"></view>
+                    <view class="text-26 color-gray">{{info.created_at}}</view>
+                </view>
+            </view>
+            <view class="list-item wl-padding-sm bg-white wl-margin-bottom-sm flow-x-auto">
+                <rich-text class="words text-30 color-title sc-regular line-40" nodes="{{info.content}}"></rich-text>
+            </view>
+        </view>
+    </view>
+</template>
+<script>
+import wepy from 'wepy'
+import api from '@/utils/api'
+import baseMixin from '@/mixins/base'
+export default class Detail extends wepy.page {
+    config = {
+        navigationBarTitleText: '公告详情',
+    }
+    
+    mixins = [ baseMixin ]
+    
+    components = {}
+
+    data = {
+        loading: false,
+        bulletinId: null,
+        info: {}
+    }
+
+    computed = {
+    }
+    
+    methods = {
+        handleBack() {
+            this.pageBack(false, true)
+        }
+    }
+
+    events = {
+    }
+
+    onLoad (params, data) {
+        this.bulletinId = params.id
+        this.handleFetchDetail()
+        this.$apply()
+    }
+    onShow () {
+        
+    }
+    onReady () {
+
+    }
+
+    handleFetchDetail() {
+        let vm = this
+        this.loading = true
+        api.$request(['bulletins_info', this.bulletinId], {} , true, false).then(({data}) => {
+            if (data && data.id) {
+                data.created_at = this.handleDateView(data.created_at)
+                // data.content = '<div style="word-break: break-all;">'+data.content+'</div>'
+                this.info = data
+                this.$apply()
+            } else {
+                api.toast(data.msg, 'none')
+            }
+        }).finally(() => {
+            this.loading = false
+            this.$apply()
+        })
+    }
+}
+</script>
+<style lang="css">
+</style>

@@ -17,25 +17,29 @@
             </view>
         </view>
         <view class="wl-padding-page z-500 relative fix-iphonex-bottom">
+            <view class="menu-nav-horizontal flex flex-ai-center">
+                <navigator class="menu-item text-center color-green" hover-class="none" url="/pages/professor/bind">
+                    <i class="fa fa-user text-60"></i>
+                    <view class="text-28 text-sc-medium wl-margin-top-xs"> 我是专家</view>
+                </navigator>
+                <navigator class="menu-item text-center color-green" hover-class="none" url="/pages/my/collect">
+                    <i class="fa fa-star-half-o text-60"></i>
+                    <view class="text-28 text-sc-medium wl-margin-top-xs"> 我的收藏</view>
+                </navigator>
+                <navigator class="menu-item text-center color-green" hover-class="none" url="/pages/my/article">
+                    <i class="fa fa-file-text-o text-60"></i>
+                    <view class="text-28 text-sc-medium wl-margin-top-xs"> 我的提问</view>
+                </navigator>
+                <navigator class="menu-item text-center color-green" hover-class="none" url="/pages/my/sign">
+                    <i class="fa fa-edit text-50"></i>
+                    <view class="text-28 text-sc-medium wl-margin-top-xs"> 我的报名</view>
+                </navigator>
+            </view>
             <view class="menu-nav flow-hide">
                 <navigator class="menu-item flex flex-ai-center" hover-class="none" url="/pages/my/history">
                     <i class="fa fa-file-text-o text-60 color-green wl-margin-right-sm"></i>
                     <view class="flex-main flex flex-ai-center">
                         <text class="flex-main text-32 text-sc-medium"> 浏览记录</text>
-                        <i class="fa fa-angle-right color-sub-green text-bold text-40"></i>
-                    </view>
-                </navigator>
-                <navigator class="menu-item flex flex-ai-center" hover-class="none" url="/pages/my/article">
-                    <i class="fa fa-file-text-o text-60 color-green wl-margin-right-sm"></i>
-                    <view class="flex-main flex flex-ai-center">
-                        <text class="flex-main text-32 text-sc-medium"> 我的提问</text>
-                        <i class="fa fa-angle-right color-sub-green text-bold text-40"></i>
-                    </view>
-                </navigator>
-                <navigator class="menu-item flex flex-ai-center" hover-class="none" url="/pages/my/collect">
-                    <i class="fa fa-star-half-o text-60 color-green wl-margin-right-sm"></i>
-                    <view class="flex-main flex flex-ai-center">
-                        <text class="flex-main text-32 text-sc-medium">我的收藏</text>
                         <i class="fa fa-angle-right color-sub-green text-bold text-40"></i>
                     </view>
                 </navigator>
@@ -48,17 +52,17 @@
                         <i class="fa fa-angle-right color-sub-green text-bold text-40"></i>
                     </view>
                 </view>
-                <navigator wx:if="{{!isProfessor}}" class="menu-item flex flex-ai-center" hover-class="none" url="/pages/professor/bind">
-                    <i class="fa fa-user text-60 color-green wl-margin-right-sm relative"></i>
-                    <view class="flex-main flex flex-ai-center">
-                        <text class="flex-main text-32 text-sc-medium"> 我是专家</text>
-                        <i class="fa fa-angle-right color-sub-green text-bold text-40"></i>
-                    </view>
-                </navigator>
                 <navigator class="menu-item flex flex-ai-center" hover-class="none" url="/pages/message/list">
                     <i class="fa fa-flickr text-60 color-green wl-margin-right-sm"></i>
                     <view class="flex-main flex flex-ai-center">
                         <text class="flex-main text-32 text-sc-medium">我的留言</text>
+                        <i class="fa fa-angle-right color-sub-green text-bold text-40"></i>
+                    </view>
+                </navigator>
+                <navigator class="menu-item flex flex-ai-center" hover-class="none" url="/pages/bulletin/list">
+                    <i class="fa fa-bell-o text-50 color-green wl-margin-right-sm"></i>
+                    <view class="flex-main flex flex-ai-center">
+                        <text class="flex-main text-32 text-sc-medium">公告消息</text>
                         <i class="fa fa-angle-right color-sub-green text-bold text-40"></i>
                     </view>
                 </navigator>

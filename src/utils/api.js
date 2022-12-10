@@ -30,6 +30,9 @@ const urlConfig = {
     atnews_info:            ['', '/atnews/${0}', methods.GET],
     atnews_update:          ['', '/atnews/${0}', methods.PUT],
 
+    bulletins_list:         ['', '/bulletins', methods.GET],
+    bulletins_info:         ['', '/bulletins/${0}', methods.GET],
+
     chats_list:             ['', '/chats', methods.GET],
     chats_save:             ['', '/chats', methods.POST],
     chats_delete:           ['', '/chats/${0}', methods.DELETE],
@@ -58,6 +61,7 @@ const urlConfig = {
     users_update:           ['', '/users/${0}', methods.PUT],
 
     signs_list:             ['', '/signs', methods.GET],
+    signs_info:             ['', '/signs/${0}', methods.GET],
     sign_save:              ['', '/signs', methods.POST],
     sign_update:            ['', '/signs/${0}', methods.PUT],
 

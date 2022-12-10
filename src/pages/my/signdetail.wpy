@@ -1,0 +1,157 @@
+<template>
+    <view class="page-task-driver flex flex-col h-full-v flow-hide">
+        <view class="relative flex-main flow-y-auto list z-100 bg-tran fix-iphonex-bottom">
+            <view class="list-item bg-white wl-padding-sm wl-margin-bottom-sm">
+                <view class="title text-36 text-center wl-margin-bottom-sm">{{info.title}}</view>
+                <view class="flex flex-ai-center flex-jc-center wl-padding-bottom-xl">
+                    <view wx:if="{{info.author&&info.author.username}}" class="text-24 color-gray flex-main text-ellipsis">
+                        <i class="icon-user text-24 color-gray wl-margin-right-xs"></i>{{info.author.username}}
+                    </view>
+                    <view class="text-24 color-gray wl-margin-horizontal-sm">|</view>
+                    <view class="text-26 color-gray flex-main">
+                        <i class="fa fa-clock-o text-24 color-gray wl-margin-right-xs"></i>{{info.created_at}}
+                    </view>
+                </view>
+                <view wx:if="{{info.type==1}}" class="live wl-margin-bottom-sm bg-white">
+                    <image class="w-full box-radius-20" src="{{info.image.url}}"  mode="aspectFill" />
+                </view>
+                <view wx:if="{{info.description}}" style="line-height: 1.6;" class="description text-30 color-gray wl-margin-bottom-sm">{{info.description}}</view>
+            </view>
+            <view wx:if="{{info.content}}" class="list-item wl-padding-sm bg-white wl-margin-bottom-sm flow-x-auto">
+                <rich-text class="text-30 color-title sc-regular line-40" nodes="{{info.content}}"></rich-text>
+            </view>
+            <view wx:if="{{info.type==2}}" class="live wl-padding-sm bg-white">
+                <video class="video w-full box-radius-20" autoplay="{{true}}" custom-cache="{{false}}" controls="{{true}}" show-center-play-btn="{{true}}" src="{{info.video.url}}" />
+            </view>
+            <view wx:if="{{sign.infos&&sign.infos.length>0}}" class="list-item wl-padding-sm bg-white wl-margin-vertical-sm box-border-top">
+                <block wx:for="{{sign.infos}}"  wx:for-item="group" wx:for-index="gidx">
+                    <view class="title text-36 wl-margin-bottom-sm">{{group.title}}</view>
+                    <view wx:for="{{group.items}}"  wx:for-item="attr" wx:for-index="aidx" class="bg-gray wl-padding-sm wl-margin-top-xs box-radius">
+                        <text class="color-gray text-26">{{attr.title}}：{{attr.valueStr}}</text>
+                    </view>
+                </block>
+
+                <view wx:if="{{info.is_sign}}" class="consult-tab  text-center wl-padding-page wl-padding-top-sm wl-padding-bottom-sm z-100">
+                    <view class="btn btn-search wl-margin-auto" style="width: 60%;" @tap="handleToSign">修改信息</view>
+                </view>
+            </view>
+        </view>
+    </view>
+</template>
+<script>
+import wepy from 'wepy'
+import api from '@/utils/api'
+import baseMixin from '@/mixins/base'
+import Consult from '@/components/consult/list'
+export default class SignDetail extends wepy.page {
+    config = {
+        navigationBarTitleText: '报名详情'
+    }
+    
+    mixins = [ baseMixin ]
+    
+    components = {
+        Consult
+    }
+
+    data = {
+        loading: true,
+        signId: null,
+        sign: {},
+        info: {},
+    }
+
+    computed = {
+        userInfo() {
+            return this.$parent.globalData.appuser
+        }
+    }
+    
+    methods = {
+        handleToSign() {
+            this.$navigate('/pages/news/sign', { id: this.info.id })
+        }
+    }
+
+    events = {
+    }
+
+    handleFetchDetail() {
+        let vm = this
+        this.loading = true
+        api.$request(['signs_info', this.signId], {} , true, false).then(({data}) => {
+            if (data && data.id) {
+                try {
+                    data.infos = JSON.parse(data.infos)
+                } catch(e) {
+                    data.infos = []
+                }
+                if (data.infos && data.infos.length > 0) {
+                    data.infos.forEach(group => {
+                        if (group.items && group.items.length > 0) {
+                            group.items.forEach(item => {
+                                item.valueStr = vm.handleGetValue(item)
+                            })
+                        }
+                    })
+                }
+                data.news.created_at = this.handleDateView(data.news.created_at)
+                this.sign = data
+                this.info = data.news
+                this.$apply()
+            } else {
+                api.toast(data.msg, 'none')
+            }
+        }).finally(() => {
+            this.loading = false
+            this.$apply()
+        })
+    }
+
+    handleGetValue(item) {
+        let val = []
+        if (item.type == 'input') {
+            item.options.forEach(v => {
+                let str = v.prefix + v.value + v.suffix
+                val.push(str)
+            })
+        } else if (item.type == "radio") {
+            let v = item.options[item.value]
+            if (v.type == 3) {
+                v.options.forEach(sub => {
+                    val.push((sub.prefix+ '：[' + sub.value + ']' + sub.suffix))
+                })
+            } else {
+                val.push(v.value)
+            }
+        } else if (item.type == "checkbox") {
+            item.options.forEach((v, idx) => {
+                if (item.value.include(idx)) {
+                    if (v.type == 2) {
+                        val.push(v.value+'，'+v.prefix+v.other)
+                    } else {
+                        val.push(v.value)
+                    }
+                }
+            })
+        }
+        return val.join(',')
+    }
+
+    async onLoad (params, data) {
+        this.signId = params.id
+        this.$apply()
+        this.handleFetchDetail()
+    }
+    onShow () {
+        this.handleCheckPageBackReload((res)=>{
+            this.handleFetchDetail()
+        })
+    }
+    onReady () {
+
+    }
+}
+</script>
+<style lang="css">
+</style>
