@@ -10,11 +10,14 @@
                                 <image wx:else class="icon-60 circle" src="/public/img/avatar.png" mode="scaleToFill" />
                                 <!-- <view class="text-20 text-ellipsis text-center w-100r">{{item.customer.nickname}}</view> -->
                             </view>
-                            <view class="flex-main wl-margin-left-sm wl-padding-top-xs flow-hide">
-                                <view class="title text-32 color-sub-title wl-margin-bottom-sm">{{item.content}}</view>
-                                <view class="wl-margin-top-xs text-ellipsis text-24 color-gray">
-                                    {{item.created_at}}<text class="text-24 color-gray"> · </text>{{item.customer.nickname}}
+                            <view class="flex-main wl-margin-left-sm wl-padding-top-xs flow-hide flex flex-ai-end">
+                                <view class="flex-main">
+                                    <view class="title text-32 color-sub-title wl-margin-bottom-sm">{{item.content}}</view>
+                                    <view class="wl-margin-top-xs text-ellipsis text-24 color-gray">
+                                        {{item.created_at}}<text class="text-24 color-gray"> · </text>{{item.customer.nickname}}
+                                    </view>
                                 </view>
+                                <view wx:if="{{userInfo.id==item.customer.id}}" class="color-warning text-28" @tap="handleDelete({{item}}, {{index}})">撤回</view>
                             </view>
                         </view>
                     </view>
@@ -108,6 +111,14 @@ export default class list extends wepy.component {
             }).finally(() => {
                 this.submitLoading = false
                 this.$apply()
+            })
+        },
+        handleDelete(item, idx) {
+            api.$request(['consults_delete', item.id], {} , true, false).then(({data}) => {
+                if (data && data.id) {
+                    this.queryConfig.list.splice(idx, 1)
+                    this.$apply()
+                }
             })
         }
     }

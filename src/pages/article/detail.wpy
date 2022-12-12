@@ -20,7 +20,7 @@
                 <view wx:if="{{info.videos&&info.videos.length>0}}" class="live wl-margin-top-sm bg-white">
                     <video  wx:for="{{info.videos}}" wx:for-item="file" wx:for-index="fidx" class="video w-full box-radius-20" src="{{file.url}}" />
                 </view>
-                <view wx:if="{{info.type==2&&!isReply}}" class="reply wl-padding-sm bg-gray text-30 wl-margin-top-sm box-radius-20">
+                <view wx:if="{{info.type==2&&!isReply&&info.reply_content}}" class="reply wl-padding-sm bg-gray text-30 wl-margin-top-sm box-radius-20">
                     <text>{{info.professor.name}}：<text class="color-gray">{{info.reply_content}}</text></text>
                 </view>
                 <view wx:if="{{info.type==2&&isReply}}" class="reply wl-padding-sm bg-gray text-30 wl-margin-top-sm box-radius-20">
@@ -28,21 +28,22 @@
                         <view>
                             {{info.professor.name}}：
                             <text class="color-gray">{{info.reply_content}}</text>
-                            <view class="color-green inline" @tap="handleShowEdit">修改</view>
+                            <view class="color-green inline wl-margin-left-sm" @tap="handleShowEdit({{info.reply_content}})">修改</view>
                         </view>
                     </block>
                     <block wx:elif="{{!info.reply_content||replyEdit}}">
-                        <textarea
-                            class="w-full" 
-                            placeholder="请输入回复" 
-                            data-key="description"
-                            @input="inputReply" 
-                            placeholder-class="color-desc"
-                            maxlength="-1"
-                            value="{{info.reply_content}}" />
+                        <view>
+                            <textarea
+                                class="w-full wl-margin-bottom-sm box-border-bottom" 
+                                placeholder="请输入回复" 
+                                @input="inputReply" 
+                                placeholder-class="color-desc"
+                                maxlength="-1"
+                                value="{{info.reply_content}}" />
+                        </view>
                         <view class="text-right color-green">
                             <view wx:if="{{info.reply_content}}" class="inline color-gray wl-margin-right-xl" @tap="handleShowEdit"><text>取消</text></view>
-                            <view class="inline" @tap="handleSendReply"><text>回复 </text><i class="fa fa-mail-forward"></i></view>
+                            <view class="btn btn-search inline" @tap="handleSendReply">回复 <i class="fa fa-mail-forward"></i></view>
                         </view>
                     </block>
                 </view>
@@ -120,7 +121,8 @@ export default class Detail extends wepy.page {
             this.replyData.content = e.detail.value
             this.$apply()
         },
-        handleShowEdit() {
+        handleShowEdit(_content='') {
+            this.replyData.content = _content
             this.replyEdit = !this.replyEdit
             this.$apply()
         },
@@ -207,6 +209,7 @@ export default class Detail extends wepy.page {
                 if (data && data.id) {
                     this.info.reply_content = submitData.reply_content
                     this.replyData.content = ''
+                    this.replyEdit = false
                     this.$apply()
                 }
             }).finally(() => {

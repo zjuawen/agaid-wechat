@@ -47,6 +47,7 @@ const urlConfig = {
 
     consults_list:          ['', '/consults', methods.GET],
     consults_save:          ['', '/consults', methods.POST],
+    consults_delete:        ['', '/consults/${0}', methods.DELETE],
 
     collects_list:          ['', '/collects', methods.GET],
     collects_my:            ['', '/collects/me', methods.GET],
