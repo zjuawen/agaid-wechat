@@ -12,7 +12,10 @@
                             </view>
                             <view class="flex-main wl-margin-left-sm wl-padding-top-xs flow-hide flex flex-ai-end">
                                 <view class="flex-main">
-                                    <view class="title text-32 color-sub-title wl-margin-bottom-sm">{{item.content}}</view>
+                                    <view class="title text-32 color-sub-title wl-margin-bottom-sm {{(item.content.length>100&&!item.showMore)?'text-ellipsis-6':''}}">{{item.content}}</view>
+                                    <view wx:if="{{item.content.length>100}}" class="text-center text-26 color-gray" @tap="handleShowMore({{index}})">
+                                        <i class="fa {{item.showMore?'fa-angle-double-up':'fa-angle-double-down'}} text-32 color-gray"></i> {{item.showMore?'收起':'展开'}}
+                                    </view>
                                     <view class="wl-margin-top-xs text-ellipsis text-24 color-gray">
                                         {{item.created_at}}<text class="text-24 color-gray"> · </text>{{item.customer.nickname}}
                                     </view>
@@ -76,6 +79,10 @@ export default class list extends wepy.component {
             if (!this.showPopup) {
                 this.$emit('onclose')
             }
+            this.$apply()
+        },
+        handleShowMore(idx) {
+            this.queryConfig.list[idx].showMore = !this.queryConfig.list[idx].showMore
             this.$apply()
         },
         handleInput (key, e) {

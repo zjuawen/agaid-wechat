@@ -56,7 +56,7 @@
                 <view class="flex-main flex flex-ai-center wl-padding-page">
                     <view class="relative consult-tab flex flex-ai-center flex-main">
                         <i class="left-icon icon-comment text-32 color-blue"></i>
-                        <input type="text"  class="consult-input w-full" confirm-type="send" placeholder="我来说两句" placeholder-class="search-pholder" value="{{formData.content}}" @input="handleInput('content')" bindconfirm="handleSendConsult" />
+                        <input type="text" maxlength="-1" class="consult-input w-full" confirm-type="send" placeholder="我来说两句" placeholder-class="search-pholder" value="{{formData.content}}" @input="handleInput('content')" bindconfirm="handleSendConsult" />
                         <i wx:if="{{formData.content!=''}}" class="text-40 clear-icon fa fa-times-circle color-gray" catchtap="handleClear('content')"></i>
                     </view>
                     <view class="nav-bar-item text-center wl-margin-left-xl {{info.isCollect?'active':''}}" @tap="handleCollect(1)">

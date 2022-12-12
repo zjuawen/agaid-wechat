@@ -22,7 +22,10 @@
                                 </view>
                                 <view class="flex-main wl-margin-left-sm wl-padding-top-xs flow-hide flex flex-ai-end">
                                     <view class="flex-main">
-                                        <view class="title text-32 color-sub-title wl-margin-bottom-sm">{{item.content}}</view>
+                                        <view class="title text-32 color-sub-title wl-margin-bottom-sm {{(item.content.length>100&&!item.showMore)?'text-ellipsis-6':''}}">{{item.content}}</view>
+                                        <view wx:if="{{item.content.length>100}}" class="text-center text-26 color-gray" @tap="handleShowMore({{index}})">
+                                            <i class="fa {{item.showMore?'fa-angle-double-up':'fa-angle-double-down'}} text-32 color-gray"></i> {{item.showMore?'收起':'展开'}}
+                                        </view>
                                         <view class="wl-margin-top-xs text-ellipsis text-24 color-gray">
                                             {{item.created_at}}<text class="text-24 color-gray"> · </text>{{item.customer.nickname}}
                                         </view>
@@ -44,7 +47,7 @@
             <view class="consult-tab flex flex-ai-center box-shadow wl-padding-page wl-padding-top-sm wl-padding-bottom-sm z-100">
                 <view class="relative flex-main">
                     <i class="left-icon icon-comment text-32 color-blue"></i>
-                    <input type="text"  class="consult-input" confirm-type="send" placeholder="我来说两句" placeholder-class="search-pholder" value="{{formData.content}}" @input="handleInput('content')" bindconfirm="handleSendConsult" />
+                    <input type="text" maxlength="-1" class="consult-input" confirm-type="send" placeholder="我来说两句" placeholder-class="search-pholder" value="{{formData.content}}" @input="handleInput('content')" bindconfirm="handleSendConsult" />
                     <i wx:if="{{formData.content!=''}}" class="text-40 clear-icon fa fa-times-circle color-gray" catchtap="handleClear('content')"></i>
                 </view>
                 <view class="text-30 color-green wl-margin-left-sm" @tap="handleShow">返回</view>
@@ -101,6 +104,10 @@ export default class Dialog extends wepy.component {
             if (!this.showPopup) {
                 this.$emit('onclose')
             }
+            this.$apply()
+        },
+        handleShowMore(idx) {
+            this.queryConfig.list[idx].showMore = !this.queryConfig.list[idx].showMore
             this.$apply()
         },
         handleInput (key, e) {
