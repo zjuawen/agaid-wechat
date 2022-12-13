@@ -14,7 +14,7 @@
                     </view>
                 </view>
                 <view wx:if="{{info.type==1}}" class="live wl-margin-bottom-sm bg-white">
-                    <image class="w-full box-radius-20" src="{{info.image.url}}"  mode="aspectFill" />
+                    <image class="w-full box-radius-20" src="{{info.image.url}}"  mode="aspectFit" />
                 </view>
                 <view wx:if="{{info.description}}" style="line-height: 1.6;" class="description text-30 color-gray wl-margin-bottom-sm">{{info.description}}</view>
             </view>
