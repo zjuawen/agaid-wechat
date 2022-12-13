@@ -477,22 +477,19 @@ export default class Sign extends wepy.page {
                 this.survey = data[0]
                 this.loadFail = false
                 this.loadFailMsg = ''
-                this.$apply()
             }
-            this.$nextTick(() => {
-                this.handleSetSurvey()
-            })
         }).catch((e) => {
             this.loadFail = true
             this.loadFailMsg = '网络请求失败'
         }).finally(() => {
+            this.handleSetSurvey()
             wx.hideLoading()
         })
     }
 
     handleSetSurvey() {
         let qsItems = qsdata
-        if (this.survey) {
+        if (this.survey&&this.survey.id) {
             qsItems = JSON.parse(this.survey.infos) || qsdata
         }
         this.questions = qsItems

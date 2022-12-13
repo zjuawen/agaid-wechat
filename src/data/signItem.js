@@ -25,6 +25,7 @@ let _questions = [{
 			code: 'A03',
 			title: '出生年月',
 			type: 'input',
+			uncheck: true,
 			options: [
 				{value: '', prefix: '', suffix: ''}
 			]
@@ -33,6 +34,7 @@ let _questions = [{
 			code: 'A04',
 			title: '民族',
 			type: 'input',
+			uncheck: true,
 			options: [
 				{value: '', prefix: '', suffix: ''}
 			]
@@ -42,6 +44,7 @@ let _questions = [{
 			title: '文化程度',
 			type: 'radio',
 			value: '',
+			uncheck: true,
 			options: [
 				{name: '小学', value: '小学', type: 1},
 				{name: '初中', value: '初中', type: 1},
@@ -54,6 +57,7 @@ let _questions = [{
 			code: 'A06',
 			title: '政治面貌',
 			type: 'input',
+			uncheck: true,
 			options: [
 				{value: '', prefix: '', suffix: ''}
 			]
@@ -62,6 +66,7 @@ let _questions = [{
 			code: 'A07',
 			title: '身份证',
 			type: 'input',
+			uncheck: true,
 			options: [
 				{value: '', prefix: '', suffix: ''}
 			]
@@ -78,6 +83,7 @@ let _questions = [{
 			code: 'A09',
 			title: '户籍所在地',
 			type: 'input',
+			uncheck: true,
 			options: [
 				{value: '', prefix: '', suffix: ''}
 			]
@@ -86,6 +92,7 @@ let _questions = [{
 			code: 'A10',
 			title: '单位名称',
 			type: 'input',
+			uncheck: true,
 			options: [
 				{value: '', prefix: '', suffix: ''}
 			]
@@ -110,6 +117,7 @@ let _questions = [{
 				title: '学习培训经历：'
 			},
 			type: 'radio',
+			uncheck: true,
 			options: [
 				{name: '参加过', value: '参加过', type: 3, options: [
 					{value: '', prefix: '  最近一次参加', suffix: '', width: 300, placeholder: '时间'},
@@ -124,6 +132,7 @@ let _questions = [{
 			code: 'A13',
 			title: '参加培训意向类型',
 			type: 'input',
+			uncheck: true,
 			options: [
 				{value: '', prefix: '', suffix: ''}
 			]
