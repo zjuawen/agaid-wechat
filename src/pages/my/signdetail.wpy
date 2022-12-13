@@ -1,4 +1,5 @@
 <template>
+    <import src="../../wxParse/wxParse.wxml" />
     <view class="page-task-driver flex flex-col h-full-v flow-hide">
         <view class="relative flex-main flow-y-auto list z-100 bg-tran fix-iphonex-bottom">
             <view class="list-item bg-white wl-padding-sm wl-margin-bottom-sm">
@@ -18,7 +19,7 @@
                 <view wx:if="{{info.description}}" style="line-height: 1.6;" class="description text-30 color-gray wl-margin-bottom-sm">{{info.description}}</view>
             </view>
             <view wx:if="{{info.content}}" class="list-item wl-padding-sm bg-white wl-margin-bottom-sm flow-x-auto">
-                <rich-text class="text-30 color-title sc-regular line-40" nodes="{{info.content}}"></rich-text>
+                <template is="wxParse" data="{{wxParseData:htmlParserTpl.nodes}}"/>
             </view>
             <view wx:if="{{info.type==2}}" class="live wl-padding-sm bg-white">
                 <video class="video w-full box-radius-20" autoplay="{{true}}" custom-cache="{{false}}" controls="{{true}}" show-center-play-btn="{{true}}" src="{{info.video.url}}" />
@@ -43,6 +44,8 @@ import wepy from 'wepy'
 import api from '@/utils/api'
 import baseMixin from '@/mixins/base'
 import Consult from '@/components/consult/list'
+// 富文本插件
+import wxParse from '../../wxParse/wxParse';
 export default class SignDetail extends wepy.page {
     config = {
         navigationBarTitleText: '报名详情'
@@ -59,6 +62,8 @@ export default class SignDetail extends wepy.page {
         signId: null,
         sign: {},
         info: {},
+        newContent: '',
+        htmlParserTpl: null,
     }
 
     computed = {
@@ -94,6 +99,17 @@ export default class SignDetail extends wepy.page {
                             })
                         }
                     })
+                }
+                if (data.news.image && data.news.image.id) {
+                    data.news.image.url = api.attachmentPath + data.news.image.id
+                }
+                if (data.news.video && data.news.video.id) {
+                    data.news.video.url = api.attachmentPath + data.news.video.id
+                }
+                // 富文本转码
+                if (data.news.content && data.news.content.length > 0) {
+                    let htmlContent = wxParse.wxParse('newContent', 'html', data.news.content, vm, 0);
+                    vm.htmlParserTpl = htmlContent['newContent']
                 }
                 data.news.created_at = this.handleDateView(data.news.created_at)
                 this.sign = data
@@ -154,4 +170,5 @@ export default class SignDetail extends wepy.page {
 }
 </script>
 <style lang="css">
+@import '../../wxParse/wxParse.wxss';
 </style>
