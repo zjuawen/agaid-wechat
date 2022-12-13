@@ -18,7 +18,7 @@
                 </view>
                 <view wx:if="{{info.description}}" style="line-height: 1.6;" class="description text-30 color-gray wl-margin-bottom-sm">{{info.description}}</view>
             </view>
-            <view wx:if="{{info.content}}" class="wxParse list-item wl-padding-sm bg-white wl-margin-bottom-sm flow-x-auto">
+            <view wx:if="{{info.type==1&&info.content}}" class="wxParse list-item wl-padding-sm bg-white wl-margin-bottom-sm flow-x-auto">
                 <template is="wxParse" data="{{wxParseData:htmlParserTpl.nodes}}"/>
             </view>
             <view wx:if="{{info.type==2}}" class="live wl-padding-sm bg-white">
@@ -183,7 +183,7 @@ export default class Detail extends wepy.page {
                     data.video.url = api.attachmentPath + data.video.id
                 }
                 // 富文本转码
-                if (data.content && data.content.length > 0) {
+                if (data.type==1 && data.content && data.content.length > 0) {
                     let htmlContent = wxParse.wxParse('newContent', 'html', data.content, vm, 0);
                     vm.htmlParserTpl = htmlContent['newContent']
                 }
