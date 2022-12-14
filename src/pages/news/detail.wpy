@@ -5,11 +5,11 @@
             <view class="list-item bg-white wl-padding-sm wl-margin-bottom-sm">
                 <view class="title text-36 text-center wl-margin-bottom-sm">{{info.title}}</view>
                 <view class="flex flex-ai-center flex-jc-center wl-padding-bottom-xl">
-                    <view class="text-24 color-gray flex-main text-ellipsis">
+                    <view class="text-24 color-gray text-ellipsis" style="max-width: 40%;">
                         <i class="icon-user text-24 color-gray wl-margin-right-xs"></i>{{info.author.username}}
                     </view>
                     <view class="text-24 color-gray wl-margin-horizontal-sm">|</view>
-                    <view class="text-26 color-gray flex-main">
+                    <view class="text-26 color-gray">
                         <i class="fa fa-clock-o text-24 color-gray wl-margin-right-xs"></i>{{info.created_at}}
                     </view>
                 </view>

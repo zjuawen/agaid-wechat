@@ -55,18 +55,21 @@
             <view wx:if="{{!isReply}}" class="nav-bar flex flex-ai-center fix-iphonex-bottom">
                 <view class="flex-main flex flex-ai-center wl-padding-page">
                     <view class="relative consult-tab flex flex-ai-center flex-main">
-                        <i class="left-icon icon-comment text-32 color-blue"></i>
+                        <i class="icon-comment left-icon text-32 color-blue"></i>
                         <input type="text" maxlength="-1" class="consult-input w-full" confirm-type="send" placeholder="我来说两句" placeholder-class="search-pholder" value="{{formData.content}}" @input="handleInput('content')" bindconfirm="handleSendConsult" />
                         <i wx:if="{{formData.content!=''}}" class="text-40 clear-icon fa fa-times-circle color-gray" catchtap="handleClear('content')"></i>
                     </view>
-                    <view class="nav-bar-item text-center wl-margin-left-xl {{info.isCollect?'active':''}}" @tap="handleCollect(1)">
-                        <i class="icon-star text-40 relative bar-icon"></i>
-                        <view class="text-24 nav-title">收藏</view>
-                    </view>
-                    <view class="nav-bar-item text-center wl-margin-left-xl {{info.thumbsup?'active':''}}" @tap="handleCollect(3)">
-                        <i class="icon-thumbs-up text-30 relative bar-icon"></i>
-                        <view class="text-24 nav-title">点赞</view>
-                    </view>
+                    <view wx:if="{{formData.content!=''}}" class="btn btn-search wl-margin-left-sm" @tap="handleSendConsult">提交</view>
+                    <block wx:else>
+                        <view class="nav-bar-item text-center wl-margin-left-xl {{info.isCollect?'active':''}}" @tap="handleCollect(1)">
+                            <i class="icon-star text-40 relative bar-icon"></i>
+                            <view class="text-24 nav-title">收藏</view>
+                        </view>
+                        <view class="nav-bar-item text-center wl-margin-left-xl {{info.thumbsup?'active':''}}" @tap="handleCollect(3)">
+                            <i class="icon-thumbs-up text-30 relative bar-icon"></i>
+                            <view class="text-24 nav-title">点赞</view>
+                        </view>
+                    </block>
                 </view>
             </view>
         </view>
@@ -119,6 +122,10 @@ export default class Detail extends wepy.page {
         },
         inputReply (e) {
             this.replyData.content = e.detail.value
+            this.$apply()
+        },
+        handleClear() {
+            this.formData.content = ''
             this.$apply()
         },
         handleShowEdit(_content='') {

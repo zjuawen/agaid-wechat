@@ -35,7 +35,7 @@
         <view class="nav-bar flex flex-ai-center box-shadow fix-iphonex-bottom {{isFocus?'wl-padding-bottom-lg':''}}">
             <view class="flex-main flex flex-ai-center wl-padding-page">
                 <view class="relative consult-tab flex flex-ai-center flex-main">
-                    <i class="left-icon icon-comment text-32 color-blue"></i>
+                    <i class="icon-comment left-icon text-32 color-blue"></i>
                     <input type="text"  class="consult-input w-full" confirm-type="send" placeholder="说点什么吧" placeholder-class="search-pholder" value="{{submitData.content}}" @input="handleInput" @focus="handleSetFocus" @blur="handleSetBlur" bindconfirm="handleSend" />
                     <!-- <i wx:if="{{submitData.content!=''}}" class="text-40 clear-icon fa fa-times-circle color-gray" @catchtap="handleClear('content')"></i> -->
                 </view>

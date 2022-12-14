@@ -3,6 +3,7 @@
         show="{{showPopup}}"
         round
         closeable
+        close-icon="close"
         close-icon-position="top-right"
         position="bottom"
         custom-style="height: 80%;"
@@ -46,11 +47,12 @@
             </scroll-view>
             <view class="consult-tab flex flex-ai-center box-shadow wl-padding-page wl-padding-top-sm wl-padding-bottom-sm z-100">
                 <view class="relative flex-main">
-                    <i class="left-icon icon-comment text-32 color-blue"></i>
+                    <i class="icon-comment left-icon text-32 color-blue"></i>
                     <input type="text" maxlength="-1" class="consult-input" confirm-type="send" placeholder="我来说两句" placeholder-class="search-pholder" value="{{formData.content}}" @input="handleInput('content')" bindconfirm="handleSendConsult" />
                     <i wx:if="{{formData.content!=''}}" class="text-40 clear-icon fa fa-times-circle color-gray" catchtap="handleClear('content')"></i>
                 </view>
-                <view class="text-30 color-green wl-margin-left-sm" @tap="handleShow">返回</view>
+                <view wx:if="{{formData.content!=''}}" class="btn btn-search wl-margin-left-sm" @tap="handleSendConsult">提交</view>
+                <view wx:else class="text-30 color-green wl-margin-left-sm" @tap="handleShow">返回</view>
                 <!-- <view class="btn btn-search wl-margin-left-sm">提交</view> -->
             </view>
         </view>
@@ -70,6 +72,7 @@ export default class Dialog extends wepy.component {
 
     data = {
         showPopup: false,
+        showSend: false,
         professorName: '',
         articleId: null,
         queryParams: {
