@@ -38,7 +38,7 @@
             <view class="wl-padding-bottom-nav"></view>
         </view>
         <view wx:if="{{info.is_sign}}" class="consult-tab fix-iphonex-bottom text-center box-shadow wl-padding-page wl-padding-top-sm wl-padding-bottom-sm z-100">
-            <view class="btn btn-search wl-margin-auto" style="width: 60%;" @tap="handleToSign">我要报名</view>
+            <view class="btn btn-search wl-margin-auto wl-margin-bottom-sm" style="width: 60%;" @tap="handleToSign">我要报名</view>
         </view>
     </view>
 </template>
