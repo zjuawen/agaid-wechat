@@ -1,0 +1,77 @@
+<template>
+    <view class="page-news-list flex flex-col h-full-v flow-hide">
+        <van-calendar
+            title="日历"
+            poppable="{{ false }}"
+            show-confirm="{{ false }}"
+            class="calendar"
+        />
+    </view>
+</template>
+<script>
+import wepy from 'wepy'
+import api from '@/utils/api'
+import baseMixin from '@/mixins/base'
+export default class Checkin extends wepy.page {
+    config = {
+        navigationBarTitleText: '我的签到',
+        "usingComponents": {
+            "van-calendar": "@vant/weapp/calendar/index"
+        }
+    }
+
+    components = { }
+
+    mixins = [ baseMixin ]
+
+    data = {
+        appuser: {},
+        wxuser: {},
+        queryParams: {
+            _sort: "created_at:DESC"
+        }
+    }
+
+    computed = {
+    }
+    
+    methods = {
+        onClose() {
+            this.setData({ show: false });
+          },
+          onConfirm(event) {
+            this.setData({
+              show: false,
+              date: this.formatDate(event.detail),
+            });
+          },
+    }
+
+    events = {
+    }
+    
+    handleListBefore(vm, list) {
+        // list.forEach(v => {
+        //     v.created_at = vm.handleDateView(v.created_at)
+        //     if (v.goods.image && v.goods.image.id) {
+        //         v.goods.image.url = api.attachmentPath + v.goods.image.id
+        //     }
+        // })
+        return list
+    }
+
+    onLoad (params, data) {
+        // this.appuser = this.$parent.globalData.appuser
+        // this.queryParams['user'] = this.appuser.id
+        // this.queryConfig.key = 'checkins_list'
+        // this.handleFetchList(true, false, this.handleListBefore)
+    }
+    onShow () { }
+    onReady () { }
+}
+</script>
+<style lang="css">
+.calendar {
+  --calendar-height: 500px;
+}
+</style>

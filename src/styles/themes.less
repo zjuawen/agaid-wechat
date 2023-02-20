@@ -360,6 +360,21 @@
 				vertical-align: middle;
 			}
 	}
+	&-default {
+		width: auto;
+		height: 60rpx;
+		line-height: 60rpx;
+		color: #ffffff;
+		font-size: 24rpx;
+		padding: 0 15rpx;
+		border-radius: 20rpx;
+		box-shadow: 0 0 17rpx 0 rgba(0, 0, 0, 0.08);
+		background-color: #b4b4b4;
+		.fa, .icon {
+			font-size: 26rpx;
+			vertical-align: middle;
+		}
+	}
 	&.round {
 		border-radius: 30rpx;
 	}
@@ -379,6 +394,10 @@
 		color: #ffffff;
 		background-color: #FAA46D;
 	}
+	&.default {
+		color: #ffffff;
+		background-color: #b4b4b4;
+	}
 }
 
 .empty {
@@ -389,6 +408,31 @@
   	.icon {
   		font-size: 180rpx;
   	}
+}
+
+.days-tag {
+	&-item {
+		position: relative;
+	    color: #fff;
+	    font-size: 24rpx;
+	    line-height: 1;
+	    border-radius: 50%;
+	    width: 36rpx;
+	    height: 36rpx;
+	}
+    
+
+    &.primary {
+    	.days-tag-item {
+    		background-image: linear-gradient(-90deg, #88E27B 0%, #39D41C 78%, #09C007 100%), linear-gradient(#4574e0, #4574e0);
+    	}
+    }
+    &.default {
+    	color: #d8d8d8;
+    	.days-tag-item {
+	    	background-color: #74C19D;color: #d8d8d8;
+	    }
+    }
 }
 
 .scroll-x {
@@ -942,6 +986,27 @@
 		&.active {
 			background-color: #B5ECCA;color: #406f50;
 		}
+	}
+}
+
+.page-my-integral {
+	.integral-panel {
+		text-align: center;
+	    background: #239A4F;
+	    color: #fff;
+	    padding: 30rpx 0 0 0;
+	    &-nav {
+	    	padding: 10rpx;
+	    	border-top: 1rpx solid #dedede;
+	    	&-item {
+	    		height: 70rpx;
+		    	line-height: 70rpx;
+		    	&:not(:last-child) {
+		    		border-right: 1rpx solid #dedede;
+		    	}
+	    	}
+	    	
+	    }
 	}
 }
 

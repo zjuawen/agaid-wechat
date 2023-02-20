@@ -4,7 +4,7 @@
             <view class="flex flex-ai-center z-100 info relative wl-padding-page">
                 <image mode="aspectFill" wx:if="{{wxuser.avatar}}" class="avatar icon-128 circle" src="{{wxuser.avatar}}" />
                 <image mode="aspectFill" wx:else class="avatar icon-128 circle" src="/public/img/avatar.png" />
-                <view class="flex-main wl-margin-left-lg">
+                <view class="flex-main wl-margin-left-lg flow-hide">
                     <view class="flex flex-ai-center">
                         <view class="flex-main color-white line-1 text-40 text-sc-bold">{{wxuser.nickname||'还没有昵称'}}</view>
                         <navigator class="text-22 color-white line-1 edit" hover-class="none" url="/pages/my/info"><i class="icon-user-info sub text-34 wl-margin-right-xs text-v-middle"></i>个人信息</navigator>
@@ -12,8 +12,17 @@
                     <view wx:if="{{wxuser.phone_number}}" class="wl-margin-top-sm color-white text-28">
                         <text>绑定手机：{{wxuser.phone_number||'-'}}</text>
                     </view>
+                    <view class="flex flex-ai-center wl-margin-top-sm color-white text-28">
+                        <view wx:if="{{checkin&&checkin.today&&checkin.today.id}}" class="btn btn-search btn-min" style="width: 120rpx;height: 40rpx;line-height: 40rpx;"><van-icon name="sign" size="14" /> 已签到</view>
+                        <view wx:else class="btn btn-search btn-min" style="width: 110rpx;height: 40rpx;line-height: 40rpx;" @tap="handleCheckin">签到</view>
+                        <view wx:if="{{checkin&&checkin.hasContinuity&&checkin.days>0}}" class="flex-main flex flex-jc-end flow-hide wl-margin-left-xs" @tap="handleToCalendar">
+                            <view wx:for="{{checkinRecord}}" wx:for-item="day" wx:for-index="didx" wx:key="didx" class="wl-margin-left-xs text-center days-tag {{day.check?'primary':'default'}}">
+                                <view class="days-tag-item"><van-icon class="box-center" name="sign" size="12" /></view>
+                                <view class="text-18">D{{day.day}}</view>
+                            </view>
+                        </view>
+                    </view>
                 </view>
-
             </view>
         </view>
         <view class="wl-padding-page z-500 relative fix-iphonex-bottom">
@@ -22,9 +31,9 @@
                     <i class="fa fa-user text-60"></i>
                     <view class="text-28 text-sc-medium wl-margin-top-xs"> 我是专家</view>
                 </navigator>
-                <navigator class="menu-item text-center color-green" hover-class="none" url="/pages/my/collect">
-                    <i class="fa fa-star-half-o text-60"></i>
-                    <view class="text-28 text-sc-medium wl-margin-top-xs"> 我的收藏</view>
+                <navigator class="menu-item text-center color-green" hover-class="none" url="/pages/my/integral">
+                    <i class="fa fa-gift text-60"></i>
+                    <view class="text-28 text-sc-medium wl-margin-top-xs"> 我的积分</view>
                 </navigator>
                 <navigator class="menu-item text-center color-green" hover-class="none" url="/pages/my/article">
                     <i class="fa fa-file-text-o text-60"></i>
@@ -36,6 +45,20 @@
                 </navigator>
             </view>
             <view class="menu-nav flow-hide">
+                <navigator class="menu-item flex flex-ai-center" hover-class="none" url="/pages/my/address">
+                    <i class="fa fa-map-marker text-60 color-green wl-margin-right-sm"></i>
+                    <view class="flex-main flex flex-ai-center">
+                        <text class="flex-main text-32 text-sc-medium"> 收货地址</text>
+                        <i class="fa fa-angle-right color-sub-green text-bold text-40"></i>
+                    </view>
+                </navigator>
+                <navigator class="menu-item flex flex-ai-center" hover-class="none" url="/pages/my/collect">
+                    <i class="fa fa-star-half-o text-50 color-green wl-margin-right-sm"></i>
+                    <view class="flex-main flex flex-ai-center">
+                        <text class="flex-main text-32 text-sc-medium"> 我的收藏</text>
+                        <i class="fa fa-angle-right color-sub-green text-bold text-40"></i>
+                    </view>
+                </navigator>
                 <navigator class="menu-item flex flex-ai-center" hover-class="none" url="/pages/my/history">
                     <i class="fa fa-file-text-o text-60 color-green wl-margin-right-sm"></i>
                     <view class="flex-main flex flex-ai-center">
@@ -75,8 +98,7 @@ import wepy from 'wepy'
 import api from '@/utils/api'
 import baseMixin from '@/mixins/base'
 export default class My extends wepy.component {
-    config = {
-    }
+    config = {}
     
     mixins = [ baseMixin ]
 
@@ -86,10 +108,42 @@ export default class My extends wepy.component {
         isProfessor: false,
         replyCount: 0,
         appuser: {},
-        wxuser: {}
+        wxuser: {},
+        checkin: {}
     }
 
     computed = {
+        checkinRecord() {
+            let days = this.checkin.days;
+            let records = this.checkin.records;
+            let items = []
+            for (var i=0;i<days;i++) {
+                let isCheck = records[i] ? true : false;
+                items.push({
+                    day: (i+1),
+                    check: isCheck
+                })
+            }
+            let start = 0;
+            let len = 7;
+            if (days > 7) {
+                if (records.length > 4) {
+                    start = (records.length - 4)
+                }
+                let end = (len+start)
+                if (end > days) {
+                    start = start - (end - days)
+                    end = days
+                    if (start < 0) {
+                        start = 0
+                    }
+                }
+
+                items = items.slice(start, end)
+            }
+
+            return items;
+        }
     }
     
     methods = {
@@ -114,6 +168,23 @@ export default class My extends wepy.component {
                     })
                 }
             }
+        },
+        handleCheckin() {
+            api.$request('checkins_today', {} , false, false).then(({data}) => {
+                if (data && data.code == 0) {
+                    this.checkin.today = data.data
+                    if (this.checkin.hasContinuity) {
+                        this.checkin.last = data.data
+                        this.checkin.records.unshift(data.data)
+                    }
+                    this.$parent.$parent.globalData.checkin = this.checkin
+                    this.$apply()
+                    api.toast('签到成功', 'success')
+                }
+            })
+        },
+        handleToCalendar() {
+            // this.$parent.$navigate('/pages/my/checkin')
         }
     }
 
@@ -123,6 +194,7 @@ export default class My extends wepy.component {
     init() {
         this.appuser = this.$parent.$parent.globalData.appuser
         this.wxuser = this.$parent.$parent.globalData.wxuser
+        this.checkin = this.$parent.$parent.globalData.checkin
         if (this.appuser.professor && this.appuser.professor.id) {
             this.isProfessor = true
         }

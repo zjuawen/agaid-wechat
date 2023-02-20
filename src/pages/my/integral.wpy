@@ -1,0 +1,132 @@
+<template>
+    <view class="page-my-integral bg-body flex flex-col h-full-v flow-hide">
+        <view class="integral-panel">
+            <view class="score text-60">{{appuser.points}}</view>
+            <view class="text-24 wl-margin-top-xs wl-padding-bottom-60">我的积分</view>
+            <view class="flex flex-ai-center integral-panel-nav text-center">
+                <navigator class="flex-main integral-panel-nav-item text-28 flex flex-ai-center flex-jc-center" hover-class="none" url="/pages/my/exchange">
+                    <i class="fa fa-tags text-36 color-white wl-margin-right-xs"></i>我的兑换
+                </navigator>
+                <navigator class="flex-main integral-panel-nav-item text-28 flex flex-ai-center flex-jc-center" hover-class="none" url="/pages/integral/goods">
+                    <i class="fa fa-gift text-40 color-white wl-margin-right-xs"></i>积分兑换
+                </navigator>
+            </view>
+        </view>
+        <scroll-view scroll-y="true" class="flex-main flow-y-auto list z-100 bg-tran fix-iphonex-bottom" bindscrolltolower="handleNext">
+            <view wx:if="{{!isEmpty}}" class="list-card wl-margin-bottom-xl">
+                <view class="card-body">
+                    <view wx:for="{{queryConfig.list}}" wx:key="index" class="flex flex-ai-start list-item">
+                        <view class="flex-main flex flex-ai-start wl-padding-vertical-lg line">
+                            <view class="flex-main">
+                                <view class="color-title text-26 text-sc-bold">{{typeDictObj['code_'+item.type]}}</view>
+                                <view class="color-desc text-20 wl-margin-top-sm">{{item.desc}}</view>
+                                <view class="color-desc text-20 wl-margin-top-sm">{{item.created_at}}</view>
+                            </view>
+                            <view class="{{item.points>0?'color-green':'color-red'}} text-40 wl-margin-left-8">
+                                {{item.points>0?'+':''}}{{item.points}}
+                            </view>
+                        </view>
+                    </view>
+                    <view wx:if="{{queryConfig.finished}}" class="color-gray text-26 text-center wl-padding-top-xl wl-padding-bottom-sm">没有更多了~</view>
+                </view>
+            </view>
+            <view  wx:if="{{isEmpty}}" class="card-body">
+                <view class="empty">
+                    <i class="icon icon-empty"></i>
+                    <view class="wl-margin-top-sm">~还没有记录</view>
+                </view>
+            </view>
+        </scroll-view>
+    </view>
+</template>
+<script>
+import wepy from 'wepy'
+import api from '@/utils/api'
+import baseMixin from '@/mixins/base'
+export default class Integral extends wepy.page {
+    config = {
+        navigationBarTitleText: '我的积分',
+    }
+    
+    mixins = [ baseMixin ]
+    
+    components = {
+    }
+
+    data = {
+        appuser: {},
+        typeDict: [],
+        typeDictObj: {},
+        queryParams: {
+            is_delete: 0,
+            user: null
+        }
+    }
+
+    computed = {
+        isEmpty() {
+            return (!this.queryConfig.loading&&this.queryConfig.finished&&this.queryConfig.list.length==0)
+        },
+    }
+    
+    methods = {
+        // 下一页
+        handleNext() {
+            console.log('next')
+            if (this.queryConfig.finished) {
+                return
+            }
+            this.handleFetchList(false, false, this.handleListBefore)
+        },
+    }
+
+    events = {
+    }
+
+    loadData() {
+        api.$request('get_dict', {'type_in[]': 'integral_type'}, true, false).then(({data}) => {
+            if (data && data.length > 0) {
+                this.typeDict = data;
+                data.forEach(v => {
+                    this.typeDictObj['code_'+v.code] = v.value;
+                })
+            }
+            console.log(data)
+            this.$apply()
+        })
+    }
+
+    handleListBefore(vm, list) {
+        return list
+    }
+
+    handleFetchUser() {
+        let id = this.$parent.globalData.appuser.id
+        api.$request(['users_info', id], {}, true, false).then(({data}) => {
+            if (data && data.id) {
+                this.appuser = data
+                this.$parent.globalData.appuser = data
+                this.$parent.globalData.wxuser = data.customer
+            }
+            this.$apply()
+        })
+    }
+
+
+    onLoad (params, data) {
+        this.queryConfig.key = 'integrals_list'
+        this.queryParams.user = this.$parent.globalData.appuser.id
+        this.loadData()
+        this.handleFetchUser()
+        this.handleFetchList(true, false, this.handleListBefore)
+    }
+    onShow () {
+        
+    }
+    onReady () {
+        
+    }
+}
+</script>
+<style lang="css">
+</style>

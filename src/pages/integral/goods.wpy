@@ -1,0 +1,117 @@
+<template>
+    <view class="page-news-list flex flex-col h-full-v flow-hide">
+        <view class="head-view search-tab bg-head flex flex-ai-center wl-padding-page wl-padding-top-sm wl-padding-bottom-sm z-100">
+            <view class="relative flex-main">
+                <i class="left-icon fa fa-search text-32 color-blue"></i>
+                <input class="search-input" type="text" placeholder="搜索" placeholder-class="search-pholder" @input="handleInput" bindconfirm="handleSearch" />
+            </view>
+            <view class="btn btn-search wl-margin-left-xs" @tap="handleSearch"><i class="icon-filter icon"></i> 搜索</view>
+        </view>
+        <scroll-view scroll-y="true" class="flex-main flow-y-auto list z-100 bg-tran fix-iphonex-bottom" @scrolltolower="handleNext">
+            <view wx:if="{{!isEmpty}}" class="list-card wl-margin-bottom-xl wl-margin-top-sm">
+                <view class="card-body flex flex-flow flex-jc-between">
+                    <view wx:for="{{queryConfig.list}}" wx:key="index" class="list-item w-full box-radius-20 wl-margin-bottom-lg flow-hide bg-white">
+                        <view class="live" @tap="handleToDetail({{item}})">
+                            <image wx:if="{{item.image&&item.image.url}}" class="thumb w-full h-300" src="{{item.image.url}}" mode="aspectFill" />
+                            <view wx:else class="thumb relative"><i class="icon-news box-center text-80 color-desc"></i></view>
+                        </view>
+                        <view class="info flex flex-ai-start wl-padding-vertical-sm wl-padding-horizontal-lg box-shadow">
+                            <view class="flex-main">
+                                <view class="title text-ellipsis text-26 text-bold wl-margin-bottom-sm">{{item.name}}</view>
+                                <view class="author flex flex-ai-center">
+                                    <view class="flex-main flex flex-ai-center">
+                                        <view class="text-20">{{item.start_time}} 至 {{item.end_time}}</view>
+                                    </view>
+                                </view>
+                            </view>
+                            <view class="text-24">{{item.integral}}积分</view>
+                        </view>
+                    </view>
+                </view>
+                <view wx:if="{{queryConfig.loading}}" class="color-gray text-26 text-center wl-padding-top-xl wl-padding-bottom-sm">加载中...</view>
+                <view wx:if="{{queryConfig.finished}}" class="color-gray text-26 text-center wl-padding-top-xl wl-padding-bottom-sm">没有更多了~</view>
+            </view>
+            <view  wx:if="{{isEmpty}}" class="card-body">
+                <view class="empty">
+                    <i class="icon icon-empty"></i>
+                    <view class="wl-margin-top-sm">~还没有可兑换信息</view>
+                </view>
+            </view>
+        </scroll-view>
+    </view>
+</template>
+<script>
+import wepy from 'wepy'
+import api from '@/utils/api'
+import baseMixin from '@/mixins/base'
+export default class Goods extends wepy.page {
+    config = {
+        navigationBarTitleText: '积分兑换'
+    }
+
+    components = {}
+
+    mixins = [ baseMixin ]
+
+    data = {
+        queryParams: {
+            name_contains: '',
+            _sort: "created_at:DESC"
+        }
+    }
+
+    computed = {
+        isEmpty() {
+            return (!this.queryConfig.loading&&this.queryConfig.finished&&this.queryConfig.list.length==0)
+        },
+        userInfo() {
+            return wepy.$instance.globalData.appuser
+        }
+    }
+    
+    methods = {
+        // 下一页
+        handleNext() {
+            if (this.queryConfig.finished) {
+                return
+            }
+            this.handleFetchList(false, false, this.handleListBefore)
+        },
+        handleInput (e) {
+            this.queryParams.name_contains = e.detail.value
+            this.$apply()
+        },
+        handleSearch() {
+            this.handleFetchList(true, false, this.handleListBefore)
+            // this.$navigate('/pages/search/index', { type: 1 })
+        },
+        handleToDetail(item) {
+            this.$navigate('/pages/integral/detail', {id: item.id})
+        },
+    }
+
+    events = {
+    }
+    
+    handleListBefore(vm, list) {
+        list.forEach(v => {
+            v.start_time = vm.handleDateView(v.start_time)
+            v.end_time = vm.handleDateView(v.end_time)
+            v.created_at = vm.handleDateView(v.created_at)
+            if (v.image && v.image.id) {
+                v.image.url = api.attachmentPath + v.image.id
+            }
+        })
+        return list
+    }
+
+    onLoad (params, data) {
+        this.queryConfig.key = 'exchangegoods_list'
+        this.handleFetchList(true, false, this.handleListBefore)
+    }
+    onShow () { }
+    onReady () { }
+}
+</script>
+<style lang="css">
+</style>

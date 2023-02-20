@@ -18,10 +18,13 @@
                     </block>
                 </view>
                 <view wx:if="{{info.videos&&info.videos.length>0}}" class="live wl-margin-top-sm bg-white">
-                    <video  wx:for="{{info.videos}}" wx:for-item="file" wx:for-index="fidx" class="video w-full box-radius-20" src="{{file.url}}" />
+                    <video  wx:for="{{info.videos}}" wx:for-item="file" wx:for-index="fidx" class="video w-full box-radius-20" src="{{file.url}}" bindplay="videoBindPlay" bindpause="videoBindPause" />
                 </view>
                 <view wx:if="{{info.type==2&&!isReply&&info.reply_content}}" class="reply wl-padding-sm bg-gray text-30 wl-margin-top-sm box-radius-20">
-                    <text>{{info.professor.name}}：<text class="color-gray">{{info.reply_content}}</text></text>
+                    <view><text>{{info.professor.name}}：<text class="color-gray">{{info.reply_content}}</text></text></view>
+                    <view wx:if="{{info.reply_images&&info.reply_images.length>0}}" class="list-pics scroll-x wl-margin-top-sm">
+                        <image wx:for="{{info.reply_images}}" wx:for-item="file" wx:for-index="fidx" class="list-pics-item sm" src="{{file.url}}" mode="aspectFill" @tap="handlePreviewReply({{fidx}}, {{false}})" />
+                    </view>
                 </view>
                 <view wx:if="{{info.type==2&&isReply}}" class="reply wl-padding-sm bg-gray text-30 wl-margin-top-sm box-radius-20">
                     <block wx:if="{{info.reply_content&&!replyEdit}}">
@@ -29,6 +32,9 @@
                             {{info.professor.name}}：
                             <text class="color-gray">{{info.reply_content}}</text>
                             <view class="color-green inline wl-margin-left-sm" @tap="handleShowEdit({{info.reply_content}})">修改</view>
+                        </view>
+                        <view wx:if="{{info.reply_images&&info.reply_images.length>0}}" class="list-pics scroll-x wl-margin-vertical-sm">
+                            <image wx:for="{{info.reply_images}}" wx:for-item="file" wx:for-index="fidx" class="list-pics-item sm" src="{{file.url}}" mode="aspectFill" @tap="handlePreviewReply({{fidx}}, {{false}})" />
                         </view>
                     </block>
                     <block wx:elif="{{!info.reply_content||replyEdit}}">
@@ -40,6 +46,25 @@
                                 placeholder-class="color-desc"
                                 maxlength="-1"
                                 value="{{info.reply_content}}" />
+                        </view>
+                        <view class="wl-form wl-margin-bottom-xs">
+                            <view class="form-card wl-padding-top-sm" style="background-color: #F6F5F5;">
+                                <view class="form-group flex box-border-none files wl-padding-0">
+                                    <view class="form-control file-list flex flex-wrap wl-padding-0">
+                                        <view class="file-item">
+                                            <block wx:for="{{replyData.images||[]}}" wx:key="index">
+                                                <view class="relative inline">
+                                                    <image mode="aspectFill" src="{{item.url}}" @tap="handlePreviewReply({{index}}, {{true}})" />
+                                                    <i class="fa fa-times-circle file-del" @tap="handleDelImage({{index}})"></i>
+                                                </view>
+                                            </block>
+                                            <view wx:if="{{canUpload}}" class="file-upload" hover-class='none' @tap="handleAddMedia()">
+                                                <view class="box-center fa fa-camera upload-icon"></view>
+                                            </view>
+                                        </view>
+                                    </view>
+                                </view>
+                            </view>
                         </view>
                         <view class="text-right color-green">
                             <view wx:if="{{info.reply_content}}" class="inline color-gray wl-margin-right-xl" @tap="handleShowEdit"><text>取消</text></view>
@@ -92,6 +117,7 @@ export default class Detail extends wepy.page {
     }
 
     data = {
+        maxCount: 6,
         loading: true,
         isReply: false,
         collectList: [],
@@ -99,7 +125,8 @@ export default class Detail extends wepy.page {
         submitLoading: false,
         replyEdit: false,
         replyData: {
-            content: ''
+            content: '',
+            images: []
         },
         formData: {
             content: ''
@@ -112,7 +139,14 @@ export default class Detail extends wepy.page {
         },
         wxuserInfo() {
             return this.$parent.globalData.wxuser
-        }
+        },
+        canUpload() {
+            if (!this.replyData) {
+                return 0
+            }
+            let imgs = this.replyData.images ? this.replyData.images.length : 0
+            return imgs < this.maxCount
+        },
     }
     
     methods = {
@@ -130,13 +164,66 @@ export default class Detail extends wepy.page {
         },
         handleShowEdit(_content='') {
             this.replyData.content = _content
+            this.replyData.images = this.info.reply_images||[]
             this.replyEdit = !this.replyEdit
             this.$apply()
         },
+        // 添加图片/视频
+        handleAddMedia(key) {
+            let vm = this
+            if (!vm.replyData) {
+                vm.replyData = {}
+                vm.$apply()
+            }
+            if (!vm.replyData.images) {
+                vm.replyData.images = []
+                vm.$apply()
+            }
+            let count  = vm.replyData.images.length
+            let max = vm.maxCount - count
+                max = max < 0 ? 0 : max
+            api.uploadMedia({ max: max, mediaType: ['image'] }, function(res){
+                if(res && res.length > 0) {
+                    res.forEach(file => {
+                        file.url = api.attachmentPath + file.id
+                        if (file.type == 'image') {
+                            vm.replyData.images.push(file)
+                        }
+                    })
+                    vm.$apply()
+                }
+            });
+        },
         // 图片预览
         handlePreview(idx, len) {
-            let medisa = [].concat(this.info.images)
-            this.handlePreviewMedia(medisa, ((+len||0) + idx))
+            let medias = [].concat(this.info.images)
+            this.handlePreviewMedia(medias, ((+len||0) + idx))
+        },
+        // 删除图片
+        handleDelImage(idx) {
+            let _this = this
+            wx.showModal({
+                title: '删除',
+                content: '您确定要删除该媒体吗？',
+                confirmText: '确定',
+                cancelText: '先不了',
+                success: function (res) {
+                    if (res.confirm) {
+                        _this.replyData.images.splice(idx, 1);
+                        _this.$apply()
+                    }
+                }
+            })
+        },
+        // 图片预览
+        handlePreviewReply(idx, isEdit) {
+            let medias = []
+            if (isEdit) {
+                medias = [].concat(this.replyData.images)
+            } else {
+                medias = [].concat(this.info.reply_images)
+            }
+            this.handlePreviewMedia(medias, idx)
         },
         // 点赞收藏
         handleCollect(type) {
@@ -209,7 +296,13 @@ export default class Detail extends wepy.page {
                 return
             }
             let submitData = {
-                reply_content: this.replyData.content
+                reply_content: this.replyData.content,
+                reply_images: []
+            }
+            if (this.replyData.images && this.replyData.images.length > 0) {
+                this.replyData.images.forEach(v => {
+                    submitData.reply_images.push(v)
+                })
             }
             this.submitLoading = true
             api.$request(['articles_update', this.info.id], submitData , true, false).then(({data}) => {
@@ -260,6 +353,11 @@ export default class Detail extends wepy.page {
                 }
                 if (data.videos && data.videos.length > 0) {
                     data.videos.forEach(m => {
+                        m.url = api.attachmentPath + m.id
+                    })
+                }
+                if (data.reply_images && data.reply_images.length > 0) {
+                    data.reply_images.forEach(m => {
                         m.url = api.attachmentPath + m.id
                     })
                 }

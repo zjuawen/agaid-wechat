@@ -1,0 +1,223 @@
+<template>
+    <import src="../../wxParse/wxParse.wxml" />
+    <view class="page-task-driver flex flex-col h-full-v flow-hide fix-iphonex-bottom ">
+        <view class="relative flex-main flow-y-auto list z-100 bg-tran fix-iphonex-bottom">
+            <view class="list-item bg-white wl-padding-sm wl-margin-bottom-sm">
+                <view class="title text-36 text-center wl-margin-bottom-sm">{{info.name}}</view>
+                <view class="flex flex-ai-center flex-jc-center wl-padding-bottom-xl">
+                    <view class="text-24 color-gray text-ellipsis" style="max-width: 40%;">
+                        <i class="icon-user text-24 color-gray wl-margin-right-xs"></i>{{info.author.username}}
+                    </view>
+                    <view class="text-24 color-gray wl-margin-horizontal-sm">|</view>
+                    <view class="text-26 color-gray">
+                        <i class="fa fa-clock-o text-24 color-gray wl-margin-right-xs"></i>{{info.created_at}}
+                    </view>
+                </view>
+                <view class="live wl-margin-bottom-sm bg-white">
+                    <image class="w-full box-radius-20" src="{{info.image.url}}"  mode="aspectFit" />
+                </view>
+                <view class="text-24 color-gray">
+                    活动时间：{{info.start_time}}~{{info.end_time}}
+                </view>
+            </view>
+            <view wx:if="{{info.content}}" class="wxParse list-item wl-padding-sm bg-white wl-margin-bottom-sm flow-x-auto">
+                <template is="wxParse" data="{{wxParseData:htmlParserTpl.nodes}}"/>
+            </view>
+            
+            <view class="wl-padding-bottom-nav"></view>
+        </view>
+        <view class="flex flex-ai-center consult-tab box-shadow wl-padding-sm z-100">
+            <view class="flex-main flex flex-ai-center">
+                <view class="text-24">剩余：{{info.number}}份</view>
+                <block wx:if="{{info.leftTime&&info.leftTime>0}}">
+                    <view class="text-24 color-gray wl-margin-horizontal-sm">|</view>
+                    <view class="text-24">
+                        <text wx:if="{{timer.day&&timer.day>0}}">{{timer.day}}天</text>
+                        <text wx:if="{{timer.hour&&timer.hour>0}}">{{timer.hour}}时</text>
+                        <text wx:if="{{timer.minute&&timer.minute>0}}">{{timer.minute}}分</text>
+                    </view>
+                </block>
+            </view>
+            <block wx:if="{{info.status==1}}">
+                <view class="btn btn-default" style="width: 40%;">未开始</view>
+            </block>
+            <block wx:if="{{info.status==2}}">
+                <block wx:if="{{info.number&&info.number>0}}">
+                    <block wx:if="{{!info.isSign}}">
+                        <block wx:if="{{userInfo.points>info.integral}}">
+                            <view wx:if="{{info.type==1}}" class="btn btn-search" style="width: 40%;" @tap="handleToExchange">我要兑换({{info.integral}}积分)</view>
+                            <view wx:if="{{info.type==2}}" class="btn btn-search" style="width: 40%;" @tap="handleToSign">我要报名({{info.integral}}积分)</view>
+                        </block>
+                        <block wx:else>
+                            <view class="btn btn-default" style="width: 40%;">积分不足</view>
+                        </block>
+                    </block>
+                    <block wx:else>
+                        <view class="btn btn-default" style="width: 40%;">已兑换</view>
+                    </block>
+                </block>
+                <block wx:else>
+                    <view class="btn btn-default" style="width: 40%;">已被兑完</view>
+                </block>
+            </block>
+            <block wx:if="{{info.status==3}}">
+                <view class="btn btn-default" style="width: 40%;">已结束</view>
+            </block>
+        </view>
+    </view>
+</template>
+<script>
+import wepy from 'wepy'
+import api from '@/utils/api'
+import baseMixin from '@/mixins/base'
+import Consult from '@/components/consult/list'
+// 富文本插件
+import wxParse from '../../wxParse/wxParse';
+export default class GoodsDetail extends wepy.page {
+    config = {
+        navigationBarTitleText: '详情',
+        usingComponents: {
+        }
+    }
+    
+    mixins = [ baseMixin ]
+    
+    components = {
+        Consult
+    }
+
+    data = {
+        currendId: null,
+        loading: true,
+        info: {},
+        newContent: '',
+        htmlParserTpl: null,
+        submitLoading: false,
+        leftTime: 0,
+        timeHandler: null,
+        timer: {
+            day: 0,
+            hour: 0,
+            minute: 0,
+            second: 0
+        },
+        formData: {
+            content: ''
+        }
+    }
+
+    computed = {
+        userInfo() {
+            return this.$parent.globalData.appuser
+        }
+    }
+    
+    methods = {
+        handleInput (key, e) {
+            this.formData[key] = e.detail.value
+            this.$apply()
+        },
+        handleToExchange() {
+            if (this.info.integral > this.userInfo.points) {
+                api.toast('积分不足', 'none')
+                return
+            }
+            this.$navigate('/pages/integral/exchange', { id: this.info.id })
+        },
+        handleToSign() {
+            if (this.info.integral > this.userInfo.points) {
+                api.toast('积分不足', 'none')
+                return
+            }
+            this.$navigate('/pages/news/sign', { id: this.info.id, type: 2 })
+        }
+    }
+
+    events = {
+    }
+
+    handleFetchDetail() {
+        let vm = this
+        this.loading = true
+        api.$request(['exchangegoods_info', this.currendId], {} , true, false).then(({data}) => {
+            if (data && data.id) {
+                data.created_at = this.handleDateView(data.created_at)
+                data.start_time = this.handleDateView(data.start_time)
+                data.end_time = this.handleDateView(data.end_time)
+                if (data.image && data.image.id) {
+                    data.image.url = api.attachmentPath + data.image.id
+                }
+                // 富文本转码
+                if (data.content && data.content.length > 0) {
+                    let htmlContent = wxParse.wxParse('newContent', 'html', data.content, vm, 0);
+                    vm.htmlParserTpl = htmlContent['newContent']
+                }
+                if (data.status == 2 && data.number > 0) {
+                    this.leftTime = data.leftTime
+                    this.handleCountDown()
+                    this.timeHandler = setInterval(() => {
+                        this.handleCountDown()
+                    }, 1000);
+                }
+                this.info = data
+                this.$apply()
+            } else {
+                api.toast(data.msg, 'none')
+            }
+        }).finally(() => {
+            this.loading = false
+            this.$apply()
+        })
+    }
+
+    handleCountDown() {
+        if (!this.leftTime || this.leftTime <=0 ) {
+            clearInterval(this.timeHandler)
+            this.timer = {
+                day: 0,
+                hour: 0,
+                minute: 0,
+                second: 0
+            }
+            return;
+        }
+        var second = Math.floor((this.leftTime) / 1000);//未来时间距离现在的秒数
+        var day = Math.floor(second / 86400);//整数部分代表的是天；一天有24*60*60=86400秒 ；
+            second = second % 86400;//余数代表剩下的秒数；
+        var hour = Math.floor(second / 3600);//整数部分代表小时；
+            second %= 3600; //余数代表 剩下的秒数；
+        var minute = Math.floor(second / 60);
+            second %= 60;
+
+        this.timer.day = day
+        this.timer.hour = this.addDatePrefix(hour)
+        this.timer.minute = this.addDatePrefix(minute)
+        this.timer.second = this.addDatePrefix(second)
+        this.leftTime = this.leftTime - 1000
+
+        this.$apply()
+    }
+
+    async onLoad (params, data) {
+        this.currendId = params.id
+        this.$apply()
+        this.handleFetchDetail()
+    }
+
+    onUnload() {
+        clearInterval(this.timeHandler)
+    }
+
+    onShow () {
+        this.handleCheckPageBackReload((res)=>{
+            this.handleFetchDetail()
+        })
+    }
+    onReady () {
+
+    }
+}
+</script>
+<style lang="css">
+@import '../../wxParse/wxParse.wxss';
+</style>

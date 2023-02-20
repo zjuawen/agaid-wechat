@@ -22,7 +22,7 @@
                 <template is="wxParse" data="{{wxParseData:htmlParserTpl.nodes}}"/>
             </view>
             <view wx:if="{{info.type==2}}" class="live wl-padding-sm bg-white">
-                <video class="video w-full box-radius-20" autoplay="{{true}}" custom-cache="{{false}}" controls="{{true}}" show-center-play-btn="{{true}}" src="{{info.video.url}}" />
+                <video class="video w-full box-radius-20" autoplay="{{true}}" custom-cache="{{false}}" controls="{{true}}" show-center-play-btn="{{true}}" src="{{info.video.url}}" bindplay="videoBindPlay" bindpause="videoBindPause" />
             </view>
             <view class="flex flex-ai-center flex-jc-center wl-padding-page wl-margin-top-lg">
                 <view class="nav-bar-item text-center {{info.isCollect?'active':''}}" @tap="handleCollect(5)">
@@ -221,6 +221,7 @@ export default class Detail extends wepy.page {
         this.$apply()
         this.handleFetchDetail(id)
     }
+
     onShow () {
         
     }

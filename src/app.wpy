@@ -37,6 +37,11 @@
                 'pages/my/article',
                 'pages/my/sign',
                 'pages/my/signdetail',
+                'pages/my/integral',
+                'pages/my/exchange',
+                'pages/my/address',
+                'pages/my/address-detail',
+                'pages/my/checkin',
                 'pages/article/add',
                 'pages/article/detail',
                 'pages/bulletin/list',
@@ -46,6 +51,10 @@
                 'pages/news/sign',
                 'pages/professor/chat',
                 'pages/professor/bind',
+                'pages/integral/goods',
+                'pages/integral/detail',
+                'pages/integral/exchange',
+                'pages/integral/exchange-detail',
                 'pages/message/list',
                 'pages/message/add'
             ],
@@ -71,6 +80,7 @@
             appuser: null,
             wxuser: null,
             config: null,
+            checkin: null,
             userInfoReadyCallback: null,
             maxUploadCount: 6,
             collects: [],
@@ -140,6 +150,7 @@
                         _this.globalData.wxuser = data.user.customer||null
                         _this.globalData.collects = data.collects || []
                         _this.globalData.config = data.config || null
+                        _this.globalData.checkin = data.checkin || null
                         wx.setStorageSync('agaid-weapp-auth', !data.user.customer.nickname)
                     }
                 }

@@ -5,7 +5,7 @@
                 <view wx:for="{{queryConfig.list}}" wx:key="index" class="card-body wl-padding-vertical-lg border-bottom">
                     <view class="flex flex-ai-center list-item" @tap="handleToDetail({{item}})">
                         <view class="flex-main">
-                            <view class="flex-main color-title text-30" style="word-break: break-word;">{{item.news.title}}</view>
+                            <view class="flex-main color-title text-30" style="word-break: break-word;">{{item.type==2?item.goods.name:item.news.title}}</view>
                             <view class="color-gray text-24 wl-margin-top-sm">{{item.created_at}}</view>
                         </view>
                         <i class="fa fa-angle-right color-green text-40 wl-margin-left-8"></i>

@@ -110,7 +110,8 @@ export default class Sign extends wepy.page {
     }
     data = {
         loading: true,
-        newsId: null,
+        targetId: null,
+        type: 1,
         user: null,
         survey: null,
         patient: null,
@@ -399,7 +400,8 @@ export default class Sign extends wepy.page {
 
     onLoad (params, data) {
         this.user = this.$parent.globalData.appuser
-        this.newsId = params.id
+        this.targetId = params.id
+        this.type = params.type || 1
         this.handleFetchSurvey()
         this.$apply()
     }
@@ -413,23 +415,46 @@ export default class Sign extends wepy.page {
         wx.showLoading({
             title: '努力保存中',
         })
+        let isAdd = true
         let uri = 'sign_save'
         let items = JSON.stringify(_this.questions)
         let submitData = {
             customer: this.wxuserInfo.id,
             user: this.userInfo.id,
-            news: this.newsId,
-            infos: items
+            infos: items,
+            type: this.type
         }
         if (_this.survey && _this.survey.id) {
+            isAdd = false
             submitData = JSON.parse(JSON.stringify(_this.survey))
             submitData.infos = items
             uri = ['sign_update', _this.survey.id]
+        }
+        if (!submitData.type) {
+            submitData.type = 1
+        }
+        if (this.type == 1) {
+            submitData.news = this.targetId
+        } else if (this.type == 2) {
+            submitData.goods = this.targetId
         }
 
         api.$request(uri, submitData).then(({data}) => {
             if (data && data.id) {
                 api.toast('保存成功', 'none')
+                if (isAdd) {
+                    if (this.type==1) {
+                        this.handleSetPoint({
+                            userId: this.userInfo.id,
+                            type: this.pointType['POINT_SIGN'],
+                            action: 1,
+                            desc: '',
+                            target: data.id
+                        })
+                    } else if (this.type == 2) {
+                        this.handleExchange({ id: this.targetId, action: 1, userId: this.user.id })
+                    }
+                }
                 _this.pageBack(true, true)
                 _this.$apply()
             } else {
@@ -471,7 +496,12 @@ export default class Sign extends wepy.page {
     }
 
     handleFetchSurvey() {
-        let params = { customer: this.wxuserInfo.id, news: this.newsId, _sort: 'id:DESC' }
+        let params = { customer: this.wxuserInfo.id, type: this.type, _sort: 'id:DESC' }
+        if (this.type == 2) {
+            params['goods'] = this.targetId
+        } else {
+            params['news'] = this.targetId
+        }
         api.$request('signs_list', params).then(({data}) => {
             if (data && data.length > 0) {
                 this.survey = data[0]

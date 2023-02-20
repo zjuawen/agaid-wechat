@@ -5,9 +5,9 @@ const qs = require('qs');
 const debug = false
 const urlPrefixLocal = './data/'
 // const urlPrefixRemote = 'http://192.168.88.166:5337' // 本地
-// const urlPrefixRemote = 'http://localhost:1337' // 本地
+const urlPrefixRemote = 'http://localhost:5337' // 本地
 // const urlPrefixRemote = 'https://agaid.microripples.cn' 
-const urlPrefixRemote = 'https://fjdxagaid.bbtv.cn' 
+// const urlPrefixRemote = 'https://fjdxagaid.bbtv.cn' 
 // const urlPrefixRemote = 'http://192.168.88.166:5337' // 远程
 const attachmentPath = urlPrefixRemote + '/attachment/'
 const methods = { GET: 'GET', POST: 'POST', PUT: 'PUT', DELETE: 'DELETE' }
@@ -19,6 +19,7 @@ const methods = { GET: 'GET', POST: 'POST', PUT: 'PUT', DELETE: 'DELETE' }
 const urlConfig = {
     login:                  ['', '/customers/login', methods.POST, false],   // 登录{code}
     upload:                 ['', '/upload', methods.POST],
+    get_dict:               ['', '/dicts', methods.GET],
     check_word:             ['', '/wechat/check', methods.POST],
     check_file:             ['', '/wechat/checkFile', methods.POST],
     
@@ -61,6 +62,7 @@ const urlConfig = {
     professor_update:       ['', '/professors/${0}', methods.PUT],
     professor_save:         ['', '/professors', methods.POST],
 
+    users_info:             ['', '/users/${0}', methods.GET],
     users_update:           ['', '/users/${0}', methods.PUT],
 
     signs_list:             ['', '/signs', methods.GET],
@@ -72,6 +74,32 @@ const urlConfig = {
     messages_info:          ['', '/messages/${0}', methods.GET],
     messages_update:        ['', '/messages/${0}', methods.PUT],
     messages_save:          ['', '/messages', methods.POST],
+
+    integrals_list:         ['', '/integrals', methods.GET],
+    integrals_info:         ['', '/integrals/${0}', methods.GET],
+    integrals_update:       ['', '/integrals/${0}', methods.PUT],
+    integrals_save:         ['', '/integrals', methods.POST],
+    integrals_add:          ['', '/integrals/add', methods.POST],
+    integrals_reduce:       ['', '/integrals/reduce', methods.POST],
+
+    checkins_list:          ['', '/checkins', methods.GET],
+    checkins_today:         ['', '/checkins/today', methods.POST],
+    checkins_video:         ['', '/checkins/video', methods.POST],
+
+    exchangegoods_list:     ['', '/exchangegoods', methods.GET],
+    exchangegoods_info:     ['', '/exchangegoods/${0}', methods.GET],
+    exchangegoods_exchange: ['', '/exchangegoods/exchange', methods.POST],
+    exchangegoods_done:     ['', '/exchangegoods/done', methods.POST],
+
+    exchangeorders_list:     ['', '/exchangeorders', methods.GET],
+    exchangeorders_info:     ['', '/exchangeorders/${0}', methods.GET],
+    exchangeorders_update:   ['', '/exchangeorders/${0}', methods.PUT],
+
+    addresses_list:         ['', '/user-addresses', methods.GET],
+    addresses_info:         ['', '/user-addresses/${0}', methods.GET],
+    addresses_update:       ['', '/user-addresses/${0}', methods.PUT],
+    addresses_save:         ['', '/user-addresses', methods.POST],
+    addresses_delete:       ['', '/user-addresses/${0}', methods.DELETE],
 }
 
 // +-------------------------------------

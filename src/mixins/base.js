@@ -16,7 +16,21 @@ export default class baseMixin extends wepy.mixin {
             },
             list: [],
         },
-        collectLoading: false
+        collectLoading: false,
+        pointType: {
+            'POINT_REGISTER': 1,
+            'POINT_INFO': 2,
+            'POINT_SIGN_DAY': 3,
+            'POINT_SIGN_SEVEN': 4,
+            'POINT_VIDEO': 5,
+            'POINT_QUESTION': 6,
+            'POINT_SIGN': 7
+        },
+
+        playTime: 0, // 观看总时间，ms
+        playInterval: {},
+        playProgress: 3000,
+        playIntervalDur: 100
     }
 
     methods = {
@@ -37,9 +51,27 @@ export default class baseMixin extends wepy.mixin {
                 }
             })
         },
+        videoBindPlay() {
+            this.playInterval = setInterval(() => {
+                this.playTime += this.playIntervalDur
+                
+                if (this.playTime > this.playProgress) {
+                    this.playTime = this.playTime - this.playProgress
+                    this.handleUpdatePlay()
+                }
+            }, this.playIntervalDur)
+        },
+        videoBindPause() {
+            clearInterval(this.playInterval)
+        },
         emptyFunc() {
             
         }
+    }
+
+
+    onUnload() {
+        console.log('onUnload', this.playTime)
     }
 
     // 更新微信用户信息
@@ -135,7 +167,7 @@ export default class baseMixin extends wepy.mixin {
         }
         this.$apply()
         let _params = Object.assign({_start: (this.queryConfig.base.page-1)*this.queryConfig.base.limit, _limit: this.queryConfig.base.limit, _sort: 'updated_at:DESC' }, this.queryParams)
-        api.$request(this.queryConfig.key, _params, false).then(({data}) => {
+        api.$request(this.queryConfig.key, _params, false, true).then(({data}) => {
             if (data && data.length > 0) {
                 data.forEach(v => {
                     if (v.created_at) {
@@ -207,6 +239,40 @@ export default class baseMixin extends wepy.mixin {
         }
     }
 
+    handleSetPoint(params, callback) {
+        // type: 1-注册;2-完善信息;3-每日签到;4-连续签到;5-观看视频15分钟;6-专家资讯;7-报名
+        // let params = {
+        //     userId: userId,
+        //     type: type,
+        //     action: action,
+        //     desc: desc
+        // }
+        api.$request('integrals_add', params, true, false).then(({data}) => {
+            callback && callback(data)
+        })
+    }
+
+    handleExchange(params, callback) {
+        api.$request('exchangegoods_exchange', params, true, false).then(({data}) => {
+            if (data && data.code==0) {
+                wepy.$instance.globalData.appuser.points = wepy.$instance.globalData.appuser.points - data.data.integral
+                this.$apply()
+            }
+            callback && callback(data)
+        })
+    }
+
+    handleUpdatePlay(callback) {
+        api.$request('checkins_video', {time: Math.floor(this.playProgress/1000)}, false).then(({data}) => {
+            if (data && data.code == 0) {
+                if (data.msg) {
+                    api.toast(data.msg, 'none')
+                }
+            }
+            callback && callback(data)
+        })
+    }
+
     handleSetSearch(keyword) {
         let words = wx.getStorageSync('AGAID_SEARCH_HISTORY')
         if (!words) {
@@ -253,8 +319,11 @@ export default class baseMixin extends wepy.mixin {
         if (!types) {
             return []
         }
-        return api.$request('get_dict', types , true, false).then(({data}) => {
-            if (data.code == 0) {
+        let isarray = types.constructor === Array
+        let key = isarray ? types : [types]
+
+        api.$request('get_dict', { type_in: key }, true, false).then(({data}) => {
+            if (data) {
                 return data.list
             }
             return []

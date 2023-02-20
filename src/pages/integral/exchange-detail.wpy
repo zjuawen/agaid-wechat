@@ -1,0 +1,276 @@
+<template>
+    <import src="../../wxParse/wxParse.wxml" />
+    <view class="page-task-driver flex flex-col h-full-v flow-hide fix-iphonex-bottom ">
+        <view class="relative flex-main flow-y-auto list z-100 bg-tran fix-iphonex-bottom">
+            <view class="list-item bg-white wl-padding-sm wl-margin-bottom-sm">
+                <view class="title text-36 text-center wl-margin-bottom-sm">{{info.goods.name}}</view>
+                <view class="flex flex-ai-center flex-jc-center wl-padding-bottom-sm">
+                    <view class="text-26 color-gray">
+                        <i class="fa fa-clock-o text-24 color-gray wl-margin-right-xs"></i>{{info.created_at}}
+                    </view>
+                </view>
+            </view>
+            <view wx:if="{{info.goods.content}}" class="wxParse list-item wl-padding-sm bg-white wl-margin-bottom-sm flow-x-auto">
+                <template is="wxParse" data="{{wxParseData:htmlParserTpl.nodes}}"/>
+            </view>
+            <view class="list-item wl-padding-sm bg-white wl-margin-vertical-sm box-border-top">
+                <view class="title text-36 wl-margin-bottom-sm">收货人信息</view>
+                <view class="bg-gray wl-padding-sm wl-margin-top-xs box-radius">
+                    <text class="color-gray text-26">联系人：{{info.username}}</text>
+                </view>
+                <view class="bg-gray wl-padding-sm wl-margin-top-xs box-radius">
+                    <text class="color-gray text-26">联系电话：{{info.phone}}</text>
+                </view>
+                <view class="bg-gray wl-padding-sm wl-margin-top-xs box-radius">
+                    <text class="color-gray text-26">联系地址：{{info.region}} {{info.address}}</text>
+                </view>
+                <view class="bg-gray wl-padding-sm wl-margin-top-xs box-radius">
+                    <text class="color-gray text-26">物流名称：{{info.shipping_name||'-'}}</text>
+                </view>
+                <view class="bg-gray wl-padding-sm wl-margin-top-xs box-radius">
+                    <text class="color-gray text-26">物流单号：{{info.shipping_code||'待发货'}}</text>
+                </view>
+            </view>
+            <view class="wl-padding-bottom-nav"></view>
+        </view>
+        <view class="flex flex-ai-center consult-tab box-shadow wl-padding-sm z-100">
+            <view class="flex-main flex flex-ai-center">
+                <!-- <view class="text-24">消耗积分：{{info.integral}}</view> -->
+            </view>
+            <block wx:if="{{!info.shipping_code}}">
+                <view class="btn btn-search" style="width: 40%;" @tap="handleShowEdit">修改收货信息</view>
+            </block>
+        </view>
+    </view>
+
+    <van-popup
+        show="{{showPopup}}"
+        round
+        closeable
+        close-icon="close"
+        close-icon-position="top-right"
+        position="bottom"
+        custom-style="height: 80%;"
+        bind:close="handleShowEdit"
+      >
+        <view class="flex flex-col h-full fix-iphonex-bottom">
+            <view class="wl-padding-top-sm wl-padding-bottom-lg text-34 color-title text-center">
+                <text class="box-border-title wl-padding-bottom-xs">修改收货信息</text>
+            </view>
+            <view scroll-y="true" class="flex-main flow-y-auto list z-100 bg-tran">
+                <view class="wl-form">
+                    <view class="form-card wl-padding-vertical-sm">
+                        <view class="form-group flex wl-margin-bottom-sm">
+                            <view class="form-label must">联系人:</view>
+                            <view class="flex flex-ai-center flex-main">
+                                <view class="form-control border-bottom">
+                                    <input type="text" 
+                                            class="flex-main no-border" 
+                                            placeholder="请输入" 
+                                            data-key="username"
+                                            placeholder-class="color-desc"
+                                            @input="inputValue" value="{{submitData.username}}" />
+                                </view>
+                            </view>
+                        </view>
+                        <view class="form-group flex wl-margin-bottom-sm">
+                            <view class="form-label must">电话:</view>
+                            <view class="flex flex-ai-center flex-main">
+                                <view class="form-control border-bottom">
+                                    <input type="number" 
+                                           class="flex-main no-border" 
+                                           placeholder="请输入" 
+                                           data-key="phone"
+                                            placeholder-class="color-desc"
+                                           @input="inputValue" value="{{submitData.phone}}" />
+                                </view>
+                            </view>
+                        </view>
+                        <view class="form-group flex wl-margin-bottom-sm">
+                            <view class="form-label must">地区:</view>
+                            <view class="flex flex-ai-center flex-main">
+                                <picker class="form-control border-bottom" mode="region" @change="regionChange" value="{{region}}" custom-item="{{customItem}}">
+                                    <view  wx:if="{{region.length>0}}" class="text-28">
+                                        {{region[0]}} {{region[1]}} {{region[2]}}
+                                    </view>
+                                    <view wx:else class="text-28 color-desc wl-padding-horizontal-xs">
+                                        请选择
+                                    </view>
+                                </picker>
+                            </view>
+                        </view>
+                        <view class="form-group flex textarea">
+                            <view class="form-label must">详细地址:</view>
+                            <view class="flex flex-ai-center flex-main">
+                                <view class="form-control wl-padding-0 wl-margin-top-xs border-bottom">
+                                    <textarea
+                                        class="flex-main wl-padding-top-0" 
+                                        placeholder="请输入" 
+                                        data-key="address"
+                                        @input="inputValue" 
+                                        placeholder-class="color-desc"
+                                        value="{{submitData.address}}" />
+                                </view>
+                            </view>
+                        </view>
+                    </view>
+                </view>
+                <view class="text-center wl-margin-top-lg wl-full">
+                    <view class="btn btn-search wl-margin-auto" style="width: 60%;" @tap="handleSave">提交</view>
+                </view>
+            </view>
+        </view>
+    </van-popup>
+</template>
+<script>
+import wepy from 'wepy'
+import api from '@/utils/api'
+import baseMixin from '@/mixins/base'
+// 富文本插件
+import wxParse from '../../wxParse/wxParse';
+export default class ExchangeDetail extends wepy.page {
+    config = {
+        navigationBarTitleText: '兑换详情',
+        usingComponents: {
+            "van-popup": "@vant/weapp/popup/index",
+        }
+    }
+    
+    mixins = [ baseMixin ]
+    
+    components = {
+    }
+
+    data = {
+        currendId: null,
+        loading: true,
+        info: {},
+        newContent: '',
+        htmlParserTpl: null,
+        showPopup: false,
+        region: [],
+        submitLoading: false,
+        submitData: {}
+    }
+
+    computed = {
+        userInfo() {
+            return this.$parent.globalData.appuser
+        }
+    }
+    
+    methods = {
+        inputValue(e) {
+            let data = e.currentTarget.dataset
+            let _value = e.detail.value
+            let _key = data.key
+
+            this.submitData[_key] = _value
+            this.$apply()
+        },
+        regionChange(e) {
+            this.region = e.detail.value
+            this.$apply()
+        },
+        handleShowEdit() {
+            if (!this.showPopup) {
+                this.region = this.submitData.region.split(' ')
+            }
+            this.showPopup = !this.showPopup
+            this.$apply()
+        },
+        handleSave() {
+            console.log(this.submitData)
+            if (this.submitLoading) {
+                return
+            }
+            if (!this.submitData.username) {
+                api.toast('联系人不能为空', 'none')
+                return
+            }
+            if (!this.submitData.phone) {
+                api.toast('电话不能为空', 'none')
+                return
+            }
+            if (!this.region || this.region.length == 0) {
+                api.toast('请选择地区', 'none')
+                return
+            }
+            if (!this.submitData.address) {
+                api.toast('详细地址不能为空', 'none')
+                return
+            }
+            let sdata = {
+                username: this.submitData.username,
+                phone: this.submitData.phone,
+                region: this.region.join(' '),
+                address: this.submitData.address,
+            }
+            this.submitLoading = true
+            api.$request(['exchangeorders_update', this.submitData.id], sdata, true, false).then(({data}) => {
+                if (data && data.id) {
+                    api.toast('修改成功', 'success')
+                    this.handleFetchDetail()
+                    this.showPopup = false
+                } else {
+                    api.toast(data.msg, 'none')
+                }
+            }).finally(() => {
+                this.submitLoading = false
+                this.$apply()
+            })
+        }
+    }
+
+    events = {
+    }
+
+    handleFetchDetail() {
+        let vm = this
+        this.loading = true
+        api.$request(['exchangeorders_info', this.currendId], {} , true, false).then(({data}) => {
+            if (data && data.id) {
+                this.submitData = data
+                data.created_at = this.handleDateView(data.created_at)
+                if (data.goods) {
+                    data.goods.start_time = this.handleDateView(data.goods.start_time)
+                    data.goods.end_time = this.handleDateView(data.goods.end_time)
+                    if (data.goods.image && data.goods.image.id) {
+                        data.goods.image.url = api.attachmentPath + data.goods.image.id
+                    }
+                    // 富文本转码
+                    if (data.goods.content && data.goods.content.length > 0) {
+                        let htmlContent = wxParse.wxParse('newContent', 'html', data.goods.content, vm, 0);
+                        vm.htmlParserTpl = htmlContent['newContent']
+                    }
+                }
+                this.info = data
+                this.$apply()
+            } else {
+                api.toast(data.msg, 'none')
+            }
+        }).finally(() => {
+            this.loading = false
+            this.$apply()
+        })
+    }
+
+    async onLoad (params, data) {
+        this.currendId = params.id
+        this.$apply()
+        this.handleFetchDetail()
+    }
+
+    onUnload() {
+    }
+
+    onShow () {
+    }
+    onReady () {
+
+    }
+}
+</script>
+<style lang="css">
+@import '../../wxParse/wxParse.wxss';
+</style>

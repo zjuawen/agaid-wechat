@@ -1,0 +1,200 @@
+<template>
+    <view class="page-task-driver flex flex-col h-full-v flow-hide fix-iphonex-bottom ">
+        <view class="wl-form">
+            <view class="form-card wl-padding-vertical-lg">
+                <view class="form-group flex wl-margin-bottom-sm">
+                    <view class="form-label must">联系人:</view>
+                    <view class="flex flex-ai-center flex-main">
+                        <view class="form-control border-bottom">
+                            <input type="text" 
+                                    class="flex-main no-border" 
+                                    placeholder="请输入" 
+                                    data-key="name"
+                                    placeholder-class="color-desc"
+                                    @input="inputValue" value="{{submitData.name}}" />
+                        </view>
+                    </view>
+                </view>
+                <view class="form-group flex wl-margin-bottom-sm">
+                    <view class="form-label must">电话:</view>
+                    <view class="flex flex-ai-center flex-main">
+                        <view class="form-control border-bottom">
+                            <input type="number" 
+                                   class="flex-main no-border" 
+                                   placeholder="请输入" 
+                                   data-key="phone"
+                                    placeholder-class="color-desc"
+                                   @input="inputValue" value="{{submitData.phone}}" />
+                        </view>
+                    </view>
+                </view>
+                <view class="form-group flex wl-margin-bottom-sm">
+                    <view class="form-label must">地区:</view>
+                    <view class="flex flex-ai-center flex-main">
+                        <picker class="form-control border-bottom" mode="region" @change="regionChange" value="{{region}}" custom-item="{{customItem}}">
+                            <view  wx:if="{{region.length>0}}" class="text-28">
+                                {{region[0]}} {{region[1]}} {{region[2]}}
+                            </view>
+                            <view wx:else class="text-28 color-desc wl-padding-horizontal-xs">
+                                请选择
+                            </view>
+                        </picker>
+                    </view>
+                </view>
+                <view class="form-group flex textarea">
+                    <view class="form-label must">详细地址:</view>
+                    <view class="flex flex-ai-center flex-main">
+                        <view class="form-control wl-padding-0 wl-margin-top-xs border-bottom">
+                            <textarea
+                                class="flex-main wl-padding-top-0" 
+                                placeholder="请输入" 
+                                data-key="address"
+                                @input="inputValue" 
+                                placeholder-class="color-desc"
+                                value="{{submitData.address}}" />
+                        </view>
+                    </view>
+                </view>
+            </view>
+        </view>
+        <view class="text-center wl-margin-top-lg wl-full">
+            <view class="btn btn-search wl-margin-auto" style="width: 60%;" @tap="handleSave">提交</view>
+        </view>
+    </view>
+</template>
+<script>
+import wepy from 'wepy'
+import api from '@/utils/api'
+import baseMixin from '@/mixins/base'
+// 富文本插件
+import wxParse from '../../wxParse/wxParse';
+export default class AddressDetail extends wepy.page {
+    config = {
+        navigationBarTitleText: '收货地址',
+        usingComponents: {
+        }
+    }
+    
+    mixins = [ baseMixin ]
+    
+    components = {
+    }
+
+    data = {
+        currendId: null,
+        wxuser: {},
+        region: [],
+        submitLoading: false,
+        submitData: {}
+    }
+
+    computed = {
+        userInfo() {
+            return this.$parent.globalData.appuser
+        }
+    }
+    
+    methods = {
+        inputValue(e) {
+            let data = e.currentTarget.dataset
+            let _value = e.detail.value
+            let _key = data.key
+
+            this.submitData[_key] = _value
+            this.$apply()
+        },
+        regionChange(e) {
+            this.region = e.detail.value
+            this.$apply()
+        },
+        handleSave() {
+            if (this.submitLoading) {
+                return
+            }
+            if (!this.submitData.name) {
+                api.toast('联系人不能为空', 'none')
+                return
+            }
+            if (!this.submitData.phone) {
+                api.toast('电话不能为空', 'none')
+                return
+            }
+            if (!this.region || this.region.length == 0) {
+                api.toast('请选择地区', 'none')
+                return
+            }
+            if (!this.submitData.address) {
+                api.toast('详细地址不能为空', 'none')
+                return
+            }
+            let sdata = {
+                name: this.submitData.name,
+                phone: this.submitData.phone,
+                region: this.region.join(' '),
+                address: this.submitData.address,
+                customer: this.wxuser.id
+            }
+            let uri = this.currendId ? ['addresses_update', this.submitData.id] : 'addresses_save'
+            this.submitLoading = true
+            api.$request(uri, sdata, true, false).then(({data}) => {
+                if (data && data.id) {
+                    api.toast('操作成功', 'success')
+                    wx.setStorageSync('packBackReload', true)
+                    if (!this.currendId) {
+                        this.currendId = data.id
+                    }
+                    this.handleFetchDetail()
+                } else {
+                    api.toast(data.msg, 'none')
+                }
+            }).finally(() => {
+                this.submitLoading = false
+                this.$apply()
+            })
+        }
+    }
+
+    events = {
+    }
+
+    handleFetchDetail() {
+        let vm = this
+        this.loading = true
+        api.$request(['addresses_info', this.currendId], {} , true, false).then(({data}) => {
+            if (data && data.id) {
+                this.submitData = data
+                if (this.submitData.region) {
+                    this.region = this.submitData.region.split(' ')
+                }
+                this.$apply()
+            } else {
+                api.toast(data.msg, 'none')
+            }
+        }).finally(() => {
+            this.loading = false
+            this.$apply()
+        })
+    }
+
+    async onLoad (params, data) {
+        this.currendId = params.id||null
+        this.wxuser = this.$parent.globalData.wxuser
+        this.$apply()
+        if (this.currendId) {
+            this.handleFetchDetail()
+        }
+    }
+
+    onUnload() {
+    }
+
+    onShow () {
+    }
+    onReady () {
+
+    }
+}
+</script>
+<style lang="css">
+@import '../../wxParse/wxParse.wxss';
+</style>

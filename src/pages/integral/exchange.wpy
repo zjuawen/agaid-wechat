@@ -1,0 +1,205 @@
+<template>
+    <view class="page-work-unit">
+        <view class="wl-form head-view bg-head wl-padding-page wl-padding-vertical-xl fix-iphonex-bottom">
+            <view class="text-center wl-padding-vertical-xl">
+                <image wx:if="{{goods.image}}" class="icon-158 circle" src="{{goods.image.url}}" mode="scaleToFill" />
+                <view class="text-center text-30 color-white wl-margin-top-xs">{{goods.name}}</view>
+            </view>
+            <view class="text-30 wl-padding-sm color-white">收货人信息</view>
+            <view class="form-card wl-padding-vertical-sm">
+                <view class="form-group flex wl-margin-bottom-sm">
+                    <view class="form-label must">联系人</view>
+                    <view class="flex flex-ai-center flex-main">
+                        <view class="form-control">
+                            <input type="text" 
+                                    class="flex-main no-border" 
+                                    placeholder="请输入" 
+                                    data-key="name"
+                                    placeholder-class="color-desc"
+                                    @input="inputValue" value="{{submitData.name}}" />
+                        </view>
+                    </view>
+                </view>
+                <view class="form-group flex wl-margin-bottom-sm">
+                    <view class="form-label must">电话</view>
+                    <view class="flex flex-ai-center flex-main">
+                        <view class="form-control">
+                            <input type="number" 
+                                   class="flex-main no-border" 
+                                   placeholder="请输入" 
+                                   data-key="phone"
+                                    placeholder-class="color-desc"
+                                   @input="inputValue" value="{{submitData.phone}}" />
+                        </view>
+                    </view>
+                </view>
+                <view class="form-group flex wl-margin-bottom-sm">
+                    <view class="form-label must">地区</view>
+                    <view class="flex flex-ai-center flex-main">
+                        <picker class="form-control" mode="region" @change="regionChange" value="{{region}}" custom-item="{{customItem}}">
+                            <view  wx:if="{{region.length>0}}" class="text-28">
+                                {{region[0]}} {{region[1]}} {{region[2]}}
+                            </view>
+                            <view wx:else class="text-28 color-desc wl-padding-horizontal-xs">
+                                请选择
+                            </view>
+                        </picker>
+                    </view>
+                </view>
+                <view class="form-group flex textarea">
+                    <view class="form-label must">详细地址</view>
+                    <view class="flex flex-ai-center flex-main">
+                        <view class="form-control wl-padding-0 wl-margin-top-xs">
+                            <textarea
+                                class="flex-main wl-padding-top-0" 
+                                placeholder="请输入" 
+                                data-key="address"
+                                @input="inputValue" 
+                                placeholder-class="color-desc"
+                                value="{{submitData.address}}" />
+                        </view>
+                    </view>
+                </view>
+            </view>
+        </view>
+        <view class="flex flex-ai-center wl-padding-vertical-xs wl-padding-horizontal-xl">
+            <label class="form-control wl-padding-0 wl-margin-top-xs" @tap="checkboxChange">
+                <checkbox style="vertical-align: super;" value="1" checked="{{submitData.is_save}}" />
+                <text class="text-30">保存为常用地址</text>
+            </label>
+        </view>
+        <view class="wl-padding-page wl-margin-vertical-xl">
+            <button class="btn btn-submit border-none" hover-class='none' @tap="handleSave"> 确认兑换 </button>
+        </view>
+    </view>
+</template>
+<script>
+import wepy from 'wepy'
+import api from '@/utils/api'
+import baseMixin from '@/mixins/base'
+export default class Exchange extends wepy.page {
+    config = {
+        navigationBarTitleText: '兑换',
+    }
+    
+    mixins = [ baseMixin ]
+    
+    components = {}
+
+    data = {
+        goods: {},
+        region: [],
+        submitLoading: false,
+        submitData: {
+            is_save: false
+        }
+    }
+
+    computed = {
+    }
+    
+    methods = {
+        inputValue(e) {
+            let data = e.currentTarget.dataset
+            let _value = e.detail.value
+            let _key = data.key
+
+            this.submitData[_key] = _value
+            this.$apply()
+        },
+        regionChange(e) {
+            this.region = e.detail.value
+            this.$apply()
+        },
+        checkboxChange(e) {
+            this.submitData.is_save = !this.submitData.is_save
+            this.$apply();
+        },
+        handleSave() {
+            if (this.submitLoading) {
+                return
+            }
+            if (!this.submitData.name) {
+                api.toast('联系人不能为空', 'none')
+                return
+            }
+            if (!this.submitData.phone) {
+                api.toast('电话不能为空', 'none')
+                return
+            }
+            if (!this.region || this.region.length == 0) {
+                api.toast('请选择地区', 'none')
+                return
+            }
+            if (!this.submitData.address) {
+                api.toast('详细地址不能为空', 'none')
+                return
+            }
+            let sdata = {
+                name: this.submitData.name,
+                phone: this.submitData.phone,
+                region: this.region.join(' '),
+                address: this.submitData.address,
+                goods: this.goods.id,
+                is_save: this.submitData.is_save
+            }
+            this.submitLoading = true
+            api.$request('exchangegoods_done', sdata, true, false).then(({data}) => {
+                if (data && data.code==0) {
+                    wepy.$instance.globalData.appuser.points = wepy.$instance.globalData.appuser.points - data.data.integral
+                    this.$apply()
+                    api.toast('兑换成功', 'success')
+                    this.pageBack(true, true)
+                } else {
+                    api.toast(data.msg, 'none')
+                }
+            }).finally(() => {
+                this.submitLoading = false
+                this.$apply()
+            })
+        }
+    }
+
+    events = {
+    }
+
+    loadData() {
+        api.$request('get_dict', {'type_in[]': 'integral_type'}, true, false).then(({data}) => {
+            console.log(data)
+        })
+    }
+
+    handleFetchDetail(id) {
+        let vm = this
+        this.loading = true
+        api.$request(['exchangegoods_info', id], {} , true, false).then(({data}) => {
+            if (data && data.id) {
+                if (data.image && data.image.id) {
+                    data.image.url = api.attachmentPath + data.image.id
+                }
+                this.goods = data
+                this.$apply()
+            } else {
+                api.toast(data.msg, 'none')
+            }
+        }).finally(() => {
+            this.loading = false
+            this.$apply()
+        })
+    }
+
+    async onLoad (params, data) {
+        let id = params.id
+        this.$apply()
+        this.handleFetchDetail(id)
+    }
+    onShow () {
+        
+    }
+    onReady () {
+
+    }
+}
+</script>
+<style lang="css">
+</style>
