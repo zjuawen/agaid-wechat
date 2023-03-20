@@ -1,7 +1,7 @@
 <template>
     <import src="../../wxParse/wxParse.wxml" />
     <view class="page-task-driver flex flex-col h-full-v flow-hide">
-        <view class="relative flex-main flow-y-auto list z-100 bg-tran fix-iphonex-bottom">
+        <view wx:if="{{info.id}}" class="relative flex-main flow-y-auto list z-100 bg-tran fix-iphonex-bottom">
             <view class="list-item bg-white wl-padding-sm wl-margin-bottom-sm">
                 <view class="title text-36 text-center wl-margin-bottom-sm">{{info.title}}</view>
                 <view class="flex flex-ai-center flex-jc-center wl-padding-bottom-xl">
@@ -37,8 +37,14 @@
             
             <view class="wl-padding-bottom-nav"></view>
         </view>
+        <view  wx:else class="card-body box-center">
+            <view class="empty">
+                <image style="width: 222rpx;height: 128rpx;" src="/public/img/empty.png" />
+                <view class="wl-margin-top-sm">~内容不存在</view>
+            </view>
+        </view>
         <view wx:if="{{info.is_sign}}" class="consult-tab fix-iphonex-bottom text-center box-shadow wl-padding-page wl-padding-top-sm wl-padding-bottom-sm z-100">
-            <view class="btn btn-search wl-margin-auto wl-margin-bottom-sm" style="width: 60%;" @tap="handleToSign">我要报名</view>
+            <view class="btn btn-search wl-margin-auto wl-margin-bottom-sm" style="width: 60%;" @tap="handleToSign">{{hasSign?'已报名':'我要报名'}}</view>
         </view>
     </view>
 </template>
@@ -64,6 +70,7 @@ export default class Detail extends wepy.page {
 
     data = {
         loading: true,
+        hasSign: false,
         collectList: [],
         info: {},
         newContent: '',
@@ -77,6 +84,9 @@ export default class Detail extends wepy.page {
     computed = {
         userInfo() {
             return this.$parent.globalData.appuser
+        },
+        wxuserInfo() {
+            return this.$parent.globalData.wxuser
         }
     }
     
@@ -187,6 +197,9 @@ export default class Detail extends wepy.page {
                     let htmlContent = wxParse.wxParse('newContent', 'html', data.content, vm, 0);
                     vm.htmlParserTpl = htmlContent['newContent']
                 }
+                if (data.is_sign) {
+                    this.handleCheckSign(data.id)
+                }
                 this.info = data
                 this.$apply()
                 this.$invoke('Consult', 'init', {id: data.id})
@@ -201,6 +214,17 @@ export default class Detail extends wepy.page {
             this.$apply()
         })
     }
+
+    handleCheckSign(id) {
+        let params = { customer: this.wxuserInfo.id, type: 1, news: id, _sort: 'id:DESC' }
+        api.$request('signs_list', params).then(({data}) => {
+            if (data && data.length > 0) {
+                this.hasSign = true
+                this.$apply()
+            }
+        })
+    }
+
     handleSetCount(type, isCollect) {
         let vm = this
         let params = {}

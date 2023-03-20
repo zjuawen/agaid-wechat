@@ -14,7 +14,7 @@
                         <video wx:if="{{item.type==2}}" class="video" src="{{item.content}}" controls="{{false}}" show-center-play-btn="{{false}}"  catchtap="handlePreview({{item.content}}, 'video')" />
                     </view>
                     <view wx:if="{{item.type==0}}" class="triangle right"></view>
-                    <image mode="aspectFill" class="avatar right wl-padding-xs" src="{{wxuserInfo.avatar}}" />
+                    <image mode="aspectFill" class="avatar right wl-padding-xs" src="{{avatarPath}}" />
 
                 </view>
                 <view wx:if="{{item.sendType==1}}" class="m-row wl-over">
@@ -45,6 +45,9 @@
                 <view wx:else class="nav-bar-item text-center wl-margin-left-xl active" @tap="handleSend">
                     <view class="text-32 btn btn-min btn-send">发送</view>
                 </view>
+                <view class="nav-bar-item text-center wl-margin-left-xl active" @tap="handleFetchList(true)">
+                    <i class="fa fa-refresh text-40 color-green relative bar-icon"></i>
+                </view>
             </view>
         </view>
     </view>
@@ -66,6 +69,7 @@ export default class Chat extends wepy.page {
     data = {
         loading: true,
         professorId: null,
+        customerId: null,
         showScroll: 0,
         scrollTop: 0,
         scrollView: '',
@@ -89,6 +93,17 @@ export default class Chat extends wepy.page {
         },
         wxuserInfo() {
             return this.$parent.globalData.wxuser
+        },
+        avatarPath() {
+            if (this.wxuserInfo && this.wxuserInfo.avatar) {
+                if (this.wxuserInfo.avatar.startsWith('http')) {
+                    return this.wxuserInfo.avatar;
+                } else {
+                    return api.urlPrefixRemote + this.wxuserInfo.avatar;
+                }
+            } else {
+                return '';
+            }
         },
         isProfessor() {
             return (this.userInfo.professor && this.userInfo.professor.id == this.professorId)
@@ -152,9 +167,12 @@ export default class Chat extends wepy.page {
     events = {
     }
     // 获取聊天记录
-    handleFetchList() {
+    handleFetchList(isNew=false) {
         let vm = this
-        let params = { customer: vm.wxuserInfo.id, professor: vm.professorId, _sort: 'created_at:ASC' }
+        let params = { customer: vm.customerId, professor: vm.professorId, _sort: 'created_at:ASC' }
+        if (isNew && vm.lastChat && vm.lastChat.id) {
+            params['id_gt'] = vm.lastChat.id
+        }
         api.$request('chats_list', params , true, false).then(({data}) => {
             if (data && data.length > 0) {
                 data.forEach(v => {
@@ -172,9 +190,18 @@ export default class Chat extends wepy.page {
                     if (v.type == 1 || v.type == 2) {
                         v.content = api.attachmentPath + v.content
                     }
+                    if (v.customer && v.customer.avatar) {
+                        if (!v.customer.avatar.startsWith('http')) {
+                            v.customer.avatar = api.urlPrefixRemote + v.customer.avatar;
+                        }
+                    }
                 })
                 data = vm.handleSetTime(data)
-                vm.messages = data
+                if (isNew) {
+                    vm.messages.push(...data)
+                } else {
+                    vm.messages = data
+                }
                 vm.lastChat = data[data.length - 1]
                 vm.$apply()
                 setTimeout(function(){
@@ -189,6 +216,10 @@ export default class Chat extends wepy.page {
             this.loading = false
             this.$apply()
         })
+    }
+    // 更新为已读
+    handleDoRead() {
+        api.$request('chats_doread', {professor: this.professorId, customer: this.customerId} , false, false).then(({data}) => {})
     }
     // 加入时间标签
     handleSetTime(data) {
@@ -254,13 +285,15 @@ export default class Chat extends wepy.page {
             api.toast('内容不能为空', 'none')
             return
         }
+        let isRead = vm.isProfessor ? 1:0;
         vm.handleCheckWords(vm.wxuserInfo.openid, _content, () => {
             let sdata = {
-                customer: vm.wxuserInfo.id,
+                customer: vm.customerId,
                 professor: vm.professorId,
                 content: _content,
                 user: vm.userInfo.id,
-                type: _type
+                type: _type,
+                read: isRead
             }
             vm.submitLoading = true
             api.$request('chats_save', sdata , false, false).then(({data}) => {
@@ -307,8 +340,13 @@ export default class Chat extends wepy.page {
 
     onLoad (params, data) {
         this.professorId = params.pid
+        this.customerId = this.wxuserInfo.id
+        if (params.uid) {
+            this.customerId = params.uid
+        }
         this.$apply()
         this.handleFetchList()
+        this.handleDoRead()
     }
     onShow () {
         

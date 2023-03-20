@@ -5,9 +5,9 @@ const qs = require('qs');
 const debug = false
 const urlPrefixLocal = './data/'
 // const urlPrefixRemote = 'http://192.168.88.166:5337' // 本地
-const urlPrefixRemote = 'http://localhost:5337' // 本地
+// const urlPrefixRemote = 'http://localhost:5337' // 本地
 // const urlPrefixRemote = 'https://agaid.microripples.cn' 
-// const urlPrefixRemote = 'https://fjdxagaid.bbtv.cn' 
+const urlPrefixRemote = 'https://fjdxagaid.bbtv.cn' 
 // const urlPrefixRemote = 'http://192.168.88.166:5337' // 远程
 const attachmentPath = urlPrefixRemote + '/attachment/'
 const methods = { GET: 'GET', POST: 'POST', PUT: 'PUT', DELETE: 'DELETE' }
@@ -39,6 +39,9 @@ const urlConfig = {
     chats_list:             ['', '/chats', methods.GET],
     chats_save:             ['', '/chats', methods.POST],
     chats_delete:           ['', '/chats/${0}', methods.DELETE],
+    chats_professor:        ['', '/chats/professor/${0}', methods.GET],
+    chats_hasnew:           ['', '/chats/hasnews/${0}', methods.GET],
+    chats_doread:           ['', '/chats/doread', methods.POST],
 
     category_list:          ['', '/categories', methods.GET],
 
@@ -143,11 +146,13 @@ const getUrl = params => {
 // +--------------------------------------
 const toast = (msg, type) => {
   isLoading = true
-  wx.showToast({
-    title: msg,
-    icon: type,
-    duration: 4000
-  })
+  setTimeout(() => {
+    wx.showToast({
+      title: msg,
+      icon: type,
+      duration: 4000
+    })
+  }, 400)
 }
 
 const msgModal = (_msg, _title = '') => {

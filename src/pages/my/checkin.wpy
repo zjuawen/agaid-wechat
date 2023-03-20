@@ -1,11 +1,6 @@
 <template>
     <view class="page-news-list flex flex-col h-full-v flow-hide">
-        <van-calendar
-            title="日历"
-            poppable="{{ false }}"
-            show-confirm="{{ false }}"
-            class="calendar"
-        />
+        
     </view>
 </template>
 <script>
@@ -15,8 +10,7 @@ import baseMixin from '@/mixins/base'
 export default class Checkin extends wepy.page {
     config = {
         navigationBarTitleText: '我的签到',
-        "usingComponents": {
-            "van-calendar": "@vant/weapp/calendar/index"
+        usingComponents: {
         }
     }
 

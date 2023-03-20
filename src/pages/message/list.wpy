@@ -17,7 +17,7 @@
             <view  wx:if="{{isEmpty}}" class="card-body">
                 <view class="empty">
                     <i class="icon icon-empty"></i>
-                    <view class="wl-margin-top-sm">~还没有收藏</view>
+                    <view class="wl-margin-top-sm">~还没有留言</view>
                 </view>
             </view>
         </scroll-view>

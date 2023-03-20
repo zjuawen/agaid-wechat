@@ -33,7 +33,7 @@
                 </block>
 
                 <view wx:if="{{info.is_sign||sign.type==2}}" class="consult-tab  text-center wl-padding-page wl-padding-top-sm wl-padding-bottom-sm z-100">
-                    <view class="btn btn-search wl-margin-auto" style="width: 60%;" @tap="handleToSign">修改信息</view>
+                    <view wx:if="{{sign.status!=1}}" class="btn btn-search wl-margin-auto" style="width: 60%;" @tap="handleToSign">修改信息</view>
                 </view>
             </view>
         </view>

@@ -21,7 +21,7 @@
                     </view>
                 </view> -->
                 <view class="form-group flex wl-margin-bottom-sm">
-                    <view class="form-label">姓名</view>
+                    <view class="form-label must">姓名</view>
                     <view class="flex flex-ai-center flex-main">
                         <view class="form-control">
                             <input type="text" 
@@ -34,7 +34,7 @@
                     </view>
                 </view>
                 <view class="form-group flex">
-                    <view class="form-label">电话</view>
+                    <view class="form-label must">手机号</view>
                     <view class="flex flex-ai-center flex-main">
                         <view class="form-control">
                             <input type="number" 
@@ -47,7 +47,7 @@
                     </view>
                 </view>
                 <view class="form-group flex radio">
-                    <view class="form-label">性别</view>
+                    <view class="form-label must">性别</view>
                     <view class="flex flex-ai-center flex-main">
                         <radio-group class="form-control " @change="genderChange">
                             <label class="wl-margin-right-xl">
@@ -104,12 +104,22 @@ export default class Info extends wepy.page {
             if (this.submitLoading) {
                 return
             }
-            if (!this.submitData.nickname) {
-                api.toast('请输入昵称', 'none')
+            if (!this.submitData.name) {
+                api.toast('请填写姓名', 'none')
+                return
+            }
+            if (!this.submitData.phone_number) {
+                api.toast('请填写手机号', 'none')
+                return
+            } else if (!this.handleCheckPhone(this.submitData.phone_number)) {
+                api.toast('手机号格式不正确', 'none')
+                return
+            }
+            if (!this.submitData.gender) {
+                api.toast('请选择性别', 'none')
                 return
             }
             let sdata = {
-                nickname: this.submitData.nickname,
                 name: this.submitData.name,
                 phone_number: this.submitData.phone_number,
                 gender: this.submitData.gender
@@ -121,7 +131,7 @@ export default class Info extends wepy.page {
                     this.handleCheckPoint()
                     this.$apply()
                     api.toast('保存成功', 'success')
-                    // this.pageBack(true, true)
+                    this.pageBack(true, true)
                 } else {
                     api.toast(data.msg, 'none')
                 }
@@ -137,7 +147,6 @@ export default class Info extends wepy.page {
 
     loadData() {
         api.$request('get_dict', {'type_in[]': 'integral_type'}, true, false).then(({data}) => {
-            console.log(data)
         })
     }
 
@@ -164,7 +173,11 @@ export default class Info extends wepy.page {
     }
 
     async onLoad (params, data) {
-        this.submitData = JSON.parse(JSON.stringify(this.$parent.globalData.wxuser))
+        let wxinfo = JSON.parse(JSON.stringify(this.$parent.globalData.wxuser))
+        if (wxinfo.avatar && !wxinfo.avatar.startsWith('http')) {
+            wxinfo.avatar = api.urlPrefixRemote + wxinfo.avatar;
+        }
+        this.submitData = wxinfo
         this.loadData()
         this.$apply()
     }

@@ -9,7 +9,7 @@
                             <block wx:if="{{submitData.image&&submitData.image.id}}" wx:key="index">
                                 <view class="relative inline">
                                     <image mode="aspectFill" class="wl-margin-0" src="{{submitData.image.url}}" @tap="handleAddMedia" />
-                                    <i class="fa fa-times-circle file-del" @tap="handleDelImage"></i>
+                                    <i wx:if="{{!disabledEdit}}" class="fa fa-times-circle file-del" @tap="handleDelImage"></i>
                                 </view>
                             </block>
                             <view wx:else class="file-upload" hover-class='none' @tap="handleAddMedia()">
@@ -23,11 +23,13 @@
                     <view class="flex flex-ai-center flex-main">
                         <view class="form-control">
                             <input type="text" 
-                                    class="flex-main bottom" 
-                                    placeholder="请输入" 
-                                    data-key="name"
-                                    placeholder-class="color-desc"
-                                    @input="inputValue" value="{{submitData.name}}" />
+                                disabled="{{disabledEdit}}" 
+                                class="flex-main bottom" 
+                                placeholder="请输入" 
+                                data-key="name"
+                                placeholder-class="color-desc"
+                                @input="inputValue"
+                                value="{{submitData.name}}" />
                         </view>
                     </view>
                 </view>
@@ -36,11 +38,12 @@
                     <view class="flex flex-ai-center flex-main">
                         <view class="form-control">
                             <input type="text" 
-                                   class="flex-main bottom" 
-                                   placeholder="请输入" 
-                                   data-key="phone"
-                                    placeholder-class="color-desc"
-                                   @input="inputValue" value="{{submitData.phone}}" />
+                                disabled="{{disabledEdit}}" 
+                                class="flex-main bottom" 
+                                placeholder="请输入" 
+                                data-key="phone"
+                                placeholder-class="color-desc"
+                                @input="inputValue" value="{{submitData.phone}}" />
                         </view>
                     </view>
                 </view>
@@ -49,11 +52,12 @@
                     <view class="flex flex-ai-center flex-main">
                         <view class="form-control">
                             <input type="text" 
-                                   class="flex-main bottom" 
-                                   placeholder="请输入" 
-                                   data-key="area"
-                                    placeholder-class="color-desc"
-                                   @input="inputValue" value="{{submitData.area}}" />
+                                disabled="{{disabledEdit}}" 
+                                class="flex-main bottom" 
+                                placeholder="请输入" 
+                                data-key="area"
+                                placeholder-class="color-desc"
+                                @input="inputValue" value="{{submitData.area}}" />
                         </view>
                     </view>
                 </view>
@@ -62,6 +66,7 @@
                     <view class="flex flex-ai-center flex-main">
                         <view class="form-control wl-padding-0">
                             <textarea
+                                disabled="{{disabledEdit}}" 
                                 class="flex-main wl-padding-top-0" 
                                 placeholder="请输入" 
                                 data-key="description"
@@ -73,7 +78,7 @@
                 </view>
             </view>
         </view>
-        <view class="wl-padding-page wl-margin-vertical-xl fix-iphonex-bottom">
+        <view wx:if="{{!disabledEdit}}" class="wl-padding-page wl-margin-vertical-xl fix-iphonex-bottom">
             <button class="btn btn-submit border-none" hover-class='none' @tap="handleSave"> {{submitData.id?'保存修改':'提交申请'}} </button>
         </view>
     </view>
@@ -92,6 +97,7 @@ export default class Bind extends wepy.page {
     components = {}
 
     data = {
+        disabledEdit: true,
         submitLoading: false,
         submitData: {
             name: '',
@@ -125,6 +131,9 @@ export default class Bind extends wepy.page {
         // 添加图片
         handleAddMedia() {
             let vm = this
+            if (vm.disabledEdit) {
+                return
+            }
             api.uploadMedia({ max: 1, mediaType: ['image'] }, function(res){
                 if(res && res.length > 0) {
                     let file = res[0]
@@ -222,14 +231,25 @@ export default class Bind extends wepy.page {
     events = {
     }
 
+    handleGetInfo(id) {
+        api.$request(['professor_info', id], {}, true, false).then(({data}) => {
+            if (data && data.id) {
+                this.submitData = data
+                if (data.image && data.image.id) {
+                    let headurl = api.attachmentPath + data.image.id
+                    this.submitData.image.url = headurl
+                }
+                this.disabledEdit = (data.state == 1)
+                this.$apply()
+            }
+        })
+    }
+
     onLoad (params, data) {
         this.submitData.author = this.userInfo.id
         if (this.userInfo.professor && this.userInfo.professor.id) {
-            this.submitData = this.userInfo.professor
-            if (this.userInfo.professor.image && this.userInfo.professor.image.id) {
-                let headurl = api.attachmentPath + this.userInfo.professor.image.id
-                this.submitData.image.url = headurl
-            }
+            this.handleGetInfo(this.userInfo.professor.id)
+            
         }
         this.$apply()
     }

@@ -71,7 +71,10 @@ export default class baseMixin extends wepy.mixin {
 
 
     onUnload() {
-        console.log('onUnload', this.playTime)
+        // console.log('onUnload', this.playTime)
+        if (this.playInterval) {
+            clearInterval(this.playInterval)
+        }
     }
 
     // 更新微信用户信息
@@ -266,7 +269,11 @@ export default class baseMixin extends wepy.mixin {
         api.$request('checkins_video', {time: Math.floor(this.playProgress/1000)}, false).then(({data}) => {
             if (data && data.code == 0) {
                 if (data.msg) {
-                    api.toast(data.msg, 'none')
+                    wx.showToast({
+                        title: data.msg,
+                        icon: 'none',
+                        duration: 4000
+                    })
                 }
             }
             callback && callback(data)

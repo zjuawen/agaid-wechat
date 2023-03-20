@@ -1,6 +1,6 @@
 <template>
     <view class="page-task-driver fix-iphonex-bottom">
-        <view class="relative list z-100 bg-tran wl-padding-top-sm">
+        <view wx:if="{{info.id&&!info.is_delete}}" class="relative list z-100 bg-tran wl-padding-top-sm">
             <view class="list-item wl-padding-sm box-radius-20 bg-white wl-margin-bottom-sm">
                 <view class="flex flex-ai-center wl-margin-bottom-lg">
                     <image wx:if="{{info.customer&&info.customer.avatar}}" class="avatar" src="{{info.customer.avatar}}" mode="scaleToFill" />
@@ -96,6 +96,12 @@
                         </view>
                     </block>
                 </view>
+            </view>
+        </view>
+        <view  wx:else class="card-body box-center">
+            <view class="empty">
+                <image style="width: 222rpx;height: 128rpx;" src="/public/img/empty.png" />
+                <view class="wl-margin-top-sm">~内容不存在</view>
             </view>
         </view>
     </view>
@@ -360,6 +366,9 @@ export default class Detail extends wepy.page {
                     data.reply_images.forEach(m => {
                         m.url = api.attachmentPath + m.id
                     })
+                }
+                if (data.customer && data.customer.avatar && !data.customer.avatar.startsWith('http')) {
+                    data.customer.avatar = api.urlPrefixRemote + data.customer.avatar;
                 }
                 this.info = data
                 this.$apply()

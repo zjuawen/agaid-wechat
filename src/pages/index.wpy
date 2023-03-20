@@ -13,7 +13,7 @@
                 <News wx:if="{{navCode=='News'}}" />
                 <Professor wx:if="{{navCode=='Professor'}}" />
                 <My wx:if="{{navCode=='My'}}" />
-                <view wx:if="{{showNav}}" class="nav-bar flex flex-ai-center fix-iphonex-bottom">
+                <view wx:if="{{showNav}}" class="nav-bar box-shadow flex flex-ai-center fix-iphonex-bottom">
                     <view 
                         wx:for="{{navItems}}" wx:key="index" 
                         class="nav-bar-item flex-main text-center {{navActive==index?'active':''}}" 
@@ -66,14 +66,12 @@ export default class Index extends wepy.page {
         navigationBarTitleText: '助农小程序',
         // enablePullDownRefresh: true,
         usingComponents: {
-            // "van-calendar": "@vant/weapp/calendar/index",
             "van-sticky": "@vant/weapp/sticky/index",
-            // "van-dialog": "@vant/weapp/dialog/index",
             "van-tabs": "@vant/weapp/tabs/index",
             "van-tab": "@vant/weapp/tab/index",
             "van-popup": "@vant/weapp/popup/index",
             "van-icon": "@vant/weapp/icon/index",
-            "van-tag": "@vant/weapp/tag/index"
+            // "van-tag": "@vant/weapp/tag/index"
         }
     }
     

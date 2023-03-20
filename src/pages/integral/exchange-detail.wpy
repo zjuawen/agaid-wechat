@@ -180,7 +180,6 @@ export default class ExchangeDetail extends wepy.page {
             this.$apply()
         },
         handleSave() {
-            console.log(this.submitData)
             if (this.submitLoading) {
                 return
             }

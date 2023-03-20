@@ -2,7 +2,7 @@
     <view class="page-my page-nav wl-padding-bottom-bar">
         <view class="head-view banner">
             <view class="flex flex-ai-center z-100 info relative wl-padding-page">
-                <image mode="aspectFill" wx:if="{{wxuser.avatar}}" class="avatar icon-128 circle" src="{{wxuser.avatar}}" />
+                <image mode="aspectFill" wx:if="{{wxuser.avatar}}" class="avatar icon-128 circle" src="{{avatarPath}}" />
                 <image mode="aspectFill" wx:else class="avatar icon-128 circle" src="/public/img/avatar.png" />
                 <view class="flex-main wl-margin-left-lg flow-hide">
                     <view class="flex flex-ai-center">
@@ -67,11 +67,20 @@
                     </view>
                 </navigator>
                 <view wx:if="{{isProfessor}}" class="menu-item flex flex-ai-center" @tap="handleToConsult">
-                    <i class="fa fa-comments text-60 {{appuser.professor.state==1?'color-green':'color-gray'}} wl-margin-right-sm relative">
+                    <i class="fa fa-comments text-50 {{appuser.professor.state==1?'color-green':'color-gray'}} wl-margin-right-sm relative">
                         <text wx:if="{{replyCount>0}}" class="dot-single"></text>
                     </i>
                     <view class="flex-main flex flex-ai-center">
                         <text class="flex-main text-32 text-sc-medium {{appuser.professor.state==1?'':'color-gray'}}"> 咨询回复</text>
+                        <i class="fa fa-angle-right color-sub-green text-bold text-40"></i>
+                    </view>
+                </view>
+                <view wx:if="{{isProfessor&&appuser.professor.state==1}}" class="menu-item flex flex-ai-center" @tap="handleToChat">
+                    <i class="fa fa-envelope-o text-50 color-green wl-margin-right-sm relative">
+                        <text wx:if="{{newChat}}" class="dot-single"></text>
+                    </i>
+                    <view class="flex-main flex flex-ai-center">
+                        <text class="flex-main text-32 text-sc-medium {{appuser.professor.state==1?'':'color-gray'}}"> 私信交流</text>
                         <i class="fa fa-angle-right color-sub-green text-bold text-40"></i>
                     </view>
                 </view>
@@ -107,9 +116,10 @@ export default class My extends wepy.component {
     data = {
         isProfessor: false,
         replyCount: 0,
+        newChat: false,
         appuser: {},
         wxuser: {},
-        checkin: {}
+        checkin: {},
     }
 
     computed = {
@@ -143,6 +153,17 @@ export default class My extends wepy.component {
             }
 
             return items;
+        },
+        avatarPath() {
+            if (this.wxuser && this.wxuser.avatar) {
+                if (this.wxuser.avatar.startsWith('http')) {
+                    return this.wxuser.avatar;
+                } else {
+                    return api.urlPrefixRemote + this.wxuser.avatar;
+                }
+            } else {
+                return '';
+            }
         }
     }
     
@@ -151,6 +172,28 @@ export default class My extends wepy.component {
             if (this.appuser.professor && this.appuser.professor.id) {
                 if (this.appuser.professor.state == 1) {
                     this.$parent.$navigate('/pages/my/consult')
+                } else if (this.appuser.professor.state == 0) {
+                    api.toast('请等待管理员审核', 'none')
+                } else if (this.appuser.professor.state == 2) {
+                    let vm = this
+                    wx.showModal({
+                        title: '提示',
+                        content: vm.appuser.professor.auth_content,
+                        confirmText: '去修改',
+                        cancelText: '先不了',
+                        success: function (res) {
+                            if (res.confirm) {
+                                vm.$parent.$navigate('/pages/professor/bind')
+                            }
+                        }
+                    })
+                }
+            }
+        },
+        handleToChat() {
+            if (this.appuser.professor && this.appuser.professor.id) {
+                if (this.appuser.professor.state == 1) {
+                    this.$parent.$navigate('/pages/my/chats')
                 } else if (this.appuser.professor.state == 0) {
                     api.toast('请等待管理员审核', 'none')
                 } else if (this.appuser.professor.state == 2) {
@@ -201,7 +244,22 @@ export default class My extends wepy.component {
         this.$apply()
         if (this.isProfessor) {
             this.handleCountConsult()
+            this.handleHasnewChat()
         }
+    }
+
+    handleHasnewChat() {
+        let pid = this.appuser.professor.id
+        this.newChat = false
+        api.$request(['chats_hasnew', pid], {} , false, false).then(({data}) => {
+            if (data && data.code == 0) {
+                if (data.data && data.data.id) {
+                    this.newChat = true
+                }
+            }
+        }).finally(() => {
+            this.$apply()
+        })
     }
 
     handleCountConsult() {

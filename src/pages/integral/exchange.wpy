@@ -5,7 +5,13 @@
                 <image wx:if="{{goods.image}}" class="icon-158 circle" src="{{goods.image.url}}" mode="scaleToFill" />
                 <view class="text-center text-30 color-white wl-margin-top-xs">{{goods.name}}</view>
             </view>
-            <view class="text-30 wl-padding-sm color-white">收货人信息</view>
+            <view class="flex flex-ai-center text-30 wl-padding-sm color-white">
+                <view class="flex-main">收货人信息</view>
+                <SelectAddress title="地址" @selectCallback.user="handleSelectAddress" >
+                    <view>选择地址</view>
+                </SelectAddress>
+                <i class="fa fa-angle-right wl-margin-left-xs"></i>
+            </view>
             <view class="form-card wl-padding-vertical-sm">
                 <view class="form-group flex wl-margin-bottom-sm">
                     <view class="form-label must">联系人</view>
@@ -21,7 +27,7 @@
                     </view>
                 </view>
                 <view class="form-group flex wl-margin-bottom-sm">
-                    <view class="form-label must">电话</view>
+                    <view class="form-label must">手机号</view>
                     <view class="flex flex-ai-center flex-main">
                         <view class="form-control">
                             <input type="number" 
@@ -77,14 +83,20 @@
 import wepy from 'wepy'
 import api from '@/utils/api'
 import baseMixin from '@/mixins/base'
+import SelectAddress from '@/components/selectaddress'
 export default class Exchange extends wepy.page {
     config = {
         navigationBarTitleText: '兑换',
+        usingComponents: {
+            "van-popup": "@vant/weapp/popup/index"
+        }
     }
     
     mixins = [ baseMixin ]
     
-    components = {}
+    components = {
+        SelectAddress
+    }
 
     data = {
         goods: {},
@@ -115,6 +127,16 @@ export default class Exchange extends wepy.page {
             this.submitData.is_save = !this.submitData.is_save
             this.$apply();
         },
+        handleSelectAddress(address) {
+            if (address) {
+                this.submitData.name = address.name||'';
+                this.submitData.phone = address.phone||'';
+                this.submitData.region = address.region||'';
+                this.submitData.address = address.address||'';
+                this.region = address.region.split(' ');
+            }
+            this.$apply()
+        },
         handleSave() {
             if (this.submitLoading) {
                 return
@@ -124,7 +146,10 @@ export default class Exchange extends wepy.page {
                 return
             }
             if (!this.submitData.phone) {
-                api.toast('电话不能为空', 'none')
+                api.toast('手机号不能为空', 'none')
+                return
+            } else if (!this.handleCheckPhone(this.submitData.phone)) {
+                api.toast('手机号格式不正确', 'none')
                 return
             }
             if (!this.region || this.region.length == 0) {
@@ -135,38 +160,44 @@ export default class Exchange extends wepy.page {
                 api.toast('详细地址不能为空', 'none')
                 return
             }
-            let sdata = {
-                name: this.submitData.name,
-                phone: this.submitData.phone,
-                region: this.region.join(' '),
-                address: this.submitData.address,
-                goods: this.goods.id,
-                is_save: this.submitData.is_save
-            }
-            this.submitLoading = true
-            api.$request('exchangegoods_done', sdata, true, false).then(({data}) => {
-                if (data && data.code==0) {
-                    wepy.$instance.globalData.appuser.points = wepy.$instance.globalData.appuser.points - data.data.integral
-                    this.$apply()
-                    api.toast('兑换成功', 'success')
-                    this.pageBack(true, true)
-                } else {
-                    api.toast(data.msg, 'none')
+            let _this = this
+            wx.showModal({
+                title: '提示',
+                content: '您确定要兑换该物品吗？',
+                confirmText: '确定',
+                cancelText: '先不了',
+                success: function (res) {
+                    if (res.confirm) {
+                        let sdata = {
+                            name: _this.submitData.name,
+                            phone: _this.submitData.phone,
+                            region: _this.region.join(' '),
+                            address: _this.submitData.address,
+                            goods: _this.goods.id,
+                            is_save: _this.submitData.is_save
+                        }
+                        _this.submitLoading = true
+                        api.$request('exchangegoods_done', sdata, true, false).then(({data}) => {
+                            if (data && data.code==0) {
+                                wepy.$instance.globalData.appuser.points = wepy.$instance.globalData.appuser.points - data.data.integral
+                                _this.$apply()
+                                api.toast('兑换成功', 'success')
+                                _this.pageBack(true, true)
+                            } else {
+                                api.toast(data.msg, 'none')
+                            }
+                        }).finally(() => {
+                            _this.submitLoading = false
+                            _this.$apply()
+                        })
+                    }
                 }
-            }).finally(() => {
-                this.submitLoading = false
-                this.$apply()
             })
+            
         }
     }
 
     events = {
-    }
-
-    loadData() {
-        api.$request('get_dict', {'type_in[]': 'integral_type'}, true, false).then(({data}) => {
-            console.log(data)
-        })
     }
 
     handleFetchDetail(id) {
@@ -192,6 +223,7 @@ export default class Exchange extends wepy.page {
         let id = params.id
         this.$apply()
         this.handleFetchDetail(id)
+        this.$invoke('SelectAddress', 'init')
     }
     onShow () {
         

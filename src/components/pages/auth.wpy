@@ -67,7 +67,6 @@ export default class Auth extends wepy.component {
             wx.getUserProfile({
                 desc: '用于完善用户资料', // 声明获取用户个人信息后的用途，后续会展示在弹窗中，请谨慎填写
                 success: (res) => {
-                    console.log(res)
                     _this.handleUpdate(res.userInfo)
                 }
             })
@@ -101,7 +100,6 @@ export default class Auth extends wepy.component {
                     country: '',
                     language: ''
                 }
-                console.log(info)
                 vm.handleUpdate(info)
             })
         },

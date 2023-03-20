@@ -507,6 +507,7 @@ export default class Sign extends wepy.page {
                 this.survey = data[0]
                 this.loadFail = false
                 this.loadFailMsg = ''
+                this.disabled = (this.survey.status == 1)
             }
         }).catch((e) => {
             this.loadFail = true

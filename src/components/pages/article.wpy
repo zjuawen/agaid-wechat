@@ -216,6 +216,11 @@ export default class Article extends wepy.component {
                 v.videos = []
             }
             v.files = [...v.images, ...v.videos]
+            if (v.customer && v.customer.avatar) {
+                if (!v.customer.avatar.startsWith('http')) {
+                    v.customer.avatar = api.urlPrefixRemote + v.customer.avatar;
+                }
+            }
         })
         return list
     }

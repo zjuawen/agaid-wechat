@@ -72,7 +72,6 @@ export default class Integral extends wepy.page {
     methods = {
         // 下一页
         handleNext() {
-            console.log('next')
             if (this.queryConfig.finished) {
                 return
             }
@@ -91,7 +90,6 @@ export default class Integral extends wepy.page {
                     this.typeDictObj['code_'+v.code] = v.value;
                 })
             }
-            console.log(data)
             this.$apply()
         })
     }
@@ -118,13 +116,11 @@ export default class Integral extends wepy.page {
         this.queryParams.user = this.$parent.globalData.appuser.id
         this.loadData()
         this.handleFetchUser()
-        this.handleFetchList(true, false, this.handleListBefore)
     }
     onShow () {
-        
+        this.handleFetchList(true, false, this.handleListBefore)
     }
     onReady () {
-        
     }
 }
 </script>
