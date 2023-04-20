@@ -32,11 +32,12 @@
         },
         "disableUseStrict": false,
         "useCompilerPlugins": false,
-        "minifyWXML": true
+        "minifyWXML": true,
+        "condition": false
     },
     "compileType": "miniprogram",
-    "appid": "wx431d27fb79c87c91",
-    "projectname": "助农小程序",
+    "appid": "wx58f42ca347325c8c",
+    "projectname": "农一通小程序",
     "miniprogramRoot": "dist/",
     "libVersion": "2.24.1",
     "srcMiniprogramRoot": "dist/",
