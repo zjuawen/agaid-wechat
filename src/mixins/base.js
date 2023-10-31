@@ -293,7 +293,7 @@ export default class baseMixin extends wepy.mixin {
             words.unshift(keyword)
         }
         if (words.length > 10) {
-            words.spilce((words.length - 1), 1)
+            words.splice((words.length - 1), 1)
         }
         wx.setStorageSync('AGAID_SEARCH_HISTORY', words)
     }
