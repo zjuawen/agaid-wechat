@@ -249,7 +249,8 @@ export default class Bind extends wepy.page {
         this.submitData.author = this.userInfo.id
         if (this.userInfo.professor && this.userInfo.professor.id) {
             this.handleGetInfo(this.userInfo.professor.id)
-            
+        } else {
+            this.disabledEdit = false
         }
         this.$apply()
     }
