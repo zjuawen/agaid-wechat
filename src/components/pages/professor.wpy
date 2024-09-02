@@ -21,13 +21,14 @@
                             <view class="flex-main wl-margin-left-sm">
                                 <view class="text-30">
                                     {{item.name}}
-                                    <!-- <text class="tag blue min wl-margin-left-xs">在线</text> -->
+                                    <text wx:if="{{item.jtitle}}" class="tag blue min wl-margin-left-xs">{{item.jtitle}}</text>
                                 </view>
                             </view>
                             <view class="btn btn-follow btn-min {{item.isCollect?'active':''}}" @tap="handleCollect(2, {{item}}, {{index}})"><i class="icon-user-add"></i> {{item.isCollect?'已关注':'关注'}}</view>
                         </view>
-                        <view wx:if="{{item.description}}" class="title text-34 wl-margin-bottom-sm text-ellipsis-2">{{item.description}}</view>
-                        <view wx:if="{{item.area}}" class="description text-28 color-gray wl-margin-bottom-sm text-ellipsis-2">服务区域：{{item.area}}</view>
+                        <view wx:if="{{item.description}}" class="title text-32 wl-margin-bottom-sm">{{item.description}}</view>
+                        <!-- <view wx:if="{{item.unit}}" class="description text-26 color-gray wl-margin-bottom-sm">所在单位：{{item.unit||''}}</view> -->
+                        <view wx:if="{{item.specialty}}" class="description text-26 color-gray wl-margin-bottom-sm">专长：{{item.specialty||''}}</view>
                         <view class="flex flex-ai-center flex-jc-between text-30 color-green text-center wl-padding-top-xl">
                             <navigator hover-class="none" url="/pages/article/add?type=2&pid={{item.id}}">
                                 <i class="icon-question mid text-32"></i> 向他提问

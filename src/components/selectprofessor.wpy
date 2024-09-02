@@ -25,14 +25,14 @@
                         <view class="card-body flex flex-flow flex-jc-between">
                             <view wx:for="{{queryConfig.list}}" wx:key="index" class="list-item w-full wl-padding-vertical-sm box-radius-20 box-border-bottom" @tap="handleSelect({{item}})">
                                 <view class="flex flex-ai-center wl-margin-bottom-sm">
-                                    <image wx:if="{{item.image}}" class="avatar" src="{{item.image.url}}" mode="scaleToFill" />
+                                    <image wx:if="{{item.image&&item.image.url}}" class="avatar" src="{{attachmentPath}}{{item.image.id}}" mode="scaleToFill" />
                                     <image wx:else class="avatar" src="/public/img/logo.jpg" mode="scaleToFill" />
                                     <view class="flex-main wl-margin-left-sm">
-                                        <view class="text-30">{{item.name}}</view>
-                                        <view wx:if="{{item.area}}"  class="text-24 color-gray wl-margin-top-xs text-ellipsis-2">服务区域：{{item.area}}</view>
+                                        <view class="text-30">{{item.name}}<text wx:if="{{item.jtitle}}" class="tag blue min wl-margin-left-xs">{{item.jtitle}}</text></view>
+                                        <view wx:if="{{item.specialty}}" class="text-24 color-gray wl-margin-top-xs">专长：{{item.specialty}}</view>
                                     </view>
                                 </view>
-                                <view wx:if="{{item.description}}" style="padding-left: 100rpx;" class="title text-32 color-sub-title wl-margin-bottom-sm text-ellipsis-2">{{item.description}}</view>
+                                <view wx:if="{{item.description}}" style="padding-left: 100rpx;" class="title text-28 color-sub-title wl-margin-bottom-sm">{{item.description}}</view>
                             </view>
                         </view>
                     </view>
@@ -70,8 +70,10 @@ export default class SelectProfessor extends wepy.component {
     data = {
         showPopup: false,
         readonly: false,
+        attachmentPath: api.attachmentPath,
         professorName: '',
         queryParams: {
+            state: 1,
             name_contains: ''
         }
     }

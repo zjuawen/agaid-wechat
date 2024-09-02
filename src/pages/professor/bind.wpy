@@ -34,6 +34,21 @@
                     </view>
                 </view>
                 <view class="form-group flex wl-margin-bottom-sm">
+                    <view class="form-label must">所在单位</view>
+                    <view class="flex flex-ai-center flex-main">
+                        <view class="form-control">
+                            <input type="text" 
+                                disabled="{{disabledEdit}}" 
+                                class="flex-main bottom" 
+                                placeholder="请输入" 
+                                data-key="unit"
+                                placeholder-class="color-desc"
+                                @input="inputValue"
+                                value="{{submitData.unit}}" />
+                        </view>
+                    </view>
+                </view>
+                <view class="form-group flex wl-margin-bottom-sm">
                     <view class="form-label">联系电话</view>
                     <view class="flex flex-ai-center flex-main">
                         <view class="form-control">
@@ -48,21 +63,36 @@
                     </view>
                 </view>
                 <view class="form-group flex wl-margin-bottom-sm">
-                    <view class="form-label must">服务区域</view>
+                    <view class="form-label must">职称</view>
                     <view class="flex flex-ai-center flex-main">
                         <view class="form-control">
                             <input type="text" 
                                 disabled="{{disabledEdit}}" 
                                 class="flex-main bottom" 
                                 placeholder="请输入" 
-                                data-key="area"
+                                data-key="jtitle"
                                 placeholder-class="color-desc"
-                                @input="inputValue" value="{{submitData.area}}" />
+                                @input="inputValue" value="{{submitData.jtitle}}" />
                         </view>
                     </view>
                 </view>
                 <view class="form-group flex textarea">
-                    <view class="form-label must">专家介绍</view>
+                    <view class="form-label must">专长</view>
+                    <view class="flex flex-ai-center flex-main">
+                        <view class="form-control wl-padding-0">
+                            <textarea
+                                disabled="{{disabledEdit}}" 
+                                class="flex-main wl-padding-top-0" 
+                                placeholder="请输入" 
+                                data-key="specialty"
+                                @input="inputValue" 
+                                placeholder-class="color-desc"
+                                value="{{submitData.specialty}}" />
+                        </view>
+                    </view>
+                </view>
+                <view class="form-group flex textarea">
+                    <view class="form-label must">简介</view>
                     <view class="flex flex-ai-center flex-main">
                         <view class="form-control wl-padding-0">
                             <textarea
@@ -104,7 +134,9 @@ export default class Bind extends wepy.page {
             description: '',
             image: null,
             phone: '',
-            area: '',
+            unit: '',
+            jtitle: '',
+            specialty: '',
             state: 0,
             author: null
         }
@@ -175,16 +207,24 @@ export default class Bind extends wepy.page {
                 api.toast('请填写姓名', 'none')
                 return
             }
+            if (!this.submitData.unit) {
+                api.toast('请填写所在单位', 'none')
+                return
+            }
             // if (!this.submitData.phone) {
             //     api.toast('请填写电话', 'none')
             //     return
             // }
-            if (!this.submitData.area) {
-                api.toast('请填写服务区域', 'none')
+            if (!this.submitData.jtitle) {
+                api.toast('请填写职称', 'none')
+                return
+            }
+            if (!this.submitData.specialty) {
+                api.toast('请填写专长', 'none')
                 return
             }
             if (!this.submitData.description) {
-                api.toast('请填写介绍', 'none')
+                api.toast('请填写简介', 'none')
                 return
             }
             let sdata = JSON.parse(JSON.stringify(this.submitData))

@@ -132,6 +132,7 @@ export default class Index extends wepy.page {
             params['_or[1][description_contains]'] = this.keyword
             params['_or[2][content_contains]'] = this.keyword
         } else if (type == 2) {
+            params['state'] = 1
             params['_or[0][name_contains]'] = this.keyword
             params['_or[1][description_contains]'] = this.keyword
             params['_or[2][content_contains]'] = this.keyword
