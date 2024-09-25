@@ -25,7 +25,7 @@
                             <input type="text" 
                                 disabled="{{disabledEdit}}" 
                                 class="flex-main bottom" 
-                                placeholder="请输入" 
+                                placeholder="请输入姓名" 
                                 data-key="name"
                                 placeholder-class="color-desc"
                                 @input="inputValue"
@@ -40,7 +40,7 @@
                             <input type="text" 
                                 disabled="{{disabledEdit}}" 
                                 class="flex-main bottom" 
-                                placeholder="请输入" 
+                                placeholder="请输入单位名称" 
                                 data-key="unit"
                                 placeholder-class="color-desc"
                                 @input="inputValue"
@@ -55,7 +55,7 @@
                             <input type="text" 
                                 disabled="{{disabledEdit}}" 
                                 class="flex-main bottom" 
-                                placeholder="请输入" 
+                                placeholder="请输入联系电话" 
                                 data-key="phone"
                                 placeholder-class="color-desc"
                                 @input="inputValue" value="{{submitData.phone}}" />
@@ -69,24 +69,26 @@
                             <input type="text" 
                                 disabled="{{disabledEdit}}" 
                                 class="flex-main bottom" 
-                                placeholder="请输入" 
+                                placeholder="请输入职称" 
                                 data-key="jtitle"
                                 placeholder-class="color-desc"
-                                @input="inputValue" value="{{submitData.jtitle}}" />
+                                @input="inputValue"
+                                value="{{submitData.jtitle}}" />
                         </view>
                     </view>
                 </view>
-                <view class="form-group flex textarea">
-                    <view class="form-label must">专长</view>
+                <view class="form-group flex">
+                    <view class="form-label must">研究方向</view>
                     <view class="flex flex-ai-center flex-main">
-                        <view class="form-control wl-padding-0">
-                            <textarea
+                        <view class="form-control">
+                            <input type="text" 
                                 disabled="{{disabledEdit}}" 
-                                class="flex-main wl-padding-top-0" 
-                                placeholder="请输入" 
+                                class="flex-main bottom" 
+                                placeholder="请输入研究方向，12字以内" 
                                 data-key="specialty"
-                                @input="inputValue" 
                                 placeholder-class="color-desc"
+                                @input="inputValue"
+                                maxlength="12"
                                 value="{{submitData.specialty}}" />
                         </view>
                     </view>
@@ -98,7 +100,7 @@
                             <textarea
                                 disabled="{{disabledEdit}}" 
                                 class="flex-main wl-padding-top-0" 
-                                placeholder="请输入" 
+                                placeholder="请输入简介" 
                                 data-key="description"
                                 @input="inputValue" 
                                 placeholder-class="color-desc"

@@ -26,9 +26,12 @@
                             </view>
                             <view class="btn btn-follow btn-min {{item.isCollect?'active':''}}" @tap="handleCollect(2, {{item}}, {{index}})"><i class="icon-user-add"></i> {{item.isCollect?'已关注':'关注'}}</view>
                         </view>
-                        <view wx:if="{{item.description}}" class="title text-32 wl-margin-bottom-sm">{{item.description}}</view>
+                        <view class="title text-32 wl-margin-bottom-sm {{item.ellipsis?'text-ellipsis-3':''}}" @tap="showMoreDesc({{index}})">
+                            <text wx:if="{{item.unit}}">就职于‘{{item.unit}}’，</text>
+                            <text wx:if="{{item.description}}">{{item.description}}</text>
+                        </view>
                         <!-- <view wx:if="{{item.unit}}" class="description text-26 color-gray wl-margin-bottom-sm">所在单位：{{item.unit||''}}</view> -->
-                        <view wx:if="{{item.specialty}}" class="description text-26 color-gray wl-margin-bottom-sm">专长：{{item.specialty||''}}</view>
+                        <view wx:if="{{item.specialty}}" class="description text-26 color-gray wl-margin-bottom-sm">研究方向：{{item.specialty||''}}</view>
                         <view class="flex flex-ai-center flex-jc-between text-30 color-green text-center wl-padding-top-xl">
                             <navigator hover-class="none" url="/pages/article/add?type=2&pid={{item.id}}">
                                 <i class="icon-question mid text-32"></i> 向他提问
@@ -112,6 +115,13 @@ export default class Professor extends wepy.component {
                 phoneNumber: phone
             });
         },
+        // 介绍显示更多
+        showMoreDesc(idx) {
+            let item = this.queryConfig.list[idx]
+            if (item.description.length > 60) {
+                this.queryConfig.list[idx].ellipsis = !this.queryConfig.list[idx].ellipsis
+            }
+        },
         // 点赞收藏
         handleCollect(type, item, idx) {
             if (type != 2) {
@@ -153,6 +163,7 @@ export default class Professor extends wepy.component {
         list.forEach(v => {
             v.isCollect = false
             v.collectId = null
+            v.ellipsis = false
             v.created_at = vm.handleDateView(v.created_at)
             let cidx = vm.collectList.findIndex(c => {
                 return (c.type == 2 && c.target == v.id && c.user.id == vm.userInfo.id)
@@ -163,6 +174,9 @@ export default class Professor extends wepy.component {
             }
             if (v.image && v.image.id) {
                 v.image.url = api.attachmentPath + v.image.id
+            }
+            if (v.description.length > 60) {
+                v.ellipsis = true
             }
         })
         return list

@@ -39,9 +39,13 @@
                     </view>
                 </view>
             </view>
-            <view wx:if="{{item.description}}" class="title text-32 wl-margin-bottom-sm">{{item.description}}</view>
+            <view class="title text-32 wl-margin-bottom-sm {{item.ellipsis?'text-ellipsis-3':''}}" @tap="showMoreDesc({{index}})">
+                <text wx:if="{{item.unit}}">就职于‘{{item.unit}}’，</text>
+                <text wx:if="{{item.description}}">{{item.description}}</text>
+            </view>
+            <!-- <view wx:if="{{item.description}}" class="title text-32 wl-margin-bottom-sm">{{item.description}}</view> -->
             <!-- <view wx:if="{{item.unit}}" class="description text-26 color-gray wl-margin-bottom-sm">所在单位：{{item.unit||''}}</view> -->
-            <view wx:if="{{item.specialty}}" class="description text-26 color-gray wl-margin-bottom-sm">专长：{{item.specialty||''}}</view>
+            <view wx:if="{{item.specialty}}" class="description text-26 color-gray wl-margin-bottom-sm">研究方向：{{item.specialty||''}}</view>
             <view class="flex flex-ai-center flex-jc-between text-30 color-green text-center wl-padding-top-xl">
                 <navigator hover-class="none" url="/pages/article/add?type=2&pid={{item.id}}">
                     <i class="icon-question mid text-32"></i> 向他提问
@@ -109,6 +113,12 @@ export default class Rows extends wepy.component {
     }
     
     methods = {
+        // 介绍显示更多
+        showMoreDesc(idx) {
+            if (this.item.description.length > 60) {
+                this.item.ellipsis = !this.item.ellipsis
+            }
+        },
     }
 
     events = {

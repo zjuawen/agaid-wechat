@@ -157,8 +157,12 @@ export default class Index extends wepy.page {
                     v.video.url = api.attachmentPath + v.video.id
                 }
             } else if (vm.searchType == 2) {
+                v.ellipsis = false
                 if (v.image && v.image.id) {
                     v.image.url = api.attachmentPath + v.image.id
+                }
+                if (v.description.length > 60) {
+                    v.ellipsis = true
                 }
             } else if (vm.searchType == 3) {
                 if (v.images && v.images.length > 0) {
