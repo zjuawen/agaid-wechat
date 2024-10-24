@@ -27,7 +27,7 @@
                             <view class="btn btn-follow btn-min {{item.isCollect?'active':''}}" @tap="handleCollect(2, {{item}}, {{index}})"><i class="icon-user-add"></i> {{item.isCollect?'已关注':'关注'}}</view>
                         </view>
                         <view class="title text-32 wl-margin-bottom-sm {{item.ellipsis?'text-ellipsis-3':''}}" @tap="showMoreDesc({{index}})">
-                            <text wx:if="{{item.unit}}">就职于‘{{item.unit}}’，</text>
+                            <text wx:if="{{item.unit}}">就职于{{item.unit}}，</text>
                             <text wx:if="{{item.description}}">{{item.description}}</text>
                         </view>
                         <!-- <view wx:if="{{item.unit}}" class="description text-26 color-gray wl-margin-bottom-sm">所在单位：{{item.unit||''}}</view> -->

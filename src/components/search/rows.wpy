@@ -40,7 +40,7 @@
                 </view>
             </view>
             <view class="title text-32 wl-margin-bottom-sm {{item.ellipsis?'text-ellipsis-3':''}}" @tap="showMoreDesc({{index}})">
-                <text wx:if="{{item.unit}}">就职于‘{{item.unit}}’，</text>
+                <text wx:if="{{item.unit}}">就职于{{item.unit}}，</text>
                 <text wx:if="{{item.description}}">{{item.description}}</text>
             </view>
             <!-- <view wx:if="{{item.description}}" class="title text-32 wl-margin-bottom-sm">{{item.description}}</view> -->
