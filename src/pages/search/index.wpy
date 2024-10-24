@@ -137,6 +137,7 @@ export default class Index extends wepy.page {
             params['_or[1][description_contains]'] = this.keyword
             params['_or[2][content_contains]'] = this.keyword
         } else if (type == 3) {
+            params['is_delete'] = false
             params['_or[0][title_contains]'] = this.keyword
             params['_or[1][description_contains]'] = this.keyword
         }
