@@ -1,6 +1,6 @@
 {
   "name": "agaid-weapp",
-  "version": "0.0.2",
+  "version": "1.0.3",
   "description": "A WePY project",
   "main": "dist/app.js",
   "scripts": {
@@ -14,7 +14,7 @@
     "module-a": false,
     "./src/components/list": "./src/components/wepy-list.wpy"
   },
-  "author": "jianghuixiang <huixiangj@yahoo.com>",
+  "author": "awen <zjuawen@163.com>",
   "license": "MIT",
   "dependencies": {
     "@vant/weapp": "^1.10.13",

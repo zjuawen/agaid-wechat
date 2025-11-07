@@ -57,7 +57,8 @@
                 'pages/integral/exchange',
                 'pages/integral/exchange-detail',
                 'pages/message/list',
-                'pages/message/add'
+                'pages/message/add',
+                'pages/privacy'
             ],
             window: {
                 backgroundTextStyle: 'light',
@@ -71,7 +72,8 @@
                     "desc": "为了信息的精准性，小程序将获取您的位置权限"
                 }
             },
-            requiredPrivateInfos: ['getLocation', 'onLocationChange', 'startLocationUpdate'],
+            requiredPrivateInfos: ['getLocation', 'onLocationChange', 'startLocationUpdate', 'chooseAddress'],
+            // __usePrivacyCheck__: true,
             lazyCodeLoading: "requiredComponents"
         }
 

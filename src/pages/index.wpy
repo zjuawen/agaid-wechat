@@ -48,6 +48,23 @@
                 </view>
             </view>
         </block>
+        
+        <!-- 隐私保护提示弹窗 -->
+        <view wx:if="{{showPrivacyModal}}" class="privacy-popup">
+            <view class="privacy-mask"></view>
+            <view class="privacy-dialog">
+                <view class="privacy-title">用户隐私保护提示</view>
+                <view class="privacy-content">
+                    <text>在你使用"农一通小程序"服务之前，请仔细阅读</text>
+                    <text class="privacy-link" @tap="goToPrivacyPage">《农一通小程序隐私保护指引》</text>
+                    <text>\n如你同意该指引，请点击"同意"开始使用本小程序。</text>
+                </view>
+                <view class="privacy-buttons">
+                    <button class="privacy-btn refuse-btn" @tap="handleRefusePrivacy">拒绝</button>
+                    <button class="privacy-btn agree-btn" @tap="handleAgreePrivacy">同意</button>
+                </view>
+            </view>
+        </view>
     </view>
 </template>
 <script>
@@ -103,7 +120,8 @@ export default class Index extends wepy.page {
             { text: '首页', code: 'News', icon: 'icon-news', size: 46, isHome: true},
             { text: '专家', code: 'Professor', icon: 'icon-professor', size: 40},
             { text: '我的', code: 'My', icon: 'icon-user', size: 40},
-        ]
+        ],
+        showPrivacyModal: false
 
     }
 
@@ -147,6 +165,28 @@ export default class Index extends wepy.page {
                 }, 100)
             }
             
+        },
+        goToPrivacyPage() {
+            wx.navigateTo({
+                url: '/pages/privacy'
+            })
+        },
+        handleAgreePrivacy() {
+            this.showPrivacyModal = false
+            wx.setStorageSync('hasAgreedPrivacy', true)
+            this.$apply()
+        },
+        handleRefusePrivacy() {
+            wx.showModal({
+                title: '提示',
+                content: '同意隐私保护指引后正常使用小程序',
+                showCancel: false,
+                success: () => {
+                    // 可以选择退出小程序或保持弹窗
+                    this.showPrivacyModal = false
+                    this.$apply()
+                }
+            })
         }
     }
 
@@ -192,6 +232,11 @@ export default class Index extends wepy.page {
         let vm = this
         vm.showAuth = wx.getStorageSync('agaid-weapp-auth')
         if (!vm.showAuth) {
+            // 检查是否已同意隐私协议（仅对已登录用户）
+            const hasAgreedPrivacy = wx.getStorageSync('hasAgreedPrivacy')
+            if (!hasAgreedPrivacy) {
+                vm.showPrivacyModal = true
+            }
             vm.initPage(refresh)
         }
         vm.$apply()
@@ -252,4 +297,88 @@ export default class Index extends wepy.page {
 }
 </script>
 <style lang="css">
+/* 隐私保护弹窗样式 */
+.privacy-popup {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.privacy-mask {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.6);
+}
+
+.privacy-dialog {
+    position: relative;
+    width: 620rpx;
+    background-color: #ffffff;
+    border-radius: 24rpx;
+    overflow: hidden;
+    z-index: 10000;
+}
+
+.privacy-title {
+    padding: 48rpx 40rpx 24rpx;
+    font-size: 34rpx;
+    font-weight: 500;
+    color: #000000;
+    text-align: center;
+    line-height: 48rpx;
+}
+
+.privacy-content {
+    padding: 0 40rpx 40rpx;
+    font-size: 28rpx;
+    color: #666666;
+    line-height: 44rpx;
+    text-align: left;
+}
+
+.privacy-link {
+    color: #576B95;
+    text-decoration: none;
+}
+
+.privacy-buttons {
+    display: flex;
+    border-top: 1rpx solid #E5E5E5;
+}
+
+.privacy-btn {
+    flex: 1;
+    height: 100rpx;
+    line-height: 100rpx;
+    font-size: 34rpx;
+    text-align: center;
+    background-color: transparent;
+    border: none;
+    border-radius: 0;
+    padding: 0;
+    margin: 0;
+}
+
+.privacy-btn::after {
+    border: none;
+}
+
+.refuse-btn {
+    color: #000000;
+    border-right: 1rpx solid #E5E5E5;
+}
+
+.agree-btn {
+    color: #07C160;
+    font-weight: 500;
+}
 </style>
