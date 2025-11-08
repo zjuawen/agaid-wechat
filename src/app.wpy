@@ -113,7 +113,8 @@
         onLaunch (params, data) {
             const that = this
             that.globalData.isLaunch = true
-            that.doLogin(function (res) {
+            // 静默登录：仅获取 code 和 token，不强制用户授权
+            that.silentLogin(function (res) {
                 setTimeout(() => {
                     // 登陆回调
                     that.globalData.userInfoReadyCallback && that.globalData.userInfoReadyCallback(res)
@@ -134,6 +135,35 @@
         }
 
 
+        // 静默登录：仅获取基础 token，不强制用户授权
+        async silentLogin(callback) {
+            const login = await wepy.login()
+            let loginParams  = {
+                code: login.code
+            }
+            let _this = this
+            api.$request('login', loginParams, false).then(({data}) => {
+                if (data.code === 0) {
+                    if (data.jwt) {
+                        wx.setStorageSync('agaid-weapp-token', data.jwt)
+                    }
+                    if (data.user) {
+                        _this.globalData.appuser = data.user
+                        _this.globalData.wxuser = data.user.customer||null
+                        _this.globalData.collects = data.collects || []
+                        _this.globalData.config = data.config || null
+                        _this.globalData.checkin = data.checkin || null
+                        // 判断用户是否已授权（有昵称表示已授权）
+                        wx.setStorageSync('agaid-weapp-auth', !data.user.customer.nickname)
+                    }
+                }
+                callback && callback({code: 0})
+            }).catch((res) => {
+                callback && callback({code: 1, data: res})
+            })
+        }
+
+        // 完整登录：供按需调用，保持原有逻辑
         async doLogin(callback) {
             const login = await wepy.login()
             let loginParams  = {
@@ -147,9 +177,6 @@
                     }
                     if (data.user) {
                         _this.globalData.appuser = data.user
-                        // if (data.user.customer && data.user.customer.avatar && data.user.customer.avatar.indexOf('/attachment/') == 0) {
-                        //     data.user.customer.avatar = api.urlPrefixRemote + data.user.customer.avatar
-                        // }
                         _this.globalData.wxuser = data.user.customer||null
                         _this.globalData.collects = data.collects || []
                         _this.globalData.config = data.config || null

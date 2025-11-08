@@ -109,6 +109,11 @@ export default class Consult extends wepy.page {
     }
 
     onLoad (params, data) {
+        // 检查用户是否已授权
+        if (!this.checkAuthAndNavigate('/pages/my/consult')) {
+            return
+        }
+        
         this.queryConfig.key = 'articles_list'
         this.queryParams['professor'] = this.userInfo.professor.id
         this.collectList = wepy.$instance.globalData.collects

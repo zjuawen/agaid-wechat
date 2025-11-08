@@ -102,6 +102,11 @@ export default class Exchange extends wepy.page {
     }
 
     onLoad (params, data) {
+        // 检查用户是否已授权
+        if (!this.checkAuthAndNavigate('/pages/my/exchange')) {
+            return
+        }
+        
         this.appuser = this.$parent.globalData.appuser
         this.wxuser = this.$parent.globalData.wxuser
         this.queryParams['user'] = this.appuser.id

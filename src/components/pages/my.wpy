@@ -235,6 +235,11 @@ export default class My extends wepy.component {
     }
 
     init() {
+        // 检查用户是否已授权，未授权则跳转到授权页面
+        if (!this.checkAuthAndNavigate('/pages/index')) {
+            return
+        }
+        
         this.appuser = this.$parent.$parent.globalData.appuser
         this.wxuser = this.$parent.$parent.globalData.wxuser
         this.checkin = this.$parent.$parent.globalData.checkin

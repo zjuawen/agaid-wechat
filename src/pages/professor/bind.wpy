@@ -288,6 +288,11 @@ export default class Bind extends wepy.page {
     }
 
     onLoad (params, data) {
+        // 检查用户是否已授权
+        if (!this.checkAuthAndNavigate('/pages/professor/bind')) {
+            return
+        }
+        
         this.submitData.author = this.userInfo.id
         if (this.userInfo.professor && this.userInfo.professor.id) {
             this.handleGetInfo(this.userInfo.professor.id)

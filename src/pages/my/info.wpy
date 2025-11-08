@@ -173,6 +173,11 @@ export default class Info extends wepy.page {
     }
 
     async onLoad (params, data) {
+        // 检查用户是否已授权
+        if (!this.checkAuthAndNavigate('/pages/my/info')) {
+            return
+        }
+        
         let wxinfo = JSON.parse(JSON.stringify(this.$parent.globalData.wxuser))
         if (wxinfo.avatar && !wxinfo.avatar.startsWith('http')) {
             wxinfo.avatar = api.urlPrefixRemote + wxinfo.avatar;

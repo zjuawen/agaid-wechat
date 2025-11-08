@@ -72,6 +72,11 @@ export default class History extends wepy.page {
 
 
     onLoad (params, data) {
+        // 检查用户是否已授权
+        if (!this.checkAuthAndNavigate('/pages/my/history')) {
+            return
+        }
+        
         this.history = wx.getStorageSync('AGAID_HISTORY')
         this.$apply()
         setTimeout(() => {

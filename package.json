@@ -1,6 +1,6 @@
 {
   "name": "agaid-weapp",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "A WePY project",
   "main": "dist/app.js",
   "scripts": {

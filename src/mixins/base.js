@@ -77,6 +77,22 @@ export default class baseMixin extends wepy.mixin {
         }
     }
 
+    // 检查授权状态，未授权则跳转到授权页面
+    checkAuthAndNavigate(callbackUrl) {
+        const isAuth = wx.getStorageSync('agaid-weapp-auth')
+        if (isAuth) {
+            // 未授权，需要跳转到授权页面
+            if (callbackUrl) {
+                wx.setStorageSync('bind-navigate', callbackUrl)
+            }
+            wx.navigateTo({
+                url: '/pages/auth'
+            })
+            return false
+        }
+        return true
+    }
+
     // 更新微信用户信息
     handleUpdateWxuser(wxuser) {
         api.$request('bind', wxuser).then(({data}) => {})
@@ -207,6 +223,11 @@ export default class baseMixin extends wepy.mixin {
     // 点赞收藏
     handleSetCollect(params, isCollect, callback) {
         let _this = this
+        // 检查用户是否已授权
+        if (!_this.checkAuthAndNavigate()) {
+            return
+        }
+        
         if (_this.collectLoading) {
             return
         }

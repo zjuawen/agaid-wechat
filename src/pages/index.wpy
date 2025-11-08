@@ -4,37 +4,32 @@
             <image class="icon-loading box-center" src="/public/img/loading.gif" />
         </view>
         <block wx:if="{{!isError}}">
-            <block wx:if="{{showAuth}}">
-                <Auth @onback.user="handleAuth" />
-            </block>
-            <block wx:else>
-                <Category wx:if="{{navCode=='Category'}}" />
-                <Article wx:if="{{navCode=='Article'}}" @onevt.user="handleShowNav" />
-                <News wx:if="{{navCode=='News'}}" />
-                <Professor wx:if="{{navCode=='Professor'}}" />
-                <My wx:if="{{navCode=='My'}}" />
-                <view wx:if="{{showNav}}" class="nav-bar box-shadow flex flex-ai-center fix-iphonex-bottom">
-                    <view 
-                        wx:for="{{navItems}}" wx:key="index" 
-                        class="nav-bar-item flex-main text-center {{navActive==index?'active':''}}" 
-                        @tap="handleNavbarClick({{index}})">
-                        <view wx:if="{{item.isHome&&navActive==index}}" class="box-center home">
-                            <view class="box-center">
-                                <i class="{{item.icon}} relative bar-icon" style="font-size: {{item.size}}rpx;">
-                                    <!-- <text wx:if="{{index==0}}" class="tip">2</text> -->
-                                </i>
-                                <view class="text-24 nav-title">{{item.text}}</view>
-                            </view>
-                        </view>
-                        <block wx:else>
+            <Category wx:if="{{navCode=='Category'}}" />
+            <Article wx:if="{{navCode=='Article'}}" @onevt.user="handleShowNav" />
+            <News wx:if="{{navCode=='News'}}" />
+            <Professor wx:if="{{navCode=='Professor'}}" />
+            <My wx:if="{{navCode=='My'}}" />
+            <view wx:if="{{showNav}}" class="nav-bar box-shadow flex flex-ai-center fix-iphonex-bottom">
+                <view 
+                    wx:for="{{navItems}}" wx:key="index" 
+                    class="nav-bar-item flex-main text-center {{navActive==index?'active':''}}" 
+                    @tap="handleNavbarClick({{index}})">
+                    <view wx:if="{{item.isHome&&navActive==index}}" class="box-center home">
+                        <view class="box-center">
                             <i class="{{item.icon}} relative bar-icon" style="font-size: {{item.size}}rpx;">
                                 <!-- <text wx:if="{{index==0}}" class="tip">2</text> -->
                             </i>
                             <view class="text-24 nav-title">{{item.text}}</view>
-                        </block>
+                        </view>
                     </view>
+                    <block wx:else>
+                        <i class="{{item.icon}} relative bar-icon" style="font-size: {{item.size}}rpx;">
+                            <!-- <text wx:if="{{index==0}}" class="tip">2</text> -->
+                        </i>
+                        <view class="text-24 nav-title">{{item.text}}</view>
+                    </block>
                 </view>
-            </block>
+            </view>
         </block>
         <block wx:else>
             <view class="h-full-v w-full relative">
@@ -71,7 +66,6 @@
 import wepy from 'wepy'
 import api from '@/utils/api'
 import baseMixin from '@/mixins/base'
-import Auth from '@/components/pages/auth'
 import Category from '@/components/pages/category'
 import Article from '@/components/pages/article'
 import News from '@/components/pages/news'
@@ -95,7 +89,6 @@ export default class Index extends wepy.page {
     mixins = [ baseMixin ]
 
     components = {
-        Auth: Auth,
         Category: Category,
         Article: Article,
         News: News,
@@ -108,7 +101,6 @@ export default class Index extends wepy.page {
         loading: true,
         isError: false,
         showNav: true,
-        showAuth: false,
         display: 'block',
         message: '',
         subMessage: '',
@@ -145,12 +137,6 @@ export default class Index extends wepy.page {
             this.$parent.doLogin(() => {
                 this.loadPage()
             })
-        },
-        handleAuth(res) {
-            wx.setStorageSync('agaid-weapp-auth', false)
-            this.showAuth = false
-            this.loadPage()
-            this.$apply()
         },
         handleShowNav(isShow) {
             if (isShow) {
@@ -230,15 +216,12 @@ export default class Index extends wepy.page {
 
     loadPage(refresh=false) {
         let vm = this
-        vm.showAuth = wx.getStorageSync('agaid-weapp-auth')
-        if (!vm.showAuth) {
-            // 检查是否已同意隐私协议（仅对已登录用户）
-            const hasAgreedPrivacy = wx.getStorageSync('hasAgreedPrivacy')
-            if (!hasAgreedPrivacy) {
-                vm.showPrivacyModal = true
-            }
-            vm.initPage(refresh)
+        // 检查是否已同意隐私协议
+        const hasAgreedPrivacy = wx.getStorageSync('hasAgreedPrivacy')
+        if (!hasAgreedPrivacy) {
+            vm.showPrivacyModal = true
         }
+        vm.initPage(refresh)
         vm.$apply()
         vm.hideLoading()
     }

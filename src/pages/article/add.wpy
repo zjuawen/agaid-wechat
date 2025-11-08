@@ -217,6 +217,11 @@ export default class add extends wepy.page {
     }
 
     onLoad (params, data) {
+        // 检查用户是否已授权
+        if (!this.checkAuthAndNavigate('/pages/article/add?type=' + (params.type || ''))) {
+            return
+        }
+        
         this.maxCount = this.$parent.globalData.maxUploadCount
         this.submitData.type = params.type
         this.submitData.author = this.userInfo.id

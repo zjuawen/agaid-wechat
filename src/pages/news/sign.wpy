@@ -399,6 +399,11 @@ export default class Sign extends wepy.page {
     }
 
     onLoad (params, data) {
+        // 检查用户是否已授权
+        if (!this.checkAuthAndNavigate('/pages/news/sign?id=' + params.id + '&type=' + (params.type || 1))) {
+            return
+        }
+        
         this.user = this.$parent.globalData.appuser
         this.targetId = params.id
         this.type = params.type || 1

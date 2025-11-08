@@ -220,6 +220,11 @@ export default class Exchange extends wepy.page {
     }
 
     async onLoad (params, data) {
+        // 检查用户是否已授权
+        if (!this.checkAuthAndNavigate('/pages/integral/exchange?id=' + params.id)) {
+            return
+        }
+        
         let id = params.id
         this.$apply()
         this.handleFetchDetail(id)

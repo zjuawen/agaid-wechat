@@ -112,6 +112,11 @@ export default class Integral extends wepy.page {
 
 
     onLoad (params, data) {
+        // 检查用户是否已授权
+        if (!this.checkAuthAndNavigate('/pages/my/integral')) {
+            return
+        }
+        
         this.queryConfig.key = 'integrals_list'
         this.queryParams.user = this.$parent.globalData.appuser.id
         this.loadData()
