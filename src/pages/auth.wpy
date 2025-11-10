@@ -1,91 +1,37 @@
 <template>
-    <view class="page-auth h-full-v flex flex-col bg-white">
-        <view class="text-center">
-            <view class="logo">
-                <image mode="aspectFill" src="/public/img/logo.jpg" />
-                <view class="text-38 color-title text-sc-bold text-center wl-margin-top-xl line-1">助农小程序</view>
-            </view>
-            <view class="text-28 color-title text-center wl-margin-bottom-50">点击授权将获取您的信息（昵称，头像等）</view>
-            <view class="wl-padding-page">
-                <button class="w-full btn btn-submit border-none wl-margin-top-xl wl-margin-bottom-50" hover-class='none' open-type="getUserProfile" bindtap="getUserProfile"> 授权 </button>
-                <view class="text-28 color-blue text-center line-1" @tap="handleBack">暂不授权</view>
-            </view>
-        </view>
-        
-        <!-- 隐私保护提示弹窗 -->
-        <view wx:if="{{showPrivacyModal}}" class="privacy-popup">
-            <view class="privacy-mask"></view>
-            <view class="privacy-dialog">
-                <view class="privacy-title">用户隐私保护提示</view>
-                <view class="privacy-content">
-                    <text>在你使用"农一通小程序"服务之前，请仔细阅读</text>
-                    <text class="privacy-link" @tap="goToPrivacyPage">《农一通小程序隐私保护指引》</text>
-                    <text>\n如你同意该指引，请点击"同意"开始使用本小程序。</text>
-                </view>
-                <view class="privacy-buttons">
-                    <button class="privacy-btn refuse-btn" @tap="handleRefuse">拒绝</button>
-                    <button class="privacy-btn agree-btn" @tap="handleAgree">同意</button>
-                </view>
-            </view>
-        </view>
-    </view>
+    <AuthComponent @onback.user="handleAuthBack" />
 </template>
+
 <script>
 import wepy from 'wepy'
-import api from '@/utils/api'
+import AuthComponent from '@/components/pages/auth'
 import baseMixin from '@/mixins/base'
+
 export default class Auth extends wepy.page {
     config = {
         navigationBarTitleText: '微信授权',
-        navigationBarBackgroundColor: '#ffffff'
+        navigationBarBackgroundColor: '#239A4F',
+        navigationBarTextStyle: 'white'
     }
     
     mixins = [ baseMixin ]
     
     components = {
+        AuthComponent: AuthComponent
     }
 
     data = {
-        callbackUrl: '',
-        showPrivacyModal: false
+        isAuthCompleted: false  // 标记是否已完成授权流程
     }
 
-    computed = {
-    }
-    
     methods = {
-        getUserProfile(e) {
-            let _this = this
-            // 推荐使用 wx.getUserProfile 获取用户信息，开发者每次通过该接口获取用户个人信息均需用户确认
-            // 开发者妥善保管用户快速填写的头像昵称，避免重复弹窗
-            wx.getUserProfile({
-                desc: '用于完善用户资料', // 声明获取用户个人信息后的用途，后续会展示在弹窗中，请谨慎填写
-                success: (res) => {
-                    _this.handleUpdate(res.userInfo)
-                }
-            })
-        },
-        handleBack() {
-            this.pageBack(false, false)
-        },
-        goToPrivacyPage() {
-            wx.navigateTo({
-                url: '/pages/privacy'
-            })
-        },
-        handleAgree() {
-            this.showPrivacyModal = false
-            wx.setStorageSync('hasAgreedPrivacy', true)
-            this.$apply()
-        },
-        handleRefuse() {
-            wx.showModal({
-                title: '提示',
-                content: '同意隐私保护指引后正常使用小程序',
-                showCancel: false,
-                success: () => {
-                    this.pageBack(false, false)
-                }
+        handleAuthBack(success) {
+            // 标记授权流程已完成
+            this.isAuthCompleted = true
+            // 无论授权成功还是拒绝，都统一跳转到首页
+            // 避免用户拒绝授权后继续尝试需要授权的操作
+            wx.reLaunch({
+                url: '/pages/index'
             })
         }
     }
@@ -93,119 +39,28 @@ export default class Auth extends wepy.page {
     events = {
     }
 
-    handleUpdate(info) {
-        let wxuser = this.$parent.globalData.wxuser
-        wxuser.nickname = info.nickName
-        wxuser.profilePhotoUrl = info.avatarUrl
-        api.$request('bind', wxuser).then(({data}) => {
-            if (data.code === 0) {
-                this.pageBack(false, true, {navigateUrl: this.callbackUrl})
-            }
-        })
-    }
-
     onLoad (params, data) {
-        this.callbackUrl = wx.getStorageSync('bind-navigate')
-        
-        // 检查是否已同意隐私协议
-        const hasAgreedPrivacy = wx.getStorageSync('hasAgreedPrivacy')
-        if (!hasAgreedPrivacy) {
-            this.showPrivacyModal = true
-        }
-        
-        this.$apply()
+        // 调用组件的 onLoad
+        this.$invoke('AuthComponent', 'onLoad', params, data)
     }
+    
     onShow () {
-        
     }
+    
     onReady () {
-
+    }
+    
+    onUnload () {
+        // 页面卸载时检查：如果不是通过授权流程完成的（比如点击了返回按钮）
+        // 则跳转到首页，避免返回到需要授权的页面
+        if (!this.isAuthCompleted) {
+            wx.reLaunch({
+                url: '/pages/index'
+            })
+        }
     }
 }
 </script>
+
 <style lang="css">
-/* 隐私保护弹窗样式 */
-.privacy-popup {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    z-index: 9999;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.privacy-mask {
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background-color: rgba(0, 0, 0, 0.6);
-}
-
-.privacy-dialog {
-    position: relative;
-    width: 620rpx;
-    background-color: #ffffff;
-    border-radius: 24rpx;
-    overflow: hidden;
-    z-index: 10000;
-}
-
-.privacy-title {
-    padding: 48rpx 40rpx 24rpx;
-    font-size: 34rpx;
-    font-weight: 500;
-    color: #000000;
-    text-align: center;
-    line-height: 48rpx;
-}
-
-.privacy-content {
-    padding: 0 40rpx 40rpx;
-    font-size: 28rpx;
-    color: #666666;
-    line-height: 44rpx;
-    text-align: left;
-}
-
-.privacy-link {
-    color: #576B95;
-    text-decoration: none;
-}
-
-.privacy-buttons {
-    display: flex;
-    border-top: 1rpx solid #E5E5E5;
-}
-
-.privacy-btn {
-    flex: 1;
-    height: 100rpx;
-    line-height: 100rpx;
-    font-size: 34rpx;
-    text-align: center;
-    background-color: transparent;
-    border: none;
-    border-radius: 0;
-    padding: 0;
-    margin: 0;
-}
-
-.privacy-btn::after {
-    border: none;
-}
-
-.refuse-btn {
-    color: #000000;
-    border-right: 1rpx solid #E5E5E5;
-}
-
-.agree-btn {
-    color: #07C160;
-    font-weight: 500;
-}
 </style>

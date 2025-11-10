@@ -68,7 +68,6 @@ export default class Auth extends wepy.component {
     data = {
         loading: true,
         version: 0,
-        callbackUrl: '',
         nickname: '',
         avatarUrl: '',
         showPrivacyModal: false
@@ -161,15 +160,27 @@ export default class Auth extends wepy.component {
         customer.country = info.country
         customer.language = info.language
         api.$request(['customers_update', customer.id], customer).then(({data}) => {
-            if (data) {
-                this.$emit('onback', true);
+            // Strapi PUT 请求成功后直接返回更新后的对象
+            if (data && data.id) {
+                // 标记已授权
+                wx.setStorageSync('agaid-weapp-auth', false)
+                
+                // 重新登录以刷新完整的用户信息
+                wepy.$instance.doLogin((res) => {
+                    if (res.code === 0) {
+                        // 登录成功，通知父组件返回
+                        this.$emit('onback', true);
+                    } else {
+                        // 登录失败，但授权已完成，仍然返回
+                        this.$emit('onback', true);
+                    }
+                })
             }
         })
     }
 
     onLoad (params, data) {
         let vm = this
-        vm.callbackUrl = wx.getStorageSync('bind-navigate')
         
         // 检查是否已同意隐私协议
         const hasAgreedPrivacy = wx.getStorageSync('hasAgreedPrivacy')

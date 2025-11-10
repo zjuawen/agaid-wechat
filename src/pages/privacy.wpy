@@ -76,9 +76,12 @@
                 </view>
             </view>
 
-            <view class="text-center wl-margin-top-xl">
-                <view class="text-26 color-gray wl-margin-bottom-sm">更新日期：2025年11月10日</view>
-                <view class="text-26 color-gray">生效日期：2025年11月10日</view>
+            <view class="wl-margin-top-xl">
+                <view class="text-28 color-content wl-margin-bottom-sm">客服电话：4008600637</view>
+                <view class="text-right">
+                    <view class="text-26 color-gray wl-margin-bottom-sm">更新日期：2025年11月10日</view>
+                    <view class="text-26 color-gray">生效日期：2025年11月10日</view>
+                </view>
             </view>
         </view>
     </view>

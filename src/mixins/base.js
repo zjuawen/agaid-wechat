@@ -81,10 +81,7 @@ export default class baseMixin extends wepy.mixin {
     checkAuthAndNavigate(callbackUrl) {
         const isAuth = wx.getStorageSync('agaid-weapp-auth')
         if (isAuth) {
-            // 未授权，需要跳转到授权页面
-            if (callbackUrl) {
-                wx.setStorageSync('bind-navigate', callbackUrl)
-            }
+            // 未授权，跳转到授权页面（授权完成后统一返回首页）
             wx.navigateTo({
                 url: '/pages/auth'
             })
@@ -95,7 +92,7 @@ export default class baseMixin extends wepy.mixin {
 
     // 更新微信用户信息
     handleUpdateWxuser(wxuser) {
-        api.$request('bind', wxuser).then(({data}) => {})
+        api.$request(['bind', wxuser.id], wxuser).then(({data}) => {})
     }
 
     handleCheckWords(_openid, _content, callback) {

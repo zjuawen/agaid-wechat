@@ -15,6 +15,7 @@ const methods = { GET: 'GET', POST: 'POST', PUT: 'PUT', DELETE: 'DELETE' }
 // +--------------------------------------
 const urlConfig = {
     login:                  ['', '/customers/login', methods.POST, false],   // 登录{code}
+    bind:                   ['', '/customers/${0}', methods.PUT],            // 绑定/更新微信用户信息
     upload:                 ['', '/upload', methods.POST],
     get_dict:               ['', '/dicts', methods.GET],
     check_word:             ['', '/wechat/check', methods.POST],
